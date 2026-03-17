@@ -4,130 +4,374 @@
 {% block title %}Login - Digital Notice Board{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center min-vh-100 align-items-center">
-        <div class="col-12 col-sm-8 col-md-6 col-lg-4">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white text-center">
-                    <h4 class="mb-0">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>
-                        Login
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-person"></i>
-                                </span>
-                                {{ form.username }}
-                            </div>
-                            {% if form.username.errors %}
-                                <div class="text-danger small mt-1">
-                                    {{ form.username.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-lock"></i>
-                                </span>
-                                {{ form.password }}
-                            </div>
-                            {% if form.password.errors %}
-                                <div class="text-danger small mt-1">
-                                    {{ form.password.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {{ form.non_field_errors }}
-                            </div>
-                        {% endif %}
-                        
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-box-arrow-in-right me-1"></i>
-                                Login
-                            </button>
-                        </div>
-                    </form>
-                    
-                    <div class="mt-3 text-center">
-                        <a href="{% url 'password_reset' %}" class="text-decoration-none small">
-                            <i class="fas fa-key"></i> Forgot Password?
-                        </a>
-                    </div>
-                </div>
-                <div class="card-footer text-center">
-                    <small class="text-muted">Don't have an account?</small><br>
-                    <a href="{% url 'student:register' %}" class="btn btn-outline-primary btn-sm mt-2">
-                        <i class="fas fa-user-plus"></i> Register as Student
-                    </a>
-                </div>
+
+<div class="lg">
+
+  <!-- ambient orbs -->
+  <div class="lg__orb lg__orb--1"></div>
+  <div class="lg__orb lg__orb--2"></div>
+  <div class="lg__orb lg__orb--3"></div>
+
+  <!-- mesh grid -->
+  <div class="lg__mesh"></div>
+
+  <div class="lg__wrap">
+
+    <!-- LEFT: branding panel -->
+    <div class="lg__left">
+      <div class="lg__left-inner">
+        <div class="lg__brand-icon"><i class="bi bi-clipboard-check"></i></div>
+        <h1 class="lg__brand-title">Digital<br>Notice Board</h1>
+        <p class="lg__brand-sub">Placement management made simple. One platform for drives, students and notifications.</p>
+
+        <div class="lg__features">
+          <div class="lg__feat">
+            <div class="lg__feat-ic" style="--fc:#06b6d4"><i class="bi bi-briefcase-fill"></i></div>
+            <div>
+              <div class="lg__feat-lbl">Drive Management</div>
+              <div class="lg__feat-hint">Create and track placement drives</div>
             </div>
+          </div>
+          <div class="lg__feat">
+            <div class="lg__feat-ic" style="--fc:#10b981"><i class="bi bi-people-fill"></i></div>
+            <div>
+              <div class="lg__feat-lbl">Student Approvals</div>
+              <div class="lg__feat-hint">Review and manage registrations</div>
+            </div>
+          </div>
+          <div class="lg__feat">
+            <div class="lg__feat-ic" style="--fc:#a78bfa"><i class="bi bi-bell-fill"></i></div>
+            <div>
+              <div class="lg__feat-lbl">Auto Reminders</div>
+              <div class="lg__feat-hint">Automated email notifications</div>
+            </div>
+          </div>
         </div>
+
+        <div class="lg__version">
+          <span class="lg__dot"></span> v2026.1 — All systems operational
+        </div>
+      </div>
     </div>
+
+    <!-- RIGHT: login form -->
+    <div class="lg__right">
+      <div class="lg__card">
+
+        <!-- Card header -->
+        <div class="lg__card-top">
+          <div class="lg__card-icon"><i class="bi bi-box-arrow-in-right"></i></div>
+          <h2 class="lg__card-title">Welcome back</h2>
+          <p class="lg__card-sub">Sign in to your admin account</p>
+        </div>
+
+        <!-- Non-field errors -->
+        {% if form.non_field_errors %}
+        <div class="lg__error-box">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>{{ form.non_field_errors }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Form -->
+        <form method="post" class="lg__form">
+          {% csrf_token %}
+
+          <!-- Username -->
+          <div class="lg__field">
+            <label class="lg__lbl" for="{{ form.username.id_for_label }}">
+              <i class="bi bi-person"></i> Username
+            </label>
+            <div class="lg__input-wrap">
+              {{ form.username }}
+            </div>
+            {% if form.username.errors %}
+            <div class="lg__field-err">
+              <i class="bi bi-exclamation-circle"></i> {{ form.username.errors }}
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Password -->
+          <div class="lg__field">
+            <label class="lg__lbl" for="{{ form.password.id_for_label }}">
+              <i class="bi bi-lock"></i> Password
+            </label>
+            <div class="lg__input-wrap lg__pw-wrap">
+              {{ form.password }}
+              <button type="button" class="lg__pw-eye" onclick="togglePw(this)" tabindex="-1">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            {% if form.password.errors %}
+            <div class="lg__field-err">
+              <i class="bi bi-exclamation-circle"></i> {{ form.password.errors }}
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="lg__submit">
+            <i class="bi bi-box-arrow-in-right"></i> Sign In
+          </button>
+
+          <!-- Forgot -->
+          <div class="lg__forgot">
+            <a href="{% url 'password_reset' %}" class="lg__forgot-link">
+              <i class="fas fa-key"></i> Forgot password?
+            </a>
+          </div>
+        </form>
+
+        <!-- Footer -->
+        <div class="lg__card-footer">
+          <span>New to DNB?</span>
+          <a href="{% url 'student:register' %}" class="lg__register-btn">
+            <i class="fas fa-user-plus"></i> Register as Student
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
 </div>
 
+
 <style>
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-    }
-    
-    .card {
-        border: none;
-        border-radius: 15px;
-        max-width: 400px;
-        width: 100%;
-    }
-    
-    .card-header {
-        border-radius: 15px 15px 0 0 !important;
-    }
-    
-    .form-control {
-        border-left: none;
-        border-radius: 0 5px 5px 0;
-        height: 45px;
-    }
-    
-    .input-group-text {
-        border-right: none;
-        background-color: #f8f9fa;
-        border-radius: 5px 0 0 5px;
-        height: 45px;
-        display: flex;
-        align-items: center;
-    }
-    
-    .btn {
-        height: 45px;
-        font-weight: 500;
-    }
-    
-    @media (max-width: 576px) {
-        .container {
-            padding: 1rem;
-        }
-        
-        .card {
-            margin: 0;
-        }
-        
-        .card-body {
-            padding: 1.5rem;
-        }
-    }
+/* ══ OVERRIDE base body for login page full-screen ══ */
+body { overflow: hidden; }
+.base-footer { display: none; }
+
+.lg {
+  position: fixed; inset: 0;
+  background: #0d1f2d;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  font-family: 'Urbanist', sans-serif;
+}
+
+/* mesh */
+.lg__mesh {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(6,182,212,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6,182,212,.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* orbs */
+.lg__orb { position: absolute; border-radius: 50%; pointer-events: none; filter: blur(80px); animation: ao 18s ease-in-out infinite alternate; }
+.lg__orb--1 { width: 500px; height: 500px; background: radial-gradient(circle,rgba(6,182,212,.2),transparent); top: -150px; left: -100px; }
+.lg__orb--2 { width: 400px; height: 400px; background: radial-gradient(circle,rgba(167,139,250,.15),transparent); bottom: -100px; right: -80px; animation-delay: -9s; }
+.lg__orb--3 { width: 280px; height: 280px; background: radial-gradient(circle,rgba(16,185,129,.1),transparent); top: 50%; left: 45%; animation-delay: -4s; }
+@keyframes ao { from { transform: translate(0,0) scale(1); } to { transform: translate(25px,18px) scale(1.08); } }
+
+/* ══ WRAP ══ */
+.lg__wrap {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1fr 1fr;
+  width: 100%; max-width: 1000px;
+  min-height: 580px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(6,182,212,.15);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,.5);
+  animation: fadeUp .6s ease both;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 768px) { .lg__wrap { grid-template-columns: 1fr; max-width: 420px; } .lg__left { display: none; } }
+
+/* ══ LEFT ══ */
+.lg__left {
+  background: rgba(6,182,212,.05);
+  border-right: 1px solid rgba(6,182,212,.12);
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 40px;
+  position: relative; overflow: hidden;
+}
+.lg__left::before {
+  content: '';
+  position: absolute; bottom: -60px; right: -60px;
+  width: 250px; height: 250px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(6,182,212,.12), transparent 70%);
+  pointer-events: none;
+}
+.lg__left-inner { max-width: 320px; }
+
+.lg__brand-icon {
+  width: 54px; height: 54px; border-radius: 15px; margin-bottom: 20px;
+  background: linear-gradient(135deg, #0891b2, #06b6d4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: #fff;
+  box-shadow: 0 6px 22px rgba(6,182,212,.4);
+}
+.lg__brand-title {
+  font-size: 30px; font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 12px;
+}
+.lg__brand-sub {
+  font-size: 13.5px; color: #3d7a8a; line-height: 1.6; margin-bottom: 28px;
+}
+
+.lg__features { display: flex; flex-direction: column; gap: 16px; margin-bottom: 30px; }
+.lg__feat { display: flex; align-items: flex-start; gap: 12px; }
+.lg__feat-ic {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(255,255,255,.06); color: var(--fc);
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.lg__feat-lbl { font-size: 13.5px; font-weight: 700; color: #e0f4f8; }
+.lg__feat-hint { font-size: 11.5px; color: #3d7a8a; margin-top: 2px; }
+
+.lg__version {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11.5px; color: #3d7a8a;
+  font-family: 'JetBrains Mono', monospace;
+}
+.lg__dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #10b981;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.4); } 70% { box-shadow: 0 0 0 6px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+/* ══ RIGHT ══ */
+.lg__right {
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 40px;
+}
+.lg__card { width: 100%; max-width: 360px; }
+
+.lg__card-top { text-align: center; margin-bottom: 28px; }
+.lg__card-icon {
+  width: 52px; height: 52px; border-radius: 15px;
+  background: linear-gradient(135deg, #0891b2, #06b6d4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #fff; margin: 0 auto 14px;
+  box-shadow: 0 4px 18px rgba(6,182,212,.35);
+}
+.lg__card-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 5px; }
+.lg__card-sub { font-size: 13px; color: #3d7a8a; }
+
+/* error box */
+.lg__error-box {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.25);
+  border-radius: 10px; padding: 11px 14px; margin-bottom: 16px;
+  font-size: 13px; color: #f87171;
+}
+.lg__error-box i { flex-shrink: 0; margin-top: 1px; }
+
+/* form */
+.lg__form { display: flex; flex-direction: column; gap: 16px; }
+.lg__field { display: flex; flex-direction: column; gap: 6px; }
+.lg__lbl {
+  font-size: 12px; font-weight: 700; color: #7ec8d8;
+  text-transform: uppercase; letter-spacing: .07em;
+  display: flex; align-items: center; gap: 6px;
+}
+.lg__lbl i { font-size: 12px; }
+
+.lg__input-wrap { position: relative; }
+/* Style Django form widget inputs */
+.lg__form input[type="text"],
+.lg__form input[type="password"] {
+  width: 100%;
+  background: #1a3a52 !important;
+  border: 1px solid rgba(6,182,212,.2) !important;
+  border-radius: 11px !important;
+  color: #e0f4f8 !important;
+  font-family: 'Urbanist', sans-serif !important;
+  font-size: 14px !important; font-weight: 500 !important;
+  padding: 12px 14px !important;
+  outline: none !important;
+  transition: border-color .18s, box-shadow .18s !important;
+  box-shadow: none !important;
+}
+.lg__form input:focus {
+  border-color: rgba(6,182,212,.55) !important;
+  box-shadow: 0 0 0 3px rgba(6,182,212,.15) !important;
+}
+.lg__form input::placeholder { color: #3d7a8a !important; }
+
+/* password eye */
+.lg__pw-wrap .lg__form input[type="password"],
+.lg__pw-wrap .lg__form input[type="text"] { padding-right: 44px !important; }
+.lg__pw-eye {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: #3d7a8a; font-size: 15px; cursor: pointer;
+  transition: color .15s; padding: 4px;
+}
+.lg__pw-eye:hover { color: #06b6d4; }
+
+/* field error */
+.lg__field-err {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: #f87171;
+}
+
+/* submit */
+.lg__submit {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%;
+  background: linear-gradient(135deg, #0891b2, #06b6d4);
+  border: 1px solid rgba(6,182,212,.4);
+  color: #fff; font-family: 'Urbanist', sans-serif;
+  font-size: 15px; font-weight: 800;
+  padding: 13px; border-radius: 11px;
+  box-shadow: 0 4px 20px rgba(6,182,212,.35);
+  cursor: pointer; transition: all .2s; margin-top: 4px;
+}
+.lg__submit:hover {
+  box-shadow: 0 6px 28px rgba(6,182,212,.55);
+  transform: translateY(-1px);
+}
+.lg__submit:active { transform: scale(.98); }
+
+/* forgot */
+.lg__forgot { text-align: center; }
+.lg__forgot-link {
+  font-size: 12.5px; color: #3d7a8a; text-decoration: none;
+  transition: color .15s;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.lg__forgot-link:hover { color: #06b6d4; }
+
+/* card footer */
+.lg__card-footer {
+  margin-top: 24px; padding-top: 20px;
+  border-top: 1px solid rgba(6,182,212,.1);
+  text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.lg__card-footer span { font-size: 12.5px; color: #3d7a8a; }
+.lg__register-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(6,182,212,.08);
+  border: 1px solid rgba(6,182,212,.25);
+  color: #06b6d4; font-size: 13px; font-weight: 700;
+  padding: 9px 20px; border-radius: 10px;
+  text-decoration: none; transition: all .18s;
+}
+.lg__register-btn:hover {
+  background: rgba(6,182,212,.16);
+  border-color: rgba(6,182,212,.5);
+  color: #06b6d4;
+}
 </style>
+
+<script>
+function togglePw(btn){
+  const wrap = btn.closest('.lg__pw-wrap');
+  const input = wrap.querySelector('input');
+  const icon = btn.querySelector('i');
+  if(input.type === 'password'){
+    input.type = 'text';
+    icon.className = 'bi bi-eye-slash';
+  } else {
+    input.type = 'password';
+    icon.className = 'bi bi-eye';
+  }
+}
+</script>
+
 {% endblock %}
