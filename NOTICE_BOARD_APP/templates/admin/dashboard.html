@@ -1,0 +1,716 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Digital Notice Board{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="x">
+
+  <!-- ambient mesh -->
+  <div class="x__mesh"></div>
+  <div class="x__orb x__orb--1"></div>
+  <div class="x__orb x__orb--2"></div>
+  <div class="x__orb x__orb--3"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="x__top">
+    <div class="x__top-l">
+      <div class="x__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="x__brand">DNB <b>Admin</b></span>
+      <span class="x__div"></span>
+      <span class="x__crumb">Overview</span>
+    </div>
+    <div class="x__top-r">
+      <span class="x__live"><span class="x__dot"></span>Live</span>
+      <span class="x__clk" id="js-clk"></span>
+      <a href="{% url 'admin_app:add_drive' %}" class="x__btn-top">
+        <i class="bi bi-plus-lg"></i> New Drive
+      </a>
+    </div>
+  </div>
+
+  <div class="x__wrap">
+
+    <!-- ══ SIDEBAR ══ -->
+    <aside class="x__side">
+      <nav class="x__nav">
+        <a href="#" class="x__ni x__ni--on"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+        <a href="{% url 'admin_app:add_drive' %}" class="x__ni"><i class="bi bi-plus-circle"></i><span>Add Drive</span></a>
+        <a href="{% url 'admin_app:manage_drives' %}" class="x__ni"><i class="bi bi-briefcase"></i><span>Drives</span></a>
+        <a href="{% url 'admin_app:manage_students' %}" class="x__ni">
+          <i class="bi bi-people"></i><span>Students</span>
+          {% if pending_approvals > 0 %}<span class="x__nbadge">{{ pending_approvals }}</span>{% endif %}
+        </a>
+        <a href="{% url 'admin_app:profile_change_requests' %}" class="x__ni"><i class="bi bi-bell"></i><span>Requests</span></a>
+        <a href="{% url 'admin_app:manage_admins' %}" class="x__ni"><i class="bi bi-shield-lock"></i><span>Admins</span></a>
+        <a href="{% url 'admin_app:system_settings' %}" class="x__ni"><i class="bi bi-gear"></i><span>Settings</span></a>
+      </nav>
+      <div class="x__side-footer">
+        <span>DNB System</span>
+        <span class="x__ver">v2026.1</span>
+      </div>
+    </aside>
+
+    <!-- ══ MAIN ══ -->
+    <main class="x__main">
+
+      <!-- PAGE HEAD -->
+      <div class="x__ph anim">
+        <div>
+          <h1 class="x__h1">Dashboard <span class="x__h1-sub">/ overview</span></h1>
+          <p class="x__desc">Digital Notice Board — Placement Management System</p>
+        </div>
+        {% if pending_approvals > 0 %}
+        <a href="{% url 'admin_app:manage_students' %}?approval=pending" class="x__chip">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          {{ pending_approvals }} pending approval{{ pending_approvals|pluralize }}
+          <i class="bi bi-arrow-right"></i>
+        </a>
+        {% endif %}
+      </div>
+
+      <!-- ══ STATS ══ -->
+      <div class="x__stats">
+
+        <div class="x__sc" style="--g:#06b6d4;--i:1">
+          <div class="x__sc-shine"></div>
+          <div class="x__sc-t">
+            <span class="x__sc-lbl">Total Drives</span>
+            <span class="x__sc-ico" style="color:#06b6d4"><i class="fas fa-briefcase"></i></span>
+          </div>
+          <span class="x__sc-n" data-count="{{ total_drives }}">0</span>
+          <div class="x__sc-bar"><div class="x__sc-fill" style="--w:72%;--c:#06b6d4"></div></div>
+        </div>
+
+        <div class="x__sc" style="--g:#10b981;--i:2">
+          <div class="x__sc-shine"></div>
+          <div class="x__sc-t">
+            <span class="x__sc-lbl">Active Drives</span>
+            <span class="x__sc-ico" style="color:#10b981"><i class="fas fa-check-circle"></i></span>
+          </div>
+          <span class="x__sc-n" data-count="{{ active_drives }}">0</span>
+          <div class="x__sc-bar"><div class="x__sc-fill" style="--w:55%;--c:#10b981"></div></div>
+        </div>
+
+        <div class="x__sc" style="--g:#a78bfa;--i:3">
+          <div class="x__sc-shine"></div>
+          <div class="x__sc-t">
+            <span class="x__sc-lbl">Total Students</span>
+            <span class="x__sc-ico" style="color:#a78bfa"><i class="fas fa-users"></i></span>
+          </div>
+          <span class="x__sc-n" data-count="{{ total_students }}">0</span>
+          <small class="x__sc-sub">{{ approved_students }} approved</small>
+          <div class="x__sc-bar"><div class="x__sc-fill" style="--w:88%;--c:#a78bfa"></div></div>
+        </div>
+
+        <a href="{% url 'admin_app:manage_students' %}?approval=pending" class="x__sc" style="--g:#fb923c;--i:4;text-decoration:none">
+          <div class="x__sc-shine"></div>
+          <div class="x__sc-t">
+            <span class="x__sc-lbl">Pending Approvals</span>
+            <span class="x__sc-ico" style="color:#fb923c"><i class="fas fa-hourglass-half"></i></span>
+          </div>
+          <span class="x__sc-n" data-count="{{ pending_approvals }}">0</span>
+          {% if pending_approvals > 0 %}
+          <small class="x__sc-sub" style="color:#fb923c"><i class="fas fa-exclamation-circle"></i> Requires action</small>
+          {% else %}
+          <small class="x__sc-sub" style="color:#10b981"><i class="fas fa-check"></i> All clear</small>
+          {% endif %}
+          <div class="x__sc-bar"><div class="x__sc-fill" style="--w:30%;--c:#fb923c"></div></div>
+        </a>
+
+      </div>
+
+      <!-- ══ MID GRID ══ -->
+      <div class="x__mg">
+
+        <!-- Response Distribution -->
+        <div class="x__p" style="--i:5">
+          <div class="x__ph2">
+            <span class="x__pt"><i class="bi bi-pie-chart-fill" style="color:#06b6d4"></i> Response Distribution</span>
+          </div>
+          <div class="x__pb x__resp-body">
+            <div class="x__rw">
+              <svg viewBox="0 0 120 120" class="x__svg">
+                <circle cx="60" cy="60" r="48" class="x__rbg"/>
+                <circle cx="60" cy="60" r="48" class="x__rs x__rs--g" stroke-dasharray="0 301.6"
+                  data-val="{{ opt_in_responses }}"
+                  data-total="{{ opt_in_responses|add:opt_out_responses|add:pending_responses_count }}"/>
+                <circle cx="60" cy="60" r="48" class="x__rs x__rs--r" stroke-dasharray="0 301.6"
+                  data-val="{{ opt_out_responses }}"
+                  data-total="{{ opt_in_responses|add:opt_out_responses|add:pending_responses_count }}"/>
+                <circle cx="60" cy="60" r="48" class="x__rs x__rs--a" stroke-dasharray="0 301.6"
+                  data-val="{{ pending_responses_count }}"
+                  data-total="{{ opt_in_responses|add:opt_out_responses|add:pending_responses_count }}"/>
+                <text x="60" y="57" class="x__rn">{{ opt_in_responses|add:opt_out_responses|add:pending_responses_count }}</text>
+                <text x="60" y="70" class="x__rl">TOTAL</text>
+              </svg>
+            </div>
+            <div class="x__rrows">
+              <div class="x__rrow">
+                <span class="x__rdot" style="background:#10b981;box-shadow:0 0 8px #10b981"></span>
+                <span class="x__rnm">Opt-In</span>
+                <span class="x__rbw"><span class="x__rb" data-val="{{ opt_in_responses }}" data-total="{{ opt_in_responses|add:opt_out_responses|add:pending_responses_count }}" style="background:#10b981"></span></span>
+                <b class="x__rv" style="color:#10b981">{{ opt_in_responses }}</b>
+              </div>
+              <div class="x__rrow">
+                <span class="x__rdot" style="background:#f87171;box-shadow:0 0 8px #f87171"></span>
+                <span class="x__rnm">Opt-Out</span>
+                <span class="x__rbw"><span class="x__rb" data-val="{{ opt_out_responses }}" data-total="{{ opt_in_responses|add:opt_out_responses|add:pending_responses_count }}" style="background:#f87171"></span></span>
+                <b class="x__rv" style="color:#f87171">{{ opt_out_responses }}</b>
+              </div>
+              <div class="x__rrow">
+                <span class="x__rdot" style="background:#fb923c;box-shadow:0 0 8px #fb923c"></span>
+                <span class="x__rnm">Pending</span>
+                <span class="x__rbw"><span class="x__rb" data-val="{{ pending_responses_count }}" data-total="{{ opt_in_responses|add:opt_out_responses|add:pending_responses_count }}" style="background:#fb923c"></span></span>
+                <b class="x__rv" style="color:#fb923c">{{ pending_responses_count }}</b>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drive Statistics -->
+        <div class="x__p" style="--i:6">
+          <div class="x__ph2">
+            <span class="x__pt"><i class="bi bi-bar-chart-fill" style="color:#a78bfa"></i> Drive Statistics</span>
+          </div>
+          <div class="x__pb">
+            {% if drive_stats %}
+              {% for drive in drive_stats %}
+              <div class="x__ds">
+                <div class="x__ds-t">
+                  <span class="x__ds-n">{{ drive.company_name }}</span>
+                  <span class="x__ds-tot">{{ drive.total_responses }} resp.</span>
+                </div>
+                <div class="x__ds-bar">
+                  {% if drive.total_responses > 0 %}
+                  {% widthratio drive.opt_in_count drive.total_responses 100 as pi %}
+                  {% widthratio drive.opt_out_count drive.total_responses 100 as po %}
+                  <div class="x__ds-f" style="width:{{ pi }}%;background:#10b981"></div>
+                  <div class="x__ds-f" style="width:{{ po }}%;background:#f87171"></div>
+                  {% else %}
+                  <div class="x__ds-f" style="width:100%;background:rgba(255,255,255,.05)"></div>
+                  {% endif %}
+                </div>
+                <div class="x__ds-lbs">
+                  <small style="color:#10b981">{{ drive.opt_in_count }} In</small>
+                  <small style="color:#f87171">{{ drive.opt_out_count }} Out</small>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="x__empty"><i class="bi bi-bar-chart"></i><p>No statistics yet</p></div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="x__p" style="--i:7">
+          <div class="x__ph2">
+            <span class="x__pt"><i class="bi bi-lightning-charge-fill" style="color:#fbbf24"></i> Quick Actions</span>
+          </div>
+          <div class="x__pb x__qa-body">
+            <a href="{% url 'admin_app:add_drive' %}" class="x__qa">
+              <span class="x__qa-i" style="--qc:#06b6d4"><i class="fas fa-plus"></i></span>
+              <span>Add New Drive</span><i class="bi bi-chevron-right x__qa-a"></i>
+            </a>
+            <a href="{% url 'admin_app:manage_students' %}" class="x__qa">
+              <span class="x__qa-i" style="--qc:#a78bfa"><i class="fas fa-users"></i></span>
+              <span>Manage Students</span><i class="bi bi-chevron-right x__qa-a"></i>
+            </a>
+            <a href="{% url 'admin_app:manage_drives' %}" class="x__qa">
+              <span class="x__qa-i" style="--qc:#10b981"><i class="fas fa-briefcase"></i></span>
+              <span>Manage Drives</span><i class="bi bi-chevron-right x__qa-a"></i>
+            </a>
+            <a href="{% url 'admin_app:profile_change_requests' %}" class="x__qa">
+              <span class="x__qa-i" style="--qc:#fbbf24"><i class="fas fa-edit"></i></span>
+              <span>Profile Requests</span><i class="bi bi-chevron-right x__qa-a"></i>
+            </a>
+            <a href="{% url 'admin_app:manage_admins' %}" class="x__qa">
+              <span class="x__qa-i" style="--qc:#f87171"><i class="fas fa-user-shield"></i></span>
+              <span>Manage Admins</span><i class="bi bi-chevron-right x__qa-a"></i>
+            </a>
+            <a href="{% url 'admin_app:system_settings' %}" class="x__qa">
+              <span class="x__qa-i" style="--qc:#38bdf8"><i class="fas fa-cogs"></i></span>
+              <span>System Settings</span><i class="bi bi-chevron-right x__qa-a"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ PENDING STUDENTS ══ -->
+      {% if pending_students %}
+      <div class="x__p x__p--full" style="--i:8">
+        <div class="x__ph2">
+          <span class="x__pt"><i class="bi bi-person-exclamation" style="color:#fbbf24"></i> Pending Registrations</span>
+          <a href="{% url 'admin_app:manage_students' %}?approval=pending" class="x__plink">View All <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div style="padding:0">
+          <div class="x__tw">
+            <table class="x__tbl">
+              <thead><tr>
+                <th>Student</th><th>Department</th><th>Year</th>
+                <th>CGPA</th><th>Registered</th><th>Actions</th>
+              </tr></thead>
+              <tbody>
+                {% for student in pending_students %}
+                <tr class="x__tr">
+                  <td>
+                    <div class="x__stu">
+                      <div class="x__sav">{{ student.name|first|upper }}</div>
+                      <div>
+                        <div class="x__snm">{{ student.name }}</div>
+                        <div class="x__sem">{{ student.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="x__tag x__tag--c">{{ student.get_department_display }}</span></td>
+                  <td><span class="x__tag x__tag--g">{{ student.get_year_display }}</span></td>
+                  <td>
+                    <span class="x__cgpa {% if student.cgpa >= 8.0 %}x__cgpa--hi{% elif student.cgpa >= 6.0 %}x__cgpa--md{% else %}x__cgpa--lo{% endif %}">
+                      {{ student.cgpa }}
+                    </span>
+                  </td>
+                  <td class="x__mu">{{ student.created_at|timesince }} ago</td>
+                  <td>
+                    <div class="x__acts">
+                      <a href="{% url 'admin_app:student_detail' student.id %}" class="x__act x__act--c" title="View"><i class="fas fa-eye"></i></a>
+                      <form method="post" action="{% url 'admin_app:approve_student' student.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="x__act x__act--g" title="Approve" onclick="return confirm('Approve {{ student.name }}?')">
+                          <i class="fas fa-check"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ══ RECENT DRIVES ══ -->
+      <div class="x__p x__p--full" style="--i:9">
+        <div class="x__ph2">
+          <span class="x__pt"><i class="bi bi-briefcase-fill" style="color:#06b6d4"></i> Recent Drives</span>
+          <a href="{% url 'admin_app:manage_drives' %}" class="x__plink">View All <i class="bi bi-arrow-right"></i></a>
+        </div>
+        {% if recent_drives %}
+        <div style="padding:0">
+          <div class="x__tw">
+            <table class="x__tbl">
+              <thead><tr>
+                <th>Company</th><th>Title</th><th>Status</th><th>Created</th><th>Actions</th>
+              </tr></thead>
+              <tbody>
+                {% for drive in recent_drives %}
+                <tr class="x__tr">
+                  <td>
+                    <div class="x__co">
+                      <div class="x__cav">{{ drive.company_name|first }}</div>
+                      <span class="x__cnm">{{ drive.company_name }}</span>
+                    </div>
+                  </td>
+                  <td class="x__mu">{{ drive.title|truncatechars:32 }}</td>
+                  <td>
+                    {% if drive.status == 'Active' %}
+                    <span class="x__badge x__badge--g"><span class="x__bdot"></span>Active</span>
+                    {% else %}
+                    <span class="x__badge x__badge--sl"><span class="x__bdot"></span>Closed</span>
+                    {% endif %}
+                  </td>
+                  <td class="x__mu x__mono">{{ drive.created_at|date:"d M Y" }}</td>
+                  <td>
+                    <div class="x__acts">
+                      <a href="{% url 'admin_app:edit_drive' drive.pk %}" class="x__act x__act--o" title="Edit"><i class="bi bi-pencil-fill"></i></a>
+                      <a href="{% url 'admin_app:drive_responses' drive.id %}" class="x__act x__act--c" title="View Responses"><i class="bi bi-eye-fill"></i></a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <div class="x__empty" style="padding:40px">
+          <i class="bi bi-folder2-open"></i><p>No drives yet</p>
+          <a href="{% url 'admin_app:add_drive' %}" class="x__btn-top" style="margin-top:12px;display:inline-flex">
+            <i class="bi bi-plus-lg"></i> Create First Drive
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+    </main>
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+/* ══ ROOT — rich teal/indigo, no black ══ */
+.x{
+  --b0:#0d1f2d;
+  --b1:#102436;
+  --b2:#133044;
+  --b3:#1a3a52;
+  --b4:#204460;
+  --t1:#e0f4f8;
+  --t2:#7ec8d8;
+  --t3:#3d7a8a;
+  --acc:#06b6d4;
+  --grn:#10b981;
+  --pur:#a78bfa;
+  --ora:#fb923c;
+  --red:#f87171;
+  --yel:#fbbf24;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);
+  color:var(--t1);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+}
+
+/* mesh & orbs */
+.x__mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(6,182,212,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(6,182,212,.04) 1px,transparent 1px);
+  background-size:36px 36px;
+}
+.x__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:orb 18s ease-in-out infinite alternate;}
+.x__orb--1{width:500px;height:500px;background:radial-gradient(circle,rgba(6,182,212,.18),transparent);top:-150px;left:-100px;}
+.x__orb--2{width:400px;height:400px;background:radial-gradient(circle,rgba(167,139,250,.14),transparent);bottom:-100px;right:-80px;animation-delay:-9s;}
+.x__orb--3{width:300px;height:300px;background:radial-gradient(circle,rgba(16,185,129,.1),transparent);top:40%;left:50%;animation-delay:-4s;}
+@keyframes orb{from{transform:translate(0,0) scale(1);}to{transform:translate(25px,20px) scale(1.08);}}
+
+/* ══ TOPBAR ══ */
+.x__top{
+  position:sticky;top:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(13,31,45,.85);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(6,182,212,.15);
+  padding:0 20px;height:50px;
+}
+.x__top-l,.x__top-r{display:flex;align-items:center;gap:12px;}
+.x__logo{
+  width:28px;height:28px;border-radius:7px;
+  background:linear-gradient(135deg,#0891b2,#7c3aed);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;
+}
+.x__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.x__brand b{font-weight:800;color:#fff;}
+.x__div{width:1px;height:16px;background:var(--t3);}
+.x__crumb{font-size:12.5px;color:var(--t2);font-weight:500;letter-spacing:.04em;}
+.x__live{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);}
+.x__dot{width:7px;height:7px;border-radius:50%;background:var(--grn);animation:dp 2s infinite;}
+@keyframes dp{0%{box-shadow:0 0 0 0 rgba(16,185,129,.5);}70%{box-shadow:0 0 0 7px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+.x__clk{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t3);}
+.x__btn-top{
+  display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,#0891b2,#06b6d4);
+  color:#fff;font-size:12.5px;font-weight:700;
+  padding:7px 16px;border-radius:8px;text-decoration:none;
+  border:1px solid rgba(6,182,212,.4);
+  box-shadow:0 0 18px rgba(6,182,212,.25);
+  transition:all .2s;
+}
+.x__btn-top:hover{box-shadow:0 0 28px rgba(6,182,212,.5);transform:translateY(-1px);color:#fff;}
+
+/* ══ LAYOUT ══ */
+.x__wrap{display:flex;min-height:calc(100vh - 50px);position:relative;z-index:1;}
+
+/* ══ SIDEBAR ══ */
+.x__side{
+  width:188px;flex-shrink:0;
+  background:var(--b1);
+  border-right:1px solid rgba(6,182,212,.1);
+  padding:16px 10px;
+  position:sticky;top:50px;height:calc(100vh - 50px);overflow-y:auto;
+  display:flex;flex-direction:column;
+}
+.x__nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+.x__ni{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 12px;border-radius:9px;
+  text-decoration:none;color:var(--t2);
+  font-size:13px;font-weight:500;transition:all .18s;
+}
+.x__ni i{font-size:15px;flex-shrink:0;}
+.x__ni:hover{background:var(--b3);color:var(--t1);}
+.x__ni--on{
+  background:rgba(6,182,212,.12);color:var(--acc);
+  border:1px solid rgba(6,182,212,.22);
+  box-shadow:0 0 14px rgba(6,182,212,.1);
+}
+.x__nbadge{
+  margin-left:auto;background:var(--ora);color:#fff;
+  font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;
+  animation:bp .4s ease;
+}
+@keyframes bp{from{transform:scale(0);}to{transform:scale(1);}}
+.x__side-footer{
+  padding:12px 12px 4px;border-top:1px solid rgba(255,255,255,.06);
+  font-size:11px;color:var(--t3);
+  display:flex;justify-content:space-between;
+}
+.x__ver{color:var(--acc);font-weight:700;}
+
+/* ══ MAIN ══ */
+.x__main{flex:1;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0;}
+
+/* PAGE HEAD */
+.x__ph{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.x__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.x__h1-sub{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:400;color:var(--t3);}
+.x__desc{font-size:12px;color:var(--t3);margin-top:3px;}
+.x__chip{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3);
+  color:var(--ora);font-size:12.5px;font-weight:700;
+  padding:8px 14px;border-radius:9px;text-decoration:none;
+  animation:goa 2s ease-in-out infinite alternate;transition:transform .18s;
+}
+.x__chip:hover{transform:translateY(-1px);color:var(--ora);}
+@keyframes goa{from{box-shadow:0 0 6px rgba(251,146,60,.2);}to{box-shadow:0 0 16px rgba(251,146,60,.45);}}
+
+/* ══ STATS ══ */
+.x__stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:1100px){.x__stats{grid-template-columns:repeat(2,1fr);}}
+
+.x__sc{
+  background:var(--b2);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:14px;padding:18px 18px 14px;
+  position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,.2);
+  transition:transform .22s,box-shadow .22s;
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--i)*.07s);
+}
+.x__sc:hover{transform:translateY(-4px);box-shadow:0 0 22px rgba(var(--g),.15),0 8px 28px rgba(0,0,0,.3);}
+.x__sc-shine{
+  position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--g),transparent);opacity:.5;
+}
+.x__sc-t{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.x__sc-lbl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;}
+.x__sc-ico{font-size:17px;}
+.x__sc-n{
+  display:block;font-size:34px;font-weight:800;color:#fff;line-height:1;
+  font-family:'JetBrains Mono',monospace;
+}
+.x__sc-sub{font-size:11px;color:var(--t3);display:block;margin-top:4px;}
+.x__sc-bar{height:3px;background:rgba(255,255,255,.07);border-radius:99px;margin-top:12px;overflow:hidden;}
+.x__sc-fill{height:100%;border-radius:99px;background:var(--c);width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1) .3s;}
+
+/* ══ MID GRID ══ */
+.x__mg{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:12px;}
+@media(max-width:1200px){.x__mg{grid-template-columns:1fr 1fr;}}
+@media(max-width:800px){.x__mg{grid-template-columns:1fr;}}
+
+/* ══ PANEL ══ */
+.x__p{
+  background:var(--b2);
+  border:1px solid rgba(6,182,212,.1);
+  border-radius:14px;overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,.2);
+  animation:fu .55s ease both;
+  animation-delay:calc(var(--i)*.07s);
+}
+.x__p--full{width:100%;}
+.x__ph2{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 18px 11px;
+  border-bottom:1px solid rgba(6,182,212,.08);
+  background:rgba(6,182,212,.03);
+}
+.x__pt{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.x__pt i{font-size:14px;}
+.x__plink{font-size:12px;font-weight:700;color:var(--acc);text-decoration:none;display:flex;align-items:center;gap:5px;transition:gap .18s;}
+.x__plink:hover{gap:8px;color:var(--acc);}
+.x__pb{padding:14px 16px;}
+
+/* ring */
+.x__resp-body{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.x__rw{flex-shrink:0;}
+.x__svg{width:108px;height:108px;}
+.x__rbg{fill:none;stroke:rgba(255,255,255,.06);stroke-width:12;}
+.x__rs{fill:none;stroke-width:12;stroke-linecap:round;transform:rotate(-90deg);transform-origin:60px 60px;transition:stroke-dasharray 1s ease .3s;}
+.x__rs--g{stroke:#10b981;}.x__rs--r{stroke:#f87171;}.x__rs--a{stroke:#fb923c;}
+.x__rn{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;fill:#fff;text-anchor:middle;dominant-baseline:middle;}
+.x__rl{font-size:7px;fill:var(--t3);text-anchor:middle;font-family:'Urbanist',sans-serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}
+.x__rrows{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.x__rrow{display:flex;align-items:center;gap:7px;}
+.x__rdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.x__rnm{font-size:12px;color:var(--t2);width:46px;flex-shrink:0;}
+.x__rbw{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;}
+.x__rb{display:block;height:100%;border-radius:99px;width:0;transition:width 1s ease .5s;}
+.x__rv{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;width:22px;text-align:right;}
+
+/* drive stats */
+.x__ds{margin-bottom:12px;}
+.x__ds:last-child{margin-bottom:0;}
+.x__ds-t{display:flex;justify-content:space-between;margin-bottom:5px;}
+.x__ds-n{font-size:12.5px;color:var(--t1);font-weight:600;}
+.x__ds-tot{font-size:11px;color:var(--t3);}
+.x__ds-bar{height:4px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;display:flex;}
+.x__ds-f{height:100%;transition:width 1s ease .4s;}
+.x__ds-lbs{display:flex;justify-content:space-between;margin-top:3px;}
+.x__ds-lbs small{font-size:10.5px;font-weight:700;}
+
+/* quick actions */
+.x__qa-body{padding:6px 12px 12px;display:flex;flex-direction:column;gap:1px;}
+.x__qa{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 9px;border-radius:9px;
+  text-decoration:none;color:var(--t2);
+  font-size:13px;font-weight:500;transition:all .18s;
+}
+.x__qa:hover{background:var(--b3);color:var(--t1);transform:translateX(3px);}
+.x__qa-i{
+  width:30px;height:30px;border-radius:8px;flex-shrink:0;
+  background:rgba(255,255,255,.05);color:var(--qc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;transition:box-shadow .18s;
+}
+.x__qa:hover .x__qa-i{box-shadow:0 0 14px var(--qc);}
+.x__qa span{flex:1;}
+.x__qa-a{font-size:11px;color:var(--t3);opacity:0;transition:opacity .18s,transform .18s;}
+.x__qa:hover .x__qa-a{opacity:1;transform:translateX(2px);}
+
+/* ══ TABLE ══ */
+.x__tw{overflow-x:auto;}
+.x__tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.x__tbl thead tr{border-bottom:1px solid rgba(6,182,212,.1);}
+.x__tbl th{
+  font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--t3);padding:10px 16px;text-align:left;white-space:nowrap;
+}
+.x__tbl td{padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;}
+.x__tr{transition:background .15s;}
+.x__tr:hover{background:rgba(6,182,212,.05);}
+.x__mu{color:var(--t2);font-size:12.5px;}
+.x__mono{font-family:'JetBrains Mono',monospace;}
+
+.x__co{display:flex;align-items:center;gap:9px;}
+.x__cav{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,#0891b2,#06b6d4);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:14px;color:#fff;
+  box-shadow:0 2px 8px rgba(6,182,212,.3);
+}
+.x__cnm{font-weight:600;color:var(--t1);}
+
+.x__badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;}
+.x__bdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.x__badge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.x__badge--sl{background:rgba(71,85,105,.2);color:#64748b;border:1px solid rgba(71,85,105,.25);}
+
+.x__tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;}
+.x__tag--c{background:rgba(6,182,212,.12);color:#22d3ee;}
+.x__tag--g{background:rgba(16,185,129,.12);color:#34d399;}
+
+.x__cgpa{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;}
+.x__cgpa--hi{color:#10b981;}.x__cgpa--md{color:#fb923c;}.x__cgpa--lo{color:#f87171;}
+
+.x__acts{display:flex;gap:6px;align-items:center;}
+.x__act{
+  width:30px;height:30px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;text-decoration:none;cursor:pointer;
+  transition:transform .15s,filter .15s;
+}
+.x__act:hover{transform:scale(1.18);filter:brightness(1.35);}
+.x__act--c{background:rgba(6,182,212,.1);color:#22d3ee;border:1px solid rgba(6,182,212,.2);}
+.x__act--g{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2);}
+.x__act--o{background:rgba(251,146,60,.1);color:#fb923c;border:1px solid rgba(251,146,60,.2);}
+
+.x__stu{display:flex;align-items:center;gap:10px;}
+.x__sav{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:rgba(251,191,36,.12);color:var(--yel);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;
+  border:1px solid rgba(251,191,36,.2);
+}
+.x__snm{font-weight:700;color:var(--t1);font-size:13px;}
+.x__sem{font-size:11px;color:var(--t3);}
+
+.x__empty{text-align:center;padding:28px 20px;color:var(--t3);}
+.x__empty i{font-size:28px;margin-bottom:8px;display:block;}
+.x__empty p{font-size:13px;}
+
+/* ══ ANIM ══ */
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim{animation:fu .5s ease both;}
+</style>
+
+<script>
+(function(){
+  /* Live clock — year will show 2026 correctly from system time */
+  function tick(){
+    const now=new Date();
+    const t=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    const el=document.getElementById('js-clk');
+    if(el) el.textContent=t;
+  }
+  tick(); setInterval(tick,1000);
+
+  /* Count-up */
+  document.querySelectorAll('.x__sc-n[data-count]').forEach(el=>{
+    const tgt=parseInt(el.dataset.count)||0;
+    const dur=1200,s=performance.now();
+    (function run(now){
+      const p=Math.min((now-s)/dur,1);
+      const e=1-Math.pow(1-p,3);
+      el.textContent=Math.floor(e*tgt);
+      if(p<1) requestAnimationFrame(run);
+      else el.textContent=tgt;
+    })(s);
+  });
+
+  /* Stat bars */
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.x__sc-fill').forEach(el=>{
+      el.style.width=getComputedStyle(el).getPropertyValue('--w');
+    });
+  });
+
+  /* Response mini bars */
+  setTimeout(()=>{
+    document.querySelectorAll('.x__rb[data-val]').forEach(el=>{
+      const v=parseFloat(el.dataset.val)||0,t=parseFloat(el.dataset.total)||1;
+      el.style.width=((v/t)*100)+'%';
+    });
+  },200);
+
+  /* Donut */
+  const C=2*Math.PI*48; let off=0;
+  document.querySelectorAll('.x__rs').forEach(seg=>{
+    const v=parseFloat(seg.dataset.val)||0,t=parseFloat(seg.dataset.total)||1;
+    const d=(v/t)*C,g=C-d;
+    setTimeout(()=>{
+      seg.style.strokeDasharray=`${d} ${g}`;
+      seg.style.strokeDashoffset=-off;
+    },400);
+    off+=d;
+  });
+})();
+</script>
+
+{% endblock %}

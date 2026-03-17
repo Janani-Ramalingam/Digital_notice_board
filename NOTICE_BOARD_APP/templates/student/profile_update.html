@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Update Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="mb-4">
+                <h2>Update Profile</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'student:home' %}">Home</a></li>
+                        <li class="breadcrumb-item active">Update Profile</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Profile Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-user-edit text-primary"></i> Student Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <!-- Basic Information -->
+                                <h6 class="mb-3 text-primary">Personal Information</h6>
+                                <div class="mb-3">
+                                    {{ form.name|as_crispy_field }}
+                                </div>
+
+                                <!-- Academic Information -->
+                                <h6 class="mb-3 text-primary">Academic Information</h6>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        {{ form.department|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form.year|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form.cgpa|as_crispy_field }}
+                                    </div>
+                                </div>
+
+                                <!-- Form Actions -->
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'student:home' %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Back to Home
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Update Profile
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Profile Summary -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-user text-info"></i> Profile Summary
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-user-circle fa-4x text-muted"></i>
+                                <h6 class="mt-2">{{ user.username }}</h6>
+                                <small class="text-muted">Student Profile</small>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="mb-2">
+                                <strong>Name:</strong> 
+                                <span class="text-muted">{{ user.studentprofile.name|default:"Not set" }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Department:</strong> 
+                                <span class="text-muted">{{ user.studentprofile.get_department_display|default:"Not set" }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Year:</strong> 
+                                <span class="text-muted">{{ user.studentprofile.get_year_display|default:"Not set" }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>CGPA:</strong> 
+                                <span class="text-muted">{{ user.studentprofile.cgpa|default:"Not set" }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Last Updated:</strong> 
+                                <span class="text-muted">{{ user.studentprofile.updated_at|date:"M d, Y H:i"|default:"Never" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Eligibility Status -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-check-circle text-success"></i> Profile Status
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% if user.studentprofile.name and user.studentprofile.department and user.studentprofile.year and user.studentprofile.cgpa %}
+                                <div class="alert alert-success">
+                                    <small>
+                                        <i class="fas fa-check-circle"></i>
+                                        Your profile is complete and ready for placement drives!
+                                    </small>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <small>
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Please complete all fields to be eligible for placement drives.
+                                    </small>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <strong>Eligible Drives:</strong>
+                                <p class="small text-muted">You will be automatically notified of drives matching your profile.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Help & Tips -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-lightbulb text-warning"></i> Profile Tips
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong>Name:</strong>
+                                <p class="small text-muted">Enter your full name as it appears in official documents.</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong>CGPA:</strong>
+                                <p class="small text-muted">Enter your current CGPA accurately. This is used for eligibility checking.</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong>Department & Year:</strong>
+                                <p class="small text-muted">Select your current department and academic year to receive relevant drive notifications.</p>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <small>
+                                    <i class="fas fa-info-circle"></i>
+                                    Keep your profile updated to ensure you don't miss out on eligible placement opportunities.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

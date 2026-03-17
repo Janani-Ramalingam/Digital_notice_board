@@ -1,0 +1,66 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Profile Change Request - Digital Notice Board{% endblock %}
+
+{% block header_subtitle %}Profile Update Status{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Dear {{ student_name }},
+</div>
+
+<div class="info-box danger">
+    <h3>Profile Change Request Status</h3>
+    <p>Your profile update request has been reviewed and could not be approved at this time.</p>
+</div>
+
+<div class="content">
+    <p>After careful review, the admin team has declined your profile change request for the following reason:</p>
+</div>
+
+<div class="info-box warning">
+    <h3>📝 Reason for Rejection</h3>
+    <p><strong>{{ rejection_reason }}</strong></p>
+</div>
+
+<table class="details-table">
+    <tr>
+        <td>Request ID</td>
+        <td>{{ request_id }}</td>
+    </tr>
+    <tr>
+        <td>Requested On</td>
+        <td>{{ requested_date }}</td>
+    </tr>
+    <tr>
+        <td>Reviewed By</td>
+        <td>{{ reviewed_by }}</td>
+    </tr>
+    <tr>
+        <td>Review Date</td>
+        <td>{{ review_date }}</td>
+    </tr>
+</table>
+
+<div class="content">
+    <p><strong>What You Can Do:</strong></p>
+    <ul style="margin-left: 20px; margin-bottom: 20px;">
+        <li>Review the rejection reason carefully</li>
+        <li>Contact the placement coordinator for clarification</li>
+        <li>Submit a new request with correct information</li>
+        <li>Provide supporting documents if required</li>
+    </ul>
+    
+    <p>Your current profile information remains unchanged. If you need to update your profile, please submit a new request with accurate information.</p>
+    
+    <p style="margin-top: 25px;">
+        <strong>Regards,</strong><br>
+        Placement Cell Team<br>
+        Digital Notice Board
+    </p>
+</div>
+
+<div class="button-container">
+    <a href="{{ profile_url }}" class="btn btn-primary">View Your Profile</a>
+</div>
+{% endblock %}

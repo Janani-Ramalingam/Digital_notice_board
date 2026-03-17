@@ -1,0 +1,596 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Add New Drive{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="af">
+
+  <!-- ambient mesh & orbs -->
+  <div class="af__mesh"></div>
+  <div class="af__orb af__orb--1"></div>
+  <div class="af__orb af__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="af__top">
+    <div class="af__top-l">
+      <div class="af__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="af__brand">DNB <b>Admin</b></span>
+      <span class="af__div"></span>
+      <nav class="af__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="af__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right af__bc-sep"></i>
+        <a href="{% url 'admin_app:manage_drives' %}" class="af__bc-a">Manage Drives</a>
+        <i class="bi bi-chevron-right af__bc-sep"></i>
+        <span class="af__bc-cur">Add Drive</span>
+      </nav>
+    </div>
+    <div class="af__top-r">
+      <a href="{% url 'admin_app:manage_drives' %}" class="af__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ PAGE BODY ══ -->
+  <div class="af__body">
+
+    <!-- PAGE TITLE -->
+    <div class="af__head anim-up">
+      <div class="af__head-icon"><i class="bi bi-briefcase-fill"></i></div>
+      <div>
+        <h1 class="af__h1">Add New Placement Drive</h1>
+        <p class="af__sub">Fill in the details below to create a new campus recruitment drive.</p>
+      </div>
+    </div>
+
+    <!-- ══ TWO-COL GRID ══ -->
+    <div class="af__grid">
+
+      <!-- LEFT — MAIN FORM -->
+      <div class="af__left">
+        <form method="post" class="af__form">
+          {% csrf_token %}
+
+          <!-- Section: Basic Info -->
+          <div class="af__section anim-up" style="--i:1">
+            <div class="af__sec-head">
+              <span class="af__sec-num">01</span>
+              <div>
+                <h2 class="af__sec-title">Basic Information</h2>
+                <p class="af__sec-hint">Core details about the drive</p>
+              </div>
+            </div>
+            <div class="af__sec-body">
+              <div class="af__row2">
+                <div class="af__field">
+                  <label class="af__lbl">Drive Title</label>
+                  {{ form.title }}
+                  <span class="af__lbl-hint">e.g. "Software Developer — TCS"</span>
+                </div>
+                <div class="af__field">
+                  <label class="af__lbl">Company Name</label>
+                  {{ form.company_name }}
+                </div>
+              </div>
+              <div class="af__field">
+                <label class="af__lbl">Description</label>
+                {{ form.description }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Eligibility -->
+          <div class="af__section anim-up" style="--i:2">
+            <div class="af__sec-head">
+              <span class="af__sec-num">02</span>
+              <div>
+                <h2 class="af__sec-title">Eligibility Criteria</h2>
+                <p class="af__sec-hint">Who can apply for this drive</p>
+              </div>
+            </div>
+            <div class="af__sec-body">
+              <div class="af__row2">
+                <div class="af__field">
+                  <label class="af__lbl">Minimum CGPA</label>
+                  {{ form.min_cgpa }}
+                </div>
+                <div class="af__field">
+                  <label class="af__lbl">Eligible Year</label>
+                  {{ form.eligible_year }}
+                </div>
+              </div>
+              <div class="af__field">
+                <label class="af__lbl">Eligible Departments</label>
+                {{ form.eligible_departments }}
+                <span class="af__lbl-hint">Hold Ctrl / Cmd to select multiple</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Timeline -->
+          <div class="af__section anim-up" style="--i:3">
+            <div class="af__sec-head">
+              <span class="af__sec-num">03</span>
+              <div>
+                <h2 class="af__sec-title">Timeline & Status</h2>
+                <p class="af__sec-hint">Deadlines and visibility settings</p>
+              </div>
+            </div>
+            <div class="af__sec-body">
+              <div class="af__row2">
+                <div class="af__field">
+                  <label class="af__lbl">Last Date to Apply</label>
+                  {{ form.last_date }}
+                </div>
+                <div class="af__field">
+                  <label class="af__lbl">Drive Status</label>
+                  {{ form.status }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="af__actions anim-up" style="--i:4">
+            <a href="{% url 'admin_app:manage_drives' %}" class="af__btn-sec">
+              <i class="bi bi-arrow-left"></i> Cancel
+            </a>
+            <div class="af__actions-r">
+              <button type="submit" name="save_draft" class="af__btn-outline">
+                <i class="fas fa-save"></i> Save as Draft
+              </button>
+              <button type="submit" name="save_active" class="af__btn-primary">
+                <i class="fas fa-check"></i> Save & Activate
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- RIGHT — SIDEBAR -->
+      <aside class="af__right">
+
+        <!-- Live Preview -->
+        <div class="af__card anim-up" style="--i:1">
+          <div class="af__card-head">
+            <span class="af__card-title"><i class="bi bi-eye-fill" style="color:#06b6d4"></i> Live Preview</span>
+            <span class="af__preview-badge" id="js-status-badge">Draft</span>
+          </div>
+          <div class="af__card-body">
+            <div class="af__preview">
+              <div class="af__pv-top">
+                <div class="af__pv-av" id="js-pv-av">D</div>
+                <div>
+                  <div class="af__pv-title" id="js-pv-title">Drive Title</div>
+                  <div class="af__pv-co" id="js-pv-co">Company Name</div>
+                </div>
+              </div>
+              <p class="af__pv-desc" id="js-pv-desc">Drive description will appear here...</p>
+              <div class="af__pv-meta">
+                <span class="af__pv-chip"><i class="bi bi-mortarboard"></i> CGPA: <b id="js-pv-cgpa">—</b></span>
+                <span class="af__pv-chip"><i class="bi bi-calendar3"></i> <b id="js-pv-date">—</b></span>
+              </div>
+            </div>
+            <p class="af__preview-note">This is how students will see the drive.</p>
+          </div>
+        </div>
+
+        <!-- Guidelines -->
+        <div class="af__card anim-up" style="--i:2">
+          <div class="af__card-head">
+            <span class="af__card-title"><i class="bi bi-info-circle-fill" style="color:#a78bfa"></i> Guidelines</span>
+          </div>
+          <div class="af__card-body">
+            <div class="af__guide">
+              <div class="af__guide-item">
+                <div class="af__guide-ic" style="--gc:#06b6d4"><i class="bi bi-fonts"></i></div>
+                <div>
+                  <strong>Drive Title</strong>
+                  <p>Use a clear format like "Role — Company"</p>
+                </div>
+              </div>
+              <div class="af__guide-item">
+                <div class="af__guide-ic" style="--gc:#10b981"><i class="bi bi-person-check"></i></div>
+                <div>
+                  <strong>Eligibility</strong>
+                  <p>Set CGPA, year, and departments carefully</p>
+                </div>
+              </div>
+              <div class="af__guide-item">
+                <div class="af__guide-ic" style="--gc:#a78bfa"><i class="bi bi-toggle2-on"></i></div>
+                <div>
+                  <strong>Status Options</strong>
+                  <p class="af__status-list">
+                    <span class="af__sl af__sl--draft">Draft</span> Hidden from students<br>
+                    <span class="af__sl af__sl--active">Active</span> Visible &amp; accepting<br>
+                    <span class="af__sl af__sl--closed">Closed</span> No new responses
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip -->
+        <div class="af__tip anim-up" style="--i:3">
+          <div class="af__tip-icon"><i class="bi bi-lightbulb-fill"></i></div>
+          <p><strong>Pro Tip:</strong> Save as Draft first to review all details, then activate when ready to notify students.</p>
+        </div>
+
+      </aside>
+
+    </div>
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;}
+
+/* ══ ROOT ══ */
+.af{
+  --b0:#0d1f2d;
+  --b1:#102436;
+  --b2:#133044;
+  --b3:#1a3a52;
+  --b4:#204460;
+  --t1:#e0f4f8;
+  --t2:#7ec8d8;
+  --t3:#3d7a8a;
+  --acc:#06b6d4;
+  --grn:#10b981;
+  --pur:#a78bfa;
+  --ora:#fb923c;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);
+  color:var(--t1);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+}
+
+.af__mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);
+  background-size:38px 38px;
+}
+.af__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.af__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.16),transparent);top:-140px;right:-80px;}
+.af__orb--2{width:380px;height:380px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(20px,16px)scale(1.07);}}
+
+/* ══ TOPBAR ══ */
+.af__top{
+  position:sticky;top:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(13,31,45,.88);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(6,182,212,.14);
+  padding:0 24px;height:52px;
+}
+.af__top-l,.af__top-r{display:flex;align-items:center;gap:12px;}
+.af__logo{
+  width:28px;height:28px;border-radius:7px;
+  background:linear-gradient(135deg,#0891b2,#7c3aed);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;
+}
+.af__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.af__brand b{font-weight:800;color:#fff;}
+.af__div{width:1px;height:16px;background:var(--t3);}
+.af__bc{display:flex;align-items:center;gap:5px;}
+.af__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.af__bc-a:hover{color:var(--acc);}
+.af__bc-sep{font-size:10px;color:var(--t3);}
+.af__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.af__btn-ghost{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  color:var(--t2);font-size:12.5px;font-weight:600;
+  padding:7px 15px;border-radius:8px;text-decoration:none;transition:all .18s;
+}
+.af__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+
+/* ══ BODY ══ */
+.af__body{
+  position:relative;z-index:1;
+  max-width:1320px;margin:0 auto;
+  padding:28px 24px 64px;
+  display:flex;flex-direction:column;gap:22px;
+}
+
+/* PAGE HEAD */
+.af__head{display:flex;align-items:center;gap:16px;}
+.af__head-icon{
+  width:48px;height:48px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(135deg,#0891b2,#06b6d4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:#fff;
+  box-shadow:0 4px 20px rgba(6,182,212,.3);
+}
+.af__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.af__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* ══ TWO-COL GRID ══ */
+.af__grid{
+  display:grid;
+  grid-template-columns:1fr 320px;
+  gap:20px;align-items:start;
+}
+@media(max-width:1050px){.af__grid{grid-template-columns:1fr;}}
+
+/* ══ FORM ══ */
+.af__form{display:flex;flex-direction:column;gap:16px;}
+
+.af__section{
+  background:var(--b2);
+  border:1px solid rgba(6,182,212,.1);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,.2);
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--i)*.08s);
+}
+.af__sec-head{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 22px 14px;
+  border-bottom:1px solid rgba(6,182,212,.08);
+  background:rgba(6,182,212,.03);
+}
+.af__sec-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:22px;font-weight:700;
+  color:rgba(6,182,212,.3);line-height:1;
+  flex-shrink:0;
+}
+.af__sec-title{font-size:14px;font-weight:700;color:var(--t1);}
+.af__sec-hint{font-size:11.5px;color:var(--t3);margin-top:2px;}
+.af__sec-body{padding:20px 22px;display:flex;flex-direction:column;gap:16px;}
+
+.af__row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:640px){.af__row2{grid-template-columns:1fr;}}
+
+/* ── FIELD ── */
+.af__field{display:flex;flex-direction:column;gap:6px;}
+.af__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.af__lbl-hint{font-size:11px;color:var(--t3);}
+
+/* override Django/crispy form inputs */
+.af__field input,
+.af__field textarea,
+.af__field select,
+.af__form input[type="text"],
+.af__form input[type="number"],
+.af__form input[type="date"],
+.af__form textarea,
+.af__form select{
+  width:100%;
+  background:var(--b3) !important;
+  border:1px solid rgba(6,182,212,.18) !important;
+  border-radius:10px !important;
+  color:var(--t1) !important;
+  font-family:'Urbanist',sans-serif !important;
+  font-size:14px !important;
+  font-weight:500 !important;
+  padding:11px 14px !important;
+  outline:none !important;
+  transition:border-color .18s,box-shadow .18s !important;
+  box-shadow:none !important;
+  -webkit-appearance:none;
+}
+.af__form input:focus,
+.af__form textarea:focus,
+.af__form select:focus{
+  border-color:rgba(6,182,212,.5) !important;
+  box-shadow:0 0 0 3px rgba(6,182,212,.12) !important;
+}
+.af__form textarea{min-height:100px;resize:vertical;}
+.af__form select option{background:var(--b3);color:var(--t1);}
+/* hide crispy labels — we supply our own */
+.af__form label:not(.af__lbl){display:none !important;}
+.af__form .form-group,.af__form .mb-3{margin:0 !important;}
+.af__form .helptext,.af__form small.text-muted{display:none !important;}
+
+/* ── ACTIONS ── */
+.af__actions{
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px;
+  padding:18px 22px;
+  background:var(--b2);
+  border:1px solid rgba(6,182,212,.1);
+  border-radius:16px;
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--i)*.08s);
+}
+.af__actions-r{display:flex;gap:10px;flex-wrap:wrap;}
+
+.af__btn-sec{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  color:var(--t2);font-size:13.5px;font-weight:600;
+  padding:10px 20px;border-radius:10px;text-decoration:none;
+  transition:all .18s;
+}
+.af__btn-sec:hover{background:rgba(255,255,255,.09);color:var(--t1);}
+
+.af__btn-outline{
+  display:inline-flex;align-items:center;gap:7px;
+  background:transparent;
+  border:1px solid rgba(6,182,212,.35);
+  color:var(--acc);font-size:13.5px;font-weight:600;
+  padding:10px 20px;border-radius:10px;
+  transition:all .18s;
+}
+.af__btn-outline:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.6);}
+
+.af__btn-primary{
+  display:inline-flex;align-items:center;gap:7px;
+  background:linear-gradient(135deg,#0891b2,#06b6d4);
+  border:1px solid rgba(6,182,212,.4);
+  color:#fff;font-size:13.5px;font-weight:700;
+  padding:10px 22px;border-radius:10px;
+  box-shadow:0 0 18px rgba(6,182,212,.28);
+  transition:all .18s;
+}
+.af__btn-primary:hover{box-shadow:0 0 28px rgba(6,182,212,.48);transform:translateY(-1px);}
+
+/* ══ SIDEBAR CARDS ══ */
+.af__right{display:flex;flex-direction:column;gap:16px;}
+
+.af__card{
+  background:var(--b2);
+  border:1px solid rgba(6,182,212,.1);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,.2);
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--i)*.1s);
+}
+.af__card-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:13px 18px 11px;
+  border-bottom:1px solid rgba(6,182,212,.08);
+  background:rgba(6,182,212,.03);
+}
+.af__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.af__card-body{padding:16px 18px;}
+
+/* preview badge */
+.af__preview-badge{
+  font-size:10.5px;font-weight:800;
+  padding:3px 10px;border-radius:99px;
+  background:rgba(255,255,255,.08);color:var(--t3);
+  border:1px solid rgba(255,255,255,.1);
+  letter-spacing:.04em;
+  transition:all .3s;
+}
+.af__preview-badge.active{background:rgba(16,185,129,.12);color:#10b981;border-color:rgba(16,185,129,.25);}
+.af__preview-badge.closed{background:rgba(248,113,113,.1);color:#f87171;border-color:rgba(248,113,113,.2);}
+
+/* live preview block */
+.af__preview{
+  background:var(--b3);
+  border:1px solid rgba(6,182,212,.14);
+  border-radius:12px;padding:16px;
+  margin-bottom:10px;
+}
+.af__pv-top{display:flex;align-items:center;gap:11px;margin-bottom:10px;}
+.af__pv-av{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,#0891b2,#06b6d4);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:16px;color:#fff;
+  box-shadow:0 2px 8px rgba(6,182,212,.3);
+  transition:all .3s;
+}
+.af__pv-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;transition:all .2s;}
+.af__pv-co{font-size:12px;color:var(--t2);}
+.af__pv-desc{font-size:12.5px;color:var(--t3);margin-bottom:12px;line-height:1.5;min-height:36px;}
+.af__pv-meta{display:flex;gap:8px;flex-wrap:wrap;}
+.af__pv-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.15);
+  color:var(--t2);font-size:11.5px;font-weight:600;
+  padding:4px 10px;border-radius:8px;
+}
+.af__pv-chip b{color:var(--acc);}
+.af__preview-note{font-size:11px;color:var(--t3);text-align:center;margin-top:4px;}
+
+/* guidelines */
+.af__guide{display:flex;flex-direction:column;gap:14px;}
+.af__guide-item{display:flex;gap:12px;align-items:flex-start;}
+.af__guide-ic{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  background:rgba(255,255,255,.05);color:var(--gc);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.af__guide-item strong{font-size:13px;color:var(--t1);font-weight:700;display:block;margin-bottom:2px;}
+.af__guide-item p{font-size:12px;color:var(--t3);line-height:1.4;}
+.af__status-list{font-size:12px;color:var(--t3);line-height:1.9;}
+.af__sl{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:5px;margin-right:4px;}
+.af__sl--draft{background:rgba(255,255,255,.08);color:var(--t2);}
+.af__sl--active{background:rgba(16,185,129,.12);color:#10b981;}
+.af__sl--closed{background:rgba(248,113,113,.1);color:#f87171;}
+
+/* tip box */
+.af__tip{
+  display:flex;align-items:flex-start;gap:12px;
+  background:rgba(251,191,36,.06);
+  border:1px solid rgba(251,191,36,.2);
+  border-radius:14px;padding:14px 16px;
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--i)*.1s);
+}
+.af__tip-icon{color:#fbbf24;font-size:18px;margin-top:1px;flex-shrink:0;}
+.af__tip p{font-size:12.5px;color:var(--t2);line-height:1.5;}
+.af__tip strong{color:#fbbf24;}
+
+/* ══ ANIMATION ══ */
+@keyframes fu{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+  /* Field refs */
+  const get = s => document.querySelector(s);
+  const titleIn   = get('input[name="title"]');
+  const coIn      = get('input[name="company_name"]');
+  const descIn    = get('textarea[name="description"]');
+  const cgpaIn    = get('input[name="min_cgpa"]');
+  const dateIn    = get('input[name="last_date"]');
+  const statusIn  = get('select[name="status"]');
+
+  /* Preview elements */
+  const pvAv     = get('#js-pv-av');
+  const pvTitle  = get('#js-pv-title');
+  const pvCo     = get('#js-pv-co');
+  const pvDesc   = get('#js-pv-desc');
+  const pvCgpa   = get('#js-pv-cgpa');
+  const pvDate   = get('#js-pv-date');
+  const badge    = get('#js-status-badge');
+
+  function update(){
+    const t = titleIn  ? titleIn.value  : '';
+    const c = coIn     ? coIn.value     : '';
+    const d = descIn   ? descIn.value   : '';
+    const g = cgpaIn   ? cgpaIn.value   : '';
+    const dt= dateIn   ? dateIn.value   : '';
+    const s = statusIn ? statusIn.value : '';
+
+    if(pvTitle)  pvTitle.textContent  = t || 'Drive Title';
+    if(pvCo)     pvCo.textContent     = c || 'Company Name';
+    if(pvDesc)   pvDesc.textContent   = d || 'Drive description will appear here...';
+    if(pvCgpa)   pvCgpa.textContent   = g || '—';
+    if(pvDate)   pvDate.textContent   = dt|| '—';
+
+    /* Avatar letter */
+    if(pvAv) pvAv.textContent = (c||t||'D').charAt(0).toUpperCase();
+
+    /* Status badge */
+    if(badge){
+      const map={draft:'Draft',active:'Active',closed:'Closed'};
+      badge.textContent = map[s] || s || 'Draft';
+      badge.className = 'af__preview-badge ' + (s||'');
+    }
+  }
+
+  [titleIn,coIn,descIn,cgpaIn,dateIn,statusIn].forEach(el=>{
+    if(el) el.addEventListener('input',update);
+    if(el) el.addEventListener('change',update);
+  });
+
+  update();
+});
+</script>
+
+{% endblock %}

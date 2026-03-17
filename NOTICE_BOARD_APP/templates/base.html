@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Digital Notice Board{% endblock %}</title>
+
+  <!-- Bootstrap 5 CSS (still needed for legacy components) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Custom CSS -->
+  {% load static %}
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+  <link href="{% static 'css/responsive-fixes.css' %}" rel="stylesheet">
+
+  {% block extra_css %}{% endblock %}
+
+  <style>
+  /* ══════════════════════════════════════════
+     BASE THEME — Dark Premium Teal
+  ══════════════════════════════════════════ */
+  :root {
+    --b0: #0d1f2d;
+    --b1: #102436;
+    --b2: #133044;
+    --b3: #1a3a52;
+    --t1: #e0f4f8;
+    --t2: #7ec8d8;
+    --t3: #3d7a8a;
+    --acc: #06b6d4;
+    --grn: #10b981;
+    --red: #f87171;
+    --yel: #fbbf24;
+    --pur: #a78bfa;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--b0);
+    font-family: 'Urbanist', sans-serif;
+    color: var(--t1);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── GLOBAL BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(6,182,212,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(6,182,212,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(6,182,212,.12), transparent 70%);
+    top: -150px; right: -100px;
+    pointer-events: none; z-index: 0;
+    filter: blur(80px);
+    animation: orb 20s ease-in-out infinite alternate;
+  }
+  @keyframes orb {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(30px, 20px) scale(1.08); }
+  }
+
+  /* ══ NAVBAR ══ */
+  .base-nav {
+    position: sticky; top: 0; z-index: 500;
+    background: rgba(13, 31, 45, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(6,182,212,.15);
+    padding: 0 24px;
+    height: 58px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+  }
+
+  /* Brand */
+  .base-nav__brand {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; flex-shrink: 0;
+  }
+  .base-nav__brand-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    background: linear-gradient(135deg, #0891b2, #7c3aed);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: #fff;
+    box-shadow: 0 2px 10px rgba(6,182,212,.3);
+  }
+  .base-nav__brand-text {
+    font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -.01em;
+  }
+  .base-nav__brand-text span { color: var(--acc); }
+
+  /* Center links */
+  .base-nav__links {
+    display: flex; align-items: center; gap: 2px;
+    list-style: none; margin: 0; padding: 0; flex: 1; justify-content: center;
+  }
+  .base-nav__links .nav-link {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: var(--t2);
+    padding: 7px 13px; border-radius: 9px;
+    text-decoration: none; transition: all .18s;
+    white-space: nowrap;
+  }
+  .base-nav__links .nav-link:hover,
+  .base-nav__links .nav-link.active {
+    background: rgba(6,182,212,.1);
+    color: var(--acc);
+  }
+  .base-nav__links .nav-link i { font-size: 14px; }
+
+  /* Dropdown */
+  .base-nav__links .dropdown-menu {
+    background: var(--b2);
+    border: 1px solid rgba(6,182,212,.15);
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.45);
+    padding: 6px;
+    min-width: 210px;
+    margin-top: 6px;
+    animation: dropIn .2s ease;
+  }
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .base-nav__links .dropdown-menu .dropdown-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 500; color: var(--t2);
+    padding: 8px 12px; border-radius: 8px;
+    transition: all .15s; text-decoration: none;
+  }
+  .base-nav__links .dropdown-menu .dropdown-item:hover {
+    background: rgba(6,182,212,.1); color: var(--acc);
+  }
+  .base-nav__links .dropdown-menu .dropdown-item i { font-size: 13px; }
+  .base-nav__links .dropdown-menu hr.dropdown-divider {
+    border-color: rgba(255,255,255,.07); margin: 4px 0;
+  }
+
+  /* Right side user menu */
+  .base-nav__right {
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  }
+  .base-nav__user {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--t2);
+    padding: 6px 13px; border-radius: 9px;
+    text-decoration: none; cursor: pointer;
+    transition: all .18s;
+    border: none; background: none;
+  }
+  .base-nav__user:hover {
+    background: rgba(6,182,212,.1); color: var(--acc);
+  }
+  .base-nav__user-av {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #0891b2, #06b6d4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+  }
+  .base-nav__login {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #0891b2, #06b6d4);
+    color: #fff; font-size: 13px; font-weight: 700;
+    padding: 7px 16px; border-radius: 9px;
+    text-decoration: none; border: 1px solid rgba(6,182,212,.4);
+    box-shadow: 0 0 12px rgba(6,182,212,.25);
+    transition: all .18s;
+  }
+  .base-nav__login:hover {
+    box-shadow: 0 0 22px rgba(6,182,212,.45);
+    transform: translateY(-1px); color: #fff;
+  }
+
+  /* Mobile toggler */
+  .base-nav__toggler {
+    display: none;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.1);
+    color: var(--t2); padding: 7px 10px;
+    border-radius: 8px; cursor: pointer; font-size: 16px;
+    transition: all .18s;
+  }
+  .base-nav__toggler:hover { background: rgba(6,182,212,.1); color: var(--acc); }
+
+  /* Mobile collapse */
+  @media (max-width: 900px) {
+    .base-nav__links { display: none; }
+    .base-nav__toggler { display: flex; align-items: center; }
+    .base-nav__links.open {
+      display: flex; flex-direction: column; align-items: flex-start;
+      position: fixed; top: 58px; left: 0; right: 0;
+      background: rgba(13,31,45,.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(6,182,212,.15);
+      padding: 12px 16px 16px;
+      gap: 4px; z-index: 499;
+    }
+    .base-nav__links.open .dropdown-menu {
+      position: static !important;
+      box-shadow: none; border: none;
+      background: rgba(255,255,255,.04);
+      margin: 4px 0 0 12px;
+    }
+  }
+
+  /* ══ MESSAGES ══ */
+  .base-messages {
+    position: relative; z-index: 10;
+    padding: 12px 24px 0;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .base-msg {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-radius: 11px;
+    font-size: 13.5px; font-weight: 500;
+    animation: msgIn .4s ease both;
+    cursor: pointer;
+  }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .base-msg--success { background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.22); color: #34d399; }
+  .base-msg--danger,
+  .base-msg--error   { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.22); color: #f87171; }
+  .base-msg--warning { background: rgba(251,191,36,.1);  border: 1px solid rgba(251,191,36,.22);  color: #fbbf24; }
+  .base-msg--info    { background: rgba(6,182,212,.1);   border: 1px solid rgba(6,182,212,.22);   color: #22d3ee; }
+  .base-msg i { font-size: 15px; flex-shrink: 0; }
+  .base-msg__close {
+    margin-left: auto; background: none; border: none;
+    color: inherit; opacity: .6; font-size: 18px; cursor: pointer;
+    line-height: 1; padding: 0;
+  }
+
+  /* ══ MAIN ══ */
+  .base-main {
+    position: relative; z-index: 1;
+    flex: 1;
+  }
+
+  /* ══ FOOTER ══ */
+  .base-footer {
+    position: relative; z-index: 2;
+    background: rgba(13,31,45,.9);
+    border-top: 1px solid rgba(6,182,212,.1);
+    padding: 18px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px;
+    backdrop-filter: blur(10px);
+  }
+  .base-footer__brand {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 700; color: var(--t2);
+  }
+  .base-footer__brand i { color: var(--acc); }
+  .base-footer__copy {
+    font-size: 12px; color: var(--t3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .base-footer__links {
+    display: flex; gap: 16px;
+  }
+  .base-footer__links a {
+    font-size: 12px; color: var(--t3); text-decoration: none; transition: color .15s;
+  }
+  .base-footer__links a:hover { color: var(--acc); }
+
+  /* Override Bootstrap dropdowns to use our theme */
+  .navbar-dark .dropdown-menu { background: var(--b2); }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══ NAVBAR ══ -->
+  <nav class="base-nav">
+
+    <!-- Brand -->
+    <a class="base-nav__brand" href="{% url 'home' %}">
+      <div class="base-nav__brand-icon"><i class="bi bi-clipboard-check"></i></div>
+      <span class="base-nav__brand-text">Digital Notice Board</span>
+    </a>
+
+    <!-- Center nav links -->
+    <ul class="base-nav__links" id="base-nav-links">
+
+      {% if user.is_authenticated %}
+
+        {% if user.admin_profile or user.is_staff %}
+        <!-- ── ADMIN NAV ── -->
+        <li>
+          <a class="nav-link" href="{% url 'admin_app:dashboard' %}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+        </li>
+
+        <li class="dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-briefcase"></i> Drives
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="{% url 'admin_app:manage_drives' %}">
+                <i class="bi bi-list-ul"></i> Manage Drives
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'admin_app:add_drive' %}">
+                <i class="bi bi-plus-circle"></i> Add New Drive
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-people"></i> Users
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="{% url 'admin_app:manage_students' %}">
+                <i class="bi bi-mortarboard"></i> Manage Students
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'admin_app:manage_admins' %}">
+                <i class="bi bi-shield-lock"></i> Manage Admins
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="{% url 'admin_app:profile_change_requests' %}">
+                <i class="bi bi-pencil-square"></i> Profile Requests
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {% elif user.studentprofile %}
+        <!-- ── STUDENT NAV ── -->
+        <li>
+          <a class="nav-link" href="{% url 'student:home' %}">
+            <i class="bi bi-house"></i> Home
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" href="{% url 'student:notices' %}">
+            <i class="bi bi-bell"></i> All Notices
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" href="{% url 'student:my_responses' %}">
+            <i class="bi bi-check-circle"></i> My Responses
+          </a>
+        </li>
+        {% endif %}
+
+      {% endif %}
+    </ul>
+
+    <!-- Right: user / login + mobile toggle -->
+    <div class="base-nav__right">
+
+      {% if user.is_authenticated %}
+      <div class="dropdown">
+        <button class="base-nav__user dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <div class="base-nav__user-av">
+            {% if user.admin_profile %}{{ user.admin_profile.name|first|upper }}
+            {% elif user.studentprofile %}{{ user.studentprofile.name|first|upper }}
+            {% else %}{{ user.username|first|upper }}{% endif %}
+          </div>
+          {% if user.admin_profile %}{{ user.admin_profile.name }}
+          {% elif user.studentprofile %}{{ user.studentprofile.name }}
+          {% else %}{{ user.username }}{% endif %}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end"
+            style="background:var(--b2);border:1px solid rgba(6,182,212,.15);border-radius:12px;padding:6px;min-width:180px;box-shadow:0 12px 40px rgba(0,0,0,.45)">
+          {% if user.studentprofile %}
+          <li>
+            <a class="dropdown-item" href="{% url 'student:profile_update' %}"
+               style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--t2);padding:8px 12px;border-radius:8px;transition:all .15s;text-decoration:none">
+              <i class="bi bi-person-gear"></i> Update Profile
+            </a>
+          </li>
+          <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,.07);margin:4px 0"></li>
+          {% endif %}
+          <li>
+            <a class="dropdown-item" href="{% url 'logout' %}"
+               style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#f87171;padding:8px 12px;border-radius:8px;transition:all .15s;text-decoration:none">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      {% else %}
+      <a class="base-nav__login" href="{% url 'login' %}">
+        <i class="bi bi-box-arrow-in-right"></i> Login
+      </a>
+      {% endif %}
+
+      <!-- Mobile toggle -->
+      <button class="base-nav__toggler" id="base-toggler" aria-label="Menu">
+        <i class="bi bi-list"></i>
+      </button>
+    </div>
+
+  </nav>
+  <!-- /NAVBAR -->
+
+
+  <!-- ══ FLASH MESSAGES ══ -->
+  {% if messages %}
+  <div class="base-messages">
+    {% for message in messages %}
+    <div class="base-msg base-msg--{{ message.tags }}" onclick="this.remove()">
+      <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'danger' or message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+      <span>{{ message }}</span>
+      <button class="base-msg__close" onclick="event.stopPropagation();this.parentElement.remove()">×</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="base-main">
+    {% block content %}{% endblock %}
+  </main>
+
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="base-footer">
+    <div class="base-footer__brand">
+      <i class="bi bi-clipboard-check"></i>
+      Digital Notice Board
+    </div>
+    <span class="base-footer__copy">&copy; 2026 DNB. All rights reserved.</span>
+    <div class="base-footer__links">
+      <a href="{% url 'admin_app:dashboard' %}">Dashboard</a>
+      <a href="{% url 'admin_app:system_settings' %}">Settings</a>
+      <a href="{% url 'admin_app:system_status' %}">Status</a>
+    </div>
+  </footer>
+
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <!-- Custom JS -->
+  {% load static %}
+  <script src="{% static 'js/main.js' %}"></script>
+
+  <script>
+  /* Mobile nav toggle */
+  document.getElementById('base-toggler').addEventListener('click', function(){
+    const links = document.getElementById('base-nav-links');
+    links.classList.toggle('open');
+    this.querySelector('i').className = links.classList.contains('open') ? 'bi bi-x-lg' : 'bi bi-list';
+  });
+
+  /* Auto-dismiss messages after 5s */
+  document.querySelectorAll('.base-msg').forEach(function(el){
+    setTimeout(function(){ el.style.opacity='0'; el.style.transition='opacity .4s'; setTimeout(function(){el.remove();},400); }, 5000);
+  });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+
+</body>
+</html>

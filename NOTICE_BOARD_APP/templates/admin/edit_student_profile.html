@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Student Profile - {{ student_profile.name }}{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="es">
+
+  <div class="es__mesh"></div>
+  <div class="es__orb es__orb--1"></div>
+  <div class="es__orb es__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="es__top">
+    <div class="es__top-l">
+      <div class="es__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="es__brand">DNB <b>Admin</b></span>
+      <span class="es__div"></span>
+      <nav class="es__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="es__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right es__bc-sep"></i>
+        <a href="{% url 'admin_app:manage_students' %}" class="es__bc-a">Students</a>
+        <i class="bi bi-chevron-right es__bc-sep"></i>
+        <a href="{% url 'admin_app:student_detail' student_profile.id %}" class="es__bc-a">{{ student_profile.name }}</a>
+        <i class="bi bi-chevron-right es__bc-sep"></i>
+        <span class="es__bc-cur">Edit Profile</span>
+      </nav>
+    </div>
+    <div class="es__top-r">
+      <a href="{% url 'admin_app:student_detail' student_profile.id %}" class="es__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="es__body">
+
+    <!-- FLASH MESSAGES -->
+    {% if messages %}
+    <div class="es__messages anim-up">
+      {% for message in messages %}
+      <div class="es__msg es__msg--{{ message.tags }}">
+        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- PAGE HEAD -->
+    <div class="es__head anim-up">
+      <div class="es__head-icon"><i class="bi bi-person-fill-gear"></i></div>
+      <div class="es__head-text">
+        <h1 class="es__h1">Edit Student Profile</h1>
+        <p class="es__sub">Updating profile for <strong style="color:var(--acc)">{{ student_profile.name }}</strong></p>
+      </div>
+    </div>
+
+    <!-- ══ TWO-COL GRID ══ -->
+    <div class="es__grid">
+
+      <!-- LEFT: FORM -->
+      <div class="es__left">
+        <form method="post" class="es__form">
+          {% csrf_token %}
+
+          <!-- 01 Personal Info -->
+          <div class="es__sec anim-up" style="--i:1">
+            <div class="es__sec-head">
+              <span class="es__sec-num">01</span>
+              <div>
+                <h2 class="es__sec-title">Personal Information</h2>
+                <p class="es__sec-hint">Name, roll number and contact details</p>
+              </div>
+            </div>
+            <div class="es__sec-body">
+              <div class="es__row2">
+                <div class="es__field">
+                  <label class="es__lbl" for="name">Full Name <span class="es__req">*</span></label>
+                  <input type="text" class="es__input" id="name" name="name"
+                    value="{{ student_profile.name }}" required placeholder="Student full name">
+                </div>
+                <div class="es__field">
+                  <label class="es__lbl" for="roll_number">Roll Number <span class="es__req">*</span></label>
+                  <input type="text" class="es__input es__mono-input" id="roll_number" name="roll_number"
+                    value="{{ student_profile.roll_number }}" required placeholder="e.g. 21CS001">
+                </div>
+              </div>
+              <div class="es__row2">
+                <div class="es__field">
+                  <label class="es__lbl" for="email">Email Address <span class="es__req">*</span></label>
+                  <input type="email" class="es__input" id="email" name="email"
+                    value="{{ student_profile.email }}" required placeholder="student@college.edu">
+                </div>
+                <div class="es__field">
+                  <label class="es__lbl" for="phone">Phone Number</label>
+                  <input type="text" class="es__input" id="phone" name="phone"
+                    value="{{ student_profile.phone|default:'' }}" placeholder="+91 9876543210">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 02 Academic Info -->
+          <div class="es__sec anim-up" style="--i:2">
+            <div class="es__sec-head">
+              <span class="es__sec-num">02</span>
+              <div>
+                <h2 class="es__sec-title">Academic Details</h2>
+                <p class="es__sec-hint">Department, year and CGPA</p>
+              </div>
+            </div>
+            <div class="es__sec-body">
+              <div class="es__row3">
+                <div class="es__field">
+                  <label class="es__lbl" for="department">Department <span class="es__req">*</span></label>
+                  <select class="es__input es__select" id="department" name="department" required>
+                    {% for dept_code, dept_name in departments %}
+                    <option value="{{ dept_code }}"
+                      {% if student_profile.department == dept_code %}selected{% endif %}>
+                      {{ dept_name }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="es__field">
+                  <label class="es__lbl" for="year">Academic Year <span class="es__req">*</span></label>
+                  <select class="es__input es__select" id="year" name="year" required>
+                    {% for year_code, year_name in years %}
+                    <option value="{{ year_code }}"
+                      {% if student_profile.year == year_code %}selected{% endif %}>
+                      {{ year_name }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="es__field">
+                  <label class="es__lbl" for="cgpa">CGPA <span class="es__req">*</span></label>
+                  <input type="number" class="es__input es__mono-input" id="cgpa" name="cgpa"
+                    value="{{ student_profile.cgpa }}" step="0.01" min="0" max="10" required
+                    placeholder="0.00">
+                  <span class="es__hint">Out of 10.0</span>
+                </div>
+              </div>
+
+              <!-- CGPA visual indicator -->
+              <div class="es__cgpa-bar-wrap">
+                <div class="es__cgpa-bar-track">
+                  <div class="es__cgpa-bar-fill" id="js-cgpa-fill"></div>
+                </div>
+                <span class="es__cgpa-bar-label" id="js-cgpa-label">–</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- NOTICE -->
+          <div class="es__notice anim-up" style="--i:3">
+            <div class="es__notice-icon"><i class="bi bi-info-circle-fill"></i></div>
+            <p><strong>Note:</strong> Changes made here update the student's profile immediately without requiring approval.</p>
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="es__actions anim-up" style="--i:4">
+            <a href="{% url 'admin_app:student_detail' student_profile.id %}" class="es__btn-sec">
+              <i class="bi bi-x-lg"></i> Cancel
+            </a>
+            <button type="submit" class="es__btn-primary">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- RIGHT: SIDEBAR -->
+      <aside class="es__right">
+
+        <!-- Live Profile Preview -->
+        <div class="es__card anim-up" style="--i:1">
+          <div class="es__card-head">
+            <span class="es__card-title"><i class="bi bi-person-circle" style="color:var(--acc)"></i> Profile Preview</span>
+            <span class="es__live-chip"><span class="es__live-dot"></span>Live</span>
+          </div>
+          <div class="es__card-body">
+            <div class="es__pv-hero">
+              <div class="es__pv-av" id="js-pv-av">{{ student_profile.name|first|upper }}</div>
+              <div>
+                <div class="es__pv-name" id="js-pv-name">{{ student_profile.name }}</div>
+                <div class="es__pv-roll" id="js-pv-roll">{{ student_profile.roll_number }}</div>
+              </div>
+            </div>
+            <div class="es__divider"></div>
+            <div class="es__pv-rows">
+              <div class="es__pv-row">
+                <span class="es__pv-ic" style="--ic:#a78bfa"><i class="bi bi-envelope"></i></span>
+                <span class="es__pv-val" id="js-pv-email">{{ student_profile.email }}</span>
+              </div>
+              <div class="es__pv-row">
+                <span class="es__pv-ic" style="--ic:#fb923c"><i class="bi bi-telephone"></i></span>
+                <span class="es__pv-val" id="js-pv-phone">{{ student_profile.phone|default:"—" }}</span>
+              </div>
+              <div class="es__pv-row">
+                <span class="es__pv-ic" style="--ic:#06b6d4"><i class="bi bi-building"></i></span>
+                <span class="es__pv-val" id="js-pv-dept">—</span>
+              </div>
+              <div class="es__pv-row">
+                <span class="es__pv-ic" style="--ic:#10b981"><i class="bi bi-mortarboard"></i></span>
+                <span class="es__pv-val" id="js-pv-cgpa-disp">{{ student_profile.cgpa }} CGPA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Info -->
+        <div class="es__card anim-up" style="--i:2">
+          <div class="es__card-head">
+            <span class="es__card-title"><i class="bi bi-shield-check" style="color:#10b981"></i> Account Info</span>
+            <span class="es__ro-chip">Read-only</span>
+          </div>
+          <div class="es__card-body">
+            <div class="es__ro-list">
+              <div class="es__ro-row">
+                <span class="es__ro-ic" style="--ic:#06b6d4"><i class="bi bi-at"></i></span>
+                <div>
+                  <span class="es__ro-lbl">Username</span>
+                  <span class="es__ro-val es__mono">{{ student_profile.user.username }}</span>
+                </div>
+              </div>
+              <div class="es__ro-row">
+                <span class="es__ro-ic" style="--ic:#10b981"><i class="bi bi-check-circle"></i></span>
+                <div>
+                  <span class="es__ro-lbl">Approval Status</span>
+                  {% if student_profile.is_approved %}
+                    <span class="es__badge es__badge--g"><span class="es__bdot"></span>Approved</span>
+                  {% else %}
+                    <span class="es__badge es__badge--y"><span class="es__bdot"></span>Pending</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="es__ro-row">
+                <span class="es__ro-ic" style="--ic:#a78bfa"><i class="bi bi-calendar-check"></i></span>
+                <div>
+                  <span class="es__ro-lbl">Registered</span>
+                  <span class="es__ro-val es__mono">{{ student_profile.created_at|date:"d M Y" }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip -->
+        <div class="es__tip anim-up" style="--i:3">
+          <div class="es__tip-icon"><i class="bi bi-lightbulb-fill"></i></div>
+          <p><strong>Tip:</strong> CGPA and department changes affect placement drive eligibility — verify before saving.</p>
+        </div>
+
+      </aside>
+    </div>
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;}
+
+.es{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;--ora:#fb923c;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.es__mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);
+  background-size:38px 38px;
+}
+.es__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.es__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.es__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* TOPBAR */
+.es__top{
+  position:sticky;top:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(13,31,45,.88);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(6,182,212,.13);
+  padding:0 24px;height:52px;
+}
+.es__top-l,.es__top-r{display:flex;align-items:center;gap:12px;}
+.es__logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.es__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.es__brand b{font-weight:800;color:#fff;}
+.es__div{width:1px;height:16px;background:var(--t3);}
+.es__bc{display:flex;align-items:center;gap:5px;}
+.es__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.es__bc-a:hover{color:var(--acc);}
+.es__bc-sep{font-size:10px;color:var(--t3);}
+.es__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.es__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.es__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+
+/* BODY */
+.es__body{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:20px;}
+
+/* MESSAGES */
+.es__messages{display:flex;flex-direction:column;gap:8px;}
+.es__msg{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;font-size:13.5px;font-weight:500;}
+.es__msg--success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#34d399;}
+.es__msg--error{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#f87171;}
+.es__msg--info{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);color:#22d3ee;}
+
+/* PAGE HEAD */
+.es__head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.es__head-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 4px 20px rgba(6,182,212,.3);}
+.es__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.es__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* GRID */
+.es__grid{display:grid;grid-template-columns:1fr 310px;gap:20px;align-items:start;}
+@media(max-width:1020px){.es__grid{grid-template-columns:1fr;}}
+
+/* FORM SECTIONS */
+.es__form{display:flex;flex-direction:column;gap:14px;}
+.es__sec{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.es__sec-head{display:flex;align-items:center;gap:14px;padding:14px 22px 12px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.es__sec-num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:rgba(6,182,212,.28);line-height:1;flex-shrink:0;}
+.es__sec-title{font-size:14px;font-weight:700;color:var(--t1);}
+.es__sec-hint{font-size:11.5px;color:var(--t3);margin-top:2px;}
+.es__sec-body{padding:20px 22px;display:flex;flex-direction:column;gap:16px;}
+.es__row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.es__row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:700px){.es__row2,.es__row3{grid-template-columns:1fr;}}
+
+.es__field{display:flex;flex-direction:column;gap:6px;}
+.es__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.es__req{color:var(--red);}
+.es__hint{font-size:11px;color:var(--t3);}
+
+.es__input{
+  width:100%;background:var(--b3);
+  border:1px solid rgba(6,182,212,.18);border-radius:10px;
+  color:var(--t1);font-family:'Urbanist',sans-serif;
+  font-size:14px;font-weight:500;padding:11px 14px;outline:none;
+  transition:border-color .18s,box-shadow .18s;
+  -webkit-appearance:none;
+}
+.es__input::placeholder{color:var(--t3);}
+.es__input:focus{border-color:rgba(6,182,212,.5);box-shadow:0 0 0 3px rgba(6,182,212,.12);}
+.es__mono-input{font-family:'JetBrains Mono',monospace;font-size:13px;}
+.es__select{cursor:pointer;}
+.es__select option{background:var(--b3);color:var(--t1);}
+
+/* CGPA bar */
+.es__cgpa-bar-wrap{display:flex;align-items:center;gap:12px;}
+.es__cgpa-bar-track{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;}
+.es__cgpa-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#f87171,#fbbf24,#10b981);width:0;transition:width .4s ease;}
+.es__cgpa-bar-label{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--acc);min-width:36px;}
+
+/* NOTICE */
+.es__notice{display:flex;align-items:flex-start;gap:11px;background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.18);border-radius:12px;padding:13px 16px;animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.es__notice-icon{color:var(--acc);font-size:16px;flex-shrink:0;margin-top:1px;}
+.es__notice p{font-size:13px;color:var(--t2);line-height:1.5;}
+.es__notice strong{color:var(--acc);}
+
+/* ACTIONS */
+.es__actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 22px;background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.es__btn-sec{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:13.5px;font-weight:700;padding:10px 20px;border-radius:10px;text-decoration:none;transition:all .18s;}
+.es__btn-sec:hover{background:rgba(255,255,255,.09);color:var(--t1);}
+.es__btn-primary{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#0891b2,#06b6d4);border:1px solid rgba(6,182,212,.4);color:#fff;font-size:13.5px;font-weight:800;padding:10px 24px;border-radius:10px;box-shadow:0 0 18px rgba(6,182,212,.28);transition:all .18s;}
+.es__btn-primary:hover{box-shadow:0 0 28px rgba(6,182,212,.48);transform:translateY(-1px);}
+
+/* SIDEBAR */
+.es__right{display:flex;flex-direction:column;gap:16px;}
+.es__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.1s);}
+.es__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 18px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.es__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.es__card-body{padding:18px 18px;}
+
+/* live chip */
+.es__live-chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:99px;background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.es__live-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:dp 2s infinite;}
+@keyframes dp{0%{box-shadow:0 0 0 0 rgba(16,185,129,.5);}70%{box-shadow:0 0 0 5px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+
+/* profile preview */
+.es__pv-hero{display:flex;align-items:center;gap:13px;margin-bottom:14px;}
+.es__pv-av{width:48px;height:48px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;box-shadow:0 3px 14px rgba(6,182,212,.32);border:2px solid rgba(6,182,212,.3);transition:all .2s;}
+.es__pv-name{font-size:15px;font-weight:800;color:#fff;transition:all .2s;}
+.es__pv-roll{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t3);margin-top:2px;}
+.es__divider{height:1px;background:rgba(6,182,212,.08);margin:4px 0 14px;}
+.es__pv-rows{display:flex;flex-direction:column;gap:10px;}
+.es__pv-row{display:flex;align-items:center;gap:10px;}
+.es__pv-ic{width:26px;height:26px;border-radius:7px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--ic);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.es__pv-val{font-size:12.5px;color:var(--t1);font-weight:500;word-break:break-all;}
+
+/* read-only */
+.es__ro-chip{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 9px;border-radius:99px;background:rgba(255,255,255,.06);color:var(--t3);border:1px solid rgba(255,255,255,.08);}
+.es__ro-list{display:flex;flex-direction:column;gap:12px;}
+.es__ro-row{display:flex;align-items:flex-start;gap:10px;}
+.es__ro-ic{width:28px;height:28px;border-radius:7px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--ic);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.es__ro-lbl{display:block;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.es__ro-val{font-size:13px;color:var(--t1);font-weight:500;}
+.es__mono{font-family:'JetBrains Mono',monospace;font-size:12.5px !important;}
+
+/* badges */
+.es__badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;}
+.es__bdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.es__badge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.es__badge--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+
+/* tip */
+.es__tip{display:flex;align-items:flex-start;gap:12px;background:rgba(6,182,212,.05);border:1px solid rgba(6,182,212,.15);border-radius:14px;padding:13px 15px;animation:fu .5s ease both;animation-delay:calc(var(--i)*.1s);}
+.es__tip-icon{color:var(--acc);font-size:16px;flex-shrink:0;margin-top:1px;}
+.es__tip p{font-size:12px;color:var(--t2);line-height:1.5;}
+.es__tip strong{color:var(--acc);}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const nameIn  = document.getElementById('name');
+  const rollIn  = document.getElementById('roll_number');
+  const emailIn = document.getElementById('email');
+  const phoneIn = document.getElementById('phone');
+  const deptIn  = document.getElementById('department');
+  const cgpaIn  = document.getElementById('cgpa');
+
+  const pvAv    = document.getElementById('js-pv-av');
+  const pvName  = document.getElementById('js-pv-name');
+  const pvRoll  = document.getElementById('js-pv-roll');
+  const pvEmail = document.getElementById('js-pv-email');
+  const pvPhone = document.getElementById('js-pv-phone');
+  const pvDept  = document.getElementById('js-pv-dept');
+  const pvCgpa  = document.getElementById('js-pv-cgpa-disp');
+  const cgpaFill= document.getElementById('js-cgpa-fill');
+  const cgpaLbl = document.getElementById('js-cgpa-bar-label') || document.getElementById('js-cgpa-label');
+
+  function update(){
+    const n = nameIn  ? nameIn.value.trim()  : '';
+    const r = rollIn  ? rollIn.value.trim()  : '';
+    const e = emailIn ? emailIn.value.trim() : '';
+    const p = phoneIn ? phoneIn.value.trim() : '';
+    const d = deptIn  ? deptIn.options[deptIn.selectedIndex]?.text : '';
+    const g = cgpaIn  ? parseFloat(cgpaIn.value) : 0;
+
+    if(pvAv)    pvAv.textContent    = (n||'?').charAt(0).toUpperCase();
+    if(pvName)  pvName.textContent  = n || '—';
+    if(pvRoll)  pvRoll.textContent  = r || '—';
+    if(pvEmail) pvEmail.textContent = e || '—';
+    if(pvPhone) pvPhone.textContent = p || '—';
+    if(pvDept)  pvDept.textContent  = d || '—';
+    if(pvCgpa)  pvCgpa.textContent  = (!isNaN(g) && g > 0 ? g.toFixed(2) : '—') + ' CGPA';
+
+    if(cgpaFill && !isNaN(g) && g >= 0){
+      cgpaFill.style.width = Math.min((g/10)*100,100) + '%';
+    }
+    if(cgpaLbl && !isNaN(g) && g > 0){
+      cgpaLbl.textContent = g.toFixed(2);
+    }
+  }
+
+  [nameIn,rollIn,emailIn,phoneIn,deptIn,cgpaIn].forEach(el=>{
+    if(el) el.addEventListener('input',update);
+    if(el) el.addEventListener('change',update);
+  });
+
+  update();
+});
+</script>
+
+{% endblock %}

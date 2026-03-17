@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Drives{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="md">
+
+  <div class="md__mesh"></div>
+  <div class="md__orb md__orb--1"></div>
+  <div class="md__orb md__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="md__top">
+    <div class="md__top-l">
+      <div class="md__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="md__brand">DNB <b>Admin</b></span>
+      <span class="md__div"></span>
+      <nav class="md__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="md__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right md__bc-sep"></i>
+        <span class="md__bc-cur">Manage Drives</span>
+      </nav>
+    </div>
+    <div class="md__top-r">
+      <a href="{% url 'admin_app:dashboard' %}" class="md__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+      <a href="{% url 'admin_app:add_drive' %}" class="md__btn-primary">
+        <i class="bi bi-plus-lg"></i> New Drive
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="md__body">
+
+    <!-- PAGE HEAD -->
+    <div class="md__head anim-up">
+      <div class="md__head-icon"><i class="bi bi-briefcase-fill"></i></div>
+      <div>
+        <h1 class="md__h1">Placement Drives</h1>
+        <p class="md__sub">Create, manage and track all campus recruitment drives.</p>
+      </div>
+    </div>
+
+    <!-- ══ FILTER CARD ══ -->
+    <div class="md__filter anim-up" style="--i:1">
+      <form method="get" class="md__filter-form">
+        <div class="md__filter-field md__filter-field--wide">
+          <i class="bi bi-search md__filter-ico"></i>
+          <input type="text" name="search" class="md__finput"
+            placeholder="Search title or company…"
+            value="{{ request.GET.search }}">
+        </div>
+
+        <div class="md__filter-field">
+          <i class="bi bi-toggle2-on md__filter-ico"></i>
+          <select name="status" class="md__finput md__fselect">
+            <option value="">All Status</option>
+            <option value="Active"  {% if request.GET.status == 'Active'  %}selected{% endif %}>Active</option>
+            <option value="Closed"  {% if request.GET.status == 'Closed'  %}selected{% endif %}>Closed</option>
+            <option value="Draft"   {% if request.GET.status == 'Draft'   %}selected{% endif %}>Draft</option>
+          </select>
+        </div>
+
+        <div class="md__filter-field">
+          <i class="bi bi-building md__filter-ico"></i>
+          <select name="department" class="md__finput md__fselect">
+            <option value="">All Departments</option>
+            <option value="CSE"   {% if request.GET.department == 'CSE'   %}selected{% endif %}>CSE</option>
+            <option value="IT"    {% if request.GET.department == 'IT'    %}selected{% endif %}>IT</option>
+            <option value="ECE"   {% if request.GET.department == 'ECE'   %}selected{% endif %}>ECE</option>
+            <option value="EEE"   {% if request.GET.department == 'EEE'   %}selected{% endif %}>EEE</option>
+            <option value="MECH"  {% if request.GET.department == 'MECH'  %}selected{% endif %}>MECH</option>
+            <option value="CIVIL" {% if request.GET.department == 'CIVIL' %}selected{% endif %}>CIVIL</option>
+          </select>
+        </div>
+
+        <button type="submit" class="md__btn-search">
+          <i class="bi bi-search"></i> Search
+        </button>
+
+        {% if request.GET.search or request.GET.status or request.GET.department %}
+        <a href="{% url 'admin_app:manage_drives' %}" class="md__btn-clear">
+          <i class="bi bi-x-lg"></i> Clear
+        </a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- ══ DRIVES TABLE CARD ══ -->
+    <div class="md__card anim-up" style="--i:2">
+      <div class="md__card-head">
+        <span class="md__card-title"><i class="bi bi-table" style="color:var(--acc)"></i> All Drives</span>
+        {% if drives %}
+        <span class="md__count-chip">{{ drives|length }} found</span>
+        {% endif %}
+      </div>
+
+      {% if drives %}
+      <div class="md__tw">
+        <table class="md__tbl">
+          <thead>
+            <tr>
+              <th>Drive</th>
+              <th>Eligibility</th>
+              <th>Status</th>
+              <th>Last Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for drive in drives %}
+            <tr class="md__tr" style="--ri:{{ forloop.counter0 }}">
+
+              <!-- Drive title -->
+              <td>
+                <div class="md__drive-cell">
+                  <div class="md__drive-av">{{ drive.company_name|first }}</div>
+                  <div>
+                    <div class="md__drive-title">{{ drive.title }}</div>
+                    <div class="md__drive-co">{{ drive.company_name }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Eligibility -->
+              <td>
+                <div class="md__elig">
+                  <span class="md__elig-row">
+                    <span class="md__elig-lbl">CGPA</span>
+                    <span class="md__mono">{{ drive.min_cgpa }}+</span>
+                  </span>
+                  <span class="md__elig-row">
+                    <span class="md__elig-lbl">Year</span>
+                    {{ drive.get_eligible_year_display }}
+                  </span>
+                  <div class="md__dept-tags">
+                    {% for dept in drive.eligible_departments %}
+                    <span class="md__dept-tag">{{ dept }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+              </td>
+
+              <!-- Status -->
+              <td>
+                <span class="md__sbadge
+                  {% if drive.status == 'Active' %}md__sbadge--g
+                  {% elif drive.status == 'Closed' %}md__sbadge--sl
+                  {% else %}md__sbadge--y{% endif %}">
+                  <span class="md__sdot"></span>{{ drive.status }}
+                </span>
+              </td>
+
+              <!-- Date -->
+              <td>
+                <div class="md__date-main md__mono">{{ drive.last_date|date:"d M Y" }}</div>
+                <div class="md__days
+                  {% if drive.days_remaining <= 0 %}md__days--red
+                  {% elif drive.days_remaining <= 7 %}md__days--amber
+                  {% else %}md__days--grn{% endif %}">
+                  {% if drive.days_remaining > 0 %}
+                    {{ drive.days_remaining }}d left
+                  {% else %}
+                    Expired
+                  {% endif %}
+                </div>
+              </td>
+
+              <!-- Actions -->
+              <td>
+                <div class="md__acts">
+                  <a href="{% url 'admin_app:drive_responses' drive.id %}" class="md__act md__act--c" title="View Responses">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{% url 'admin_app:edit_drive' drive.pk %}" class="md__act md__act--y" title="Edit Drive">
+                    <i class="fas fa-pen"></i>
+                  </a>
+                  <form method="post" action="{% url 'admin_app:toggle_drive_status' drive.id %}" style="display:inline-flex">
+                    {% csrf_token %}
+                    <button type="submit" title="{% if drive.status == 'Active' %}Close Drive{% else %}Activate Drive{% endif %}"
+                      class="md__act {% if drive.status == 'Active' %}md__act--ora{% else %}md__act--g{% endif %}">
+                      <i class="fas {% if drive.status == 'Active' %}fa-pause{% else %}fa-play{% endif %}"></i>
+                    </button>
+                  </form>
+                  <a href="{% url 'admin_app:delete_drive' drive.pk %}" class="md__act md__act--r" title="Delete Drive"
+                    onclick="return confirm('Delete this drive permanently?')">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── PAGINATION ── -->
+      {% if is_paginated %}
+      <div class="md__pg">
+        {% if page_obj.has_previous %}
+          <a class="md__pg-btn" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.department %}&department={{ request.GET.department }}{% endif %}">
+            <i class="bi bi-chevron-double-left"></i>
+          </a>
+          <a class="md__pg-btn" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.department %}&department={{ request.GET.department }}{% endif %}">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        {% endif %}
+
+        <span class="md__pg-info">
+          Page <b>{{ page_obj.number }}</b> of <b>{{ page_obj.paginator.num_pages }}</b>
+        </span>
+
+        {% if page_obj.has_next %}
+          <a class="md__pg-btn" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.department %}&department={{ request.GET.department }}{% endif %}">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+          <a class="md__pg-btn" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.department %}&department={{ request.GET.department }}{% endif %}">
+            <i class="bi bi-chevron-double-right"></i>
+          </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <!-- Empty state -->
+      <div class="md__empty">
+        <div class="md__empty-ring"><i class="bi bi-briefcase"></i></div>
+        <h3>No Drives Found</h3>
+        <p>No placement drives match your search criteria.</p>
+        <a href="{% url 'admin_app:add_drive' %}" class="md__btn-primary">
+          <i class="bi bi-plus-lg"></i> Create First Drive
+        </a>
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+.md{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;--ora:#fb923c;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.md__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.md__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.md__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.md__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* TOPBAR */
+.md__top{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;background:rgba(13,31,45,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(6,182,212,.13);padding:0 24px;height:52px;}
+.md__top-l,.md__top-r{display:flex;align-items:center;gap:12px;}
+.md__logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.md__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.md__brand b{font-weight:800;color:#fff;}
+.md__div{width:1px;height:16px;background:var(--t3);}
+.md__bc{display:flex;align-items:center;gap:5px;}
+.md__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.md__bc-a:hover{color:var(--acc);}
+.md__bc-sep{font-size:10px;color:var(--t3);}
+.md__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.md__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.md__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+.md__btn-primary{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0891b2,#06b6d4);border:1px solid rgba(6,182,212,.4);color:#fff;font-size:13px;font-weight:700;padding:8px 18px;border-radius:9px;box-shadow:0 0 14px rgba(6,182,212,.25);transition:all .18s;text-decoration:none;}
+.md__btn-primary:hover{box-shadow:0 0 24px rgba(6,182,212,.45);transform:translateY(-1px);color:#fff;}
+
+/* BODY */
+.md__body{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:18px;}
+
+/* PAGE HEAD */
+.md__head{display:flex;align-items:center;gap:16px;}
+.md__head-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 4px 20px rgba(6,182,212,.3);}
+.md__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.md__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* FILTER */
+.md__filter{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;padding:16px 20px;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.md__filter-form{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.md__filter-field{position:relative;display:flex;align-items:center;flex:1;min-width:160px;}
+.md__filter-field--wide{flex:2;min-width:220px;}
+.md__filter-ico{position:absolute;left:12px;color:var(--t3);font-size:13px;pointer-events:none;}
+.md__finput{
+  width:100%;background:var(--b3);
+  border:1px solid rgba(6,182,212,.15);border-radius:10px;
+  color:var(--t1);font-family:'Urbanist',sans-serif;
+  font-size:13.5px;font-weight:500;
+  padding:10px 14px 10px 34px;outline:none;
+  transition:border-color .18s,box-shadow .18s;
+  -webkit-appearance:none;
+}
+.md__finput::placeholder{color:var(--t3);}
+.md__finput:focus{border-color:rgba(6,182,212,.45);box-shadow:0 0 0 3px rgba(6,182,212,.1);}
+.md__fselect{cursor:pointer;}
+.md__fselect option{background:var(--b2);color:var(--t1);}
+
+.md__btn-search{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);
+  color:var(--acc);font-size:13px;font-weight:700;
+  padding:10px 18px;border-radius:10px;transition:all .18s;white-space:nowrap;
+}
+.md__btn-search:hover{background:rgba(6,182,212,.18);border-color:rgba(6,182,212,.55);}
+.md__btn-clear{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);
+  color:var(--red);font-size:13px;font-weight:700;
+  padding:10px 16px;border-radius:10px;text-decoration:none;transition:all .18s;white-space:nowrap;
+}
+.md__btn-clear:hover{background:rgba(248,113,113,.15);color:var(--red);}
+
+/* TABLE CARD */
+.md__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.md__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 20px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.md__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.md__count-chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(6,182,212,.1);color:var(--acc);border:1px solid rgba(6,182,212,.2);}
+
+/* TABLE */
+.md__tw{overflow-x:auto;}
+.md__tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.md__tbl thead tr{border-bottom:1px solid rgba(6,182,212,.1);}
+.md__tbl th{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:11px 18px;text-align:left;white-space:nowrap;}
+.md__tbl td{padding:13px 18px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;}
+.md__tr{
+  transition:background .15s;
+  animation:rowIn .4s ease both;
+  animation-delay:calc(var(--ri)*.04s);
+}
+.md__tr:hover{background:rgba(6,182,212,.05);}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+
+/* drive cell */
+.md__drive-cell{display:flex;align-items:center;gap:11px;}
+.md__drive-av{width:36px;height:36px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;box-shadow:0 2px 10px rgba(6,182,212,.28);}
+.md__drive-title{font-size:14px;font-weight:800;color:var(--t1);}
+.md__drive-co{font-size:11.5px;color:var(--t3);margin-top:2px;}
+
+/* eligibility */
+.md__elig{display:flex;flex-direction:column;gap:3px;}
+.md__elig-row{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:5px;}
+.md__elig-lbl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;min-width:28px;}
+.md__mono{font-family:'JetBrains Mono',monospace;font-size:12px;}
+.md__dept-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;}
+.md__dept-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(6,182,212,.1);color:#22d3ee;letter-spacing:.04em;}
+
+/* status badge */
+.md__sbadge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:99px;white-space:nowrap;}
+.md__sdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.md__sbadge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.md__sbadge--sl{background:rgba(71,85,105,.12);color:#64748b;border:1px solid rgba(71,85,105,.2);}
+.md__sbadge--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+
+/* date */
+.md__date-main{font-size:13px;color:var(--t1);font-weight:500;}
+.md__days{font-size:11px;font-weight:700;margin-top:3px;}
+.md__days--grn{color:#10b981;}
+.md__days--amber{color:#fbbf24;}
+.md__days--red{color:#f87171;}
+
+/* action buttons */
+.md__acts{display:flex;gap:6px;align-items:center;}
+.md__act{width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;text-decoration:none;transition:transform .15s,filter .15s;border:1px solid transparent;}
+.md__act:hover{transform:scale(1.18);filter:brightness(1.35);}
+.md__act--c{background:rgba(6,182,212,.1);color:#22d3ee;border-color:rgba(6,182,212,.2);}
+.md__act--y{background:rgba(251,191,36,.1);color:#fbbf24;border-color:rgba(251,191,36,.2);}
+.md__act--g{background:rgba(16,185,129,.1);color:#10b981;border-color:rgba(16,185,129,.2);}
+.md__act--ora{background:rgba(251,146,60,.1);color:#fb923c;border-color:rgba(251,146,60,.2);}
+.md__act--r{background:rgba(248,113,113,.1);color:#f87171;border-color:rgba(248,113,113,.2);}
+
+/* empty state */
+.md__empty{display:flex;flex-direction:column;align-items:center;padding:64px 24px;color:var(--t3);}
+.md__empty-ring{width:72px;height:72px;border-radius:50%;background:rgba(6,182,212,.07);border:1px solid rgba(6,182,212,.15);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--acc);margin-bottom:18px;}
+.md__empty h3{font-size:17px;font-weight:800;color:var(--t1);margin-bottom:6px;}
+.md__empty p{font-size:13px;margin-bottom:20px;}
+
+/* pagination */
+.md__pg{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-top:1px solid rgba(6,182,212,.08);flex-wrap:wrap;}
+.md__pg-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:9px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  color:var(--t2);font-size:13px;text-decoration:none;transition:all .18s;
+}
+.md__pg-btn:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+.md__pg-info{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t2);padding:0 4px;}
+.md__pg-info b{color:var(--acc);}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;animation-delay:calc(var(--i,0)*.08s);}
+</style>
+
+{% endblock %}

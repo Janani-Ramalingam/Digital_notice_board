@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Responses{% endblock %}
+
+{% block content %}
+{% now "Y-m-d H:i" as current_time %}
+
+<div class="container-fluid">
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>My Responses</h2>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'student:home' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item active">My Responses</li>
+        </ol>
+    </div>
+
+    <a href="{% url 'student:home' %}" class="btn btn-secondary">
+        Back
+    </a>
+</div>
+
+<!-- Statistics -->
+<div class="row mb-4">
+
+<div class="col-md-4">
+<div class="card text-center">
+<div class="card-body">
+<h3 class="text-primary">{{ total_responses }}</h3>
+<p>Total Responses</p>
+</div>
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="card text-center">
+<div class="card-body">
+<h3 class="text-success">{{ opt_in_count }}</h3>
+<p>Opt-In</p>
+</div>
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="card text-center">
+<div class="card-body">
+<h3 class="text-danger">{{ opt_out_count }}</h3>
+<p>Opt-Out</p>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- Response Table -->
+
+<div class="card">
+<div class="card-header">
+<h5>Response History</h5>
+</div>
+
+<div class="card-body">
+
+{% if responses %}
+
+<div class="table-responsive">
+
+<table class="table table-striped">
+
+<thead>
+<tr>
+<th>Drive</th>
+<th>Company</th>
+<th>Response</th>
+<th>Date</th>
+<th>Status</th>
+<th>Last Date</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for response in responses %}
+
+<tr>
+
+<td>
+<strong>{{ response.drive.title }}</strong><br>
+<small>
+CGPA: {{ response.drive.min_cgpa }} |
+Year: {{ response.drive.get_eligible_year_display }}
+</small>
+</td>
+
+<td>{{ response.drive.company_name }}</td>
+
+<td>
+<span class="badge {% if response.response == 'Opt-In' %}bg-success{% else %}bg-danger{% endif %}">
+{{ response.response }}
+</span>
+</td>
+
+<td>{{ response.responded_at|date:"M d Y H:i" }}</td>
+
+<td>
+<span class="badge {% if response.drive.status == 'Active' %}bg-success{% else %}bg-secondary{% endif %}">
+{{ response.drive.status }}
+</span>
+</td>
+
+<td>
+{{ response.drive.last_date|date:"M d Y H:i" }}
+
+{% if response.drive.last_date|stringformat:"s" < current_time %}
+<br><small class="text-danger">Expired</small>
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+</table>
+
+</div>
+
+{% else %}
+
+<div class="text-center p-5">
+<h4>No Responses Yet</h4>
+<p>You haven't responded to any drives.</p>
+
+<a href="{% url 'student:notices' %}" class="btn btn-primary">
+View Drives
+</a>
+
+</div>
+
+{% endif %}
+
+</div>
+</div>
+
+</div>
+
+{% endblock %}

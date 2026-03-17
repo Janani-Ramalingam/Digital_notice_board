@@ -1,0 +1,557 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}System Settings - Digital Notice Board{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="ss">
+
+  <div class="ss__mesh"></div>
+  <div class="ss__orb ss__orb--1"></div>
+  <div class="ss__orb ss__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="ss__top">
+    <div class="ss__top-l">
+      <div class="ss__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="ss__brand">DNB <b>Admin</b></span>
+      <span class="ss__div"></span>
+      <nav class="ss__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="ss__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right ss__bc-sep"></i>
+        <span class="ss__bc-cur">System Settings</span>
+      </nav>
+    </div>
+    <div class="ss__top-r">
+      <a href="{% url 'admin_app:dashboard' %}" class="ss__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="ss__body">
+
+    <!-- PAGE HEAD -->
+    <div class="ss__head anim-up">
+      <div class="ss__head-icon"><i class="fas fa-cogs"></i></div>
+      <div>
+        <h1 class="ss__h1">System Settings</h1>
+        <p class="ss__sub">Configure email, reminders and system parameters.</p>
+      </div>
+    </div>
+
+    <!-- ══ MAIN GRID ══ -->
+    <div class="ss__grid">
+
+      <!-- ── LEFT: SETTINGS FORM ── -->
+      <div class="ss__left">
+        <form method="post" id="settingsForm">
+          {% csrf_token %}
+
+          <!-- SECTION 01: Gmail -->
+          <div class="ss__sec anim-up" style="--i:1">
+            <div class="ss__sec-head">
+              <span class="ss__sec-num">01</span>
+              <div>
+                <h2 class="ss__sec-title">Gmail Configuration</h2>
+                <p class="ss__sec-hint">SMTP credentials for outgoing email</p>
+              </div>
+              <span class="ss__sec-icon" style="color:#06b6d4"><i class="fas fa-envelope"></i></span>
+            </div>
+            <div class="ss__sec-body">
+              <div class="ss__row2">
+                <div class="ss__field">
+                  <label class="ss__lbl" for="email_host">SMTP Host</label>
+                  <input type="text" class="ss__input" id="email_host" name="email_host"
+                    value="{{ settings.email_host }}" required placeholder="smtp.gmail.com">
+                  <span class="ss__hint">Usually smtp.gmail.com for Gmail</span>
+                </div>
+                <div class="ss__field">
+                  <label class="ss__lbl" for="email_port">SMTP Port</label>
+                  <input type="number" class="ss__input ss__mono-input" id="email_port" name="email_port"
+                    value="{{ settings.email_port }}" min="1" max="65535" required placeholder="587">
+                  <span class="ss__hint">Usually 587 for TLS</span>
+                </div>
+              </div>
+              <div class="ss__row2">
+                <div class="ss__field">
+                  <label class="ss__lbl" for="email_host_user">Gmail Address</label>
+                  <input type="email" class="ss__input" id="email_host_user" name="email_host_user"
+                    value="{{ settings.email_host_user }}" required placeholder="you@gmail.com">
+                  <span class="ss__hint">Your Gmail address</span>
+                </div>
+                <div class="ss__field">
+                  <label class="ss__lbl" for="email_host_password">App Password</label>
+                  <div class="ss__pw-wrap">
+                    <input type="password" class="ss__input" id="email_host_password" name="email_host_password"
+                      value="{{ settings.email_host_password }}" required placeholder="16-character app password">
+                    <button type="button" class="ss__pw-eye" onclick="togglePw(this)" tabindex="-1">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </div>
+                  <span class="ss__hint">Gmail App Password — not your regular password</span>
+                </div>
+              </div>
+              <div class="ss__row2">
+                <div class="ss__field">
+                  <label class="ss__lbl" for="default_from_email">From Email</label>
+                  <input type="email" class="ss__input" id="default_from_email" name="default_from_email"
+                    value="{{ settings.default_from_email }}" required placeholder="noreply@gmail.com">
+                  <span class="ss__hint">Shown as sender in outgoing emails</span>
+                </div>
+                <div class="ss__field ss__field--center">
+                  <label class="ss__toggle-row">
+                    <input type="checkbox" id="email_use_tls" name="email_use_tls"
+                      class="ss__toggle-cb" {% if settings.email_use_tls %}checked{% endif %}>
+                    <span class="ss__toggle-track"><span class="ss__toggle-thumb"></span></span>
+                    <div>
+                      <span class="ss__toggle-lbl">Use TLS Encryption</span>
+                      <span class="ss__toggle-hint">Recommended for security</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Gmail instructions -->
+              <div class="ss__info-box">
+                <div class="ss__info-box-head"><i class="fas fa-info-circle"></i> Gmail Setup Instructions</div>
+                <ol class="ss__info-list">
+                  <li>Enable 2-Factor Authentication on your Gmail account</li>
+                  <li>Go to Google Account → Security → App Passwords</li>
+                  <li>Generate an App Password for <em>"Mail"</em></li>
+                  <li>Use the generated 16-character password above</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 02: Reminder Settings -->
+          <div class="ss__sec anim-up" style="--i:2">
+            <div class="ss__sec-head">
+              <span class="ss__sec-num">02</span>
+              <div>
+                <h2 class="ss__sec-title">Email Reminder Settings</h2>
+                <p class="ss__sec-hint">Automatic student notification schedule</p>
+              </div>
+              <span class="ss__sec-icon" style="color:#fbbf24"><i class="fas fa-clock"></i></span>
+            </div>
+            <div class="ss__sec-body">
+              <label class="ss__toggle-row ss__toggle-row--card">
+                <input type="checkbox" id="reminder_enabled" name="reminder_enabled"
+                  class="ss__toggle-cb" {% if settings.reminder_enabled %}checked{% endif %}>
+                <span class="ss__toggle-track"><span class="ss__toggle-thumb"></span></span>
+                <div>
+                  <span class="ss__toggle-lbl">Enable Automatic Email Reminders</span>
+                  <span class="ss__toggle-hint">Send reminders to students for pending drive responses</span>
+                </div>
+              </label>
+
+              <div class="ss__row3">
+                <div class="ss__field">
+                  <label class="ss__lbl" for="reminder_interval_hours">Hours</label>
+                  <input type="number" class="ss__input ss__mono-input" id="reminder_interval_hours"
+                    name="reminder_interval_hours" value="{{ settings.reminder_interval_hours }}"
+                    min="0" max="24" required placeholder="0">
+                  <span class="ss__hint">0 – 24</span>
+                </div>
+                <div class="ss__field">
+                  <label class="ss__lbl" for="reminder_interval_minutes">Minutes</label>
+                  <input type="number" class="ss__input ss__mono-input" id="reminder_interval_minutes"
+                    name="reminder_interval_minutes" value="{{ settings.reminder_interval_minutes|default:0 }}"
+                    min="0" max="59" placeholder="0">
+                  <span class="ss__hint">0 – 59</span>
+                </div>
+                <div class="ss__field">
+                  <label class="ss__lbl" for="max_reminders">Max Reminders</label>
+                  <input type="number" class="ss__input ss__mono-input" id="max_reminders"
+                    name="max_reminders" value="{{ settings.max_reminders }}"
+                    min="1" max="20" required placeholder="5">
+                  <span class="ss__hint">Per drive (1 – 20)</span>
+                </div>
+              </div>
+
+              <div class="ss__interval-display">
+                <i class="bi bi-info-circle"></i>
+                Reminders sent every
+                <strong class="ss__mono">{{ settings.reminder_interval_hours }}h {{ settings.reminder_interval_minutes|default:0 }}m</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 03: System Info -->
+          <div class="ss__sec anim-up" style="--i:3">
+            <div class="ss__sec-head">
+              <span class="ss__sec-num">03</span>
+              <div>
+                <h2 class="ss__sec-title">System Information</h2>
+                <p class="ss__sec-hint">Application name and base URL</p>
+              </div>
+              <span class="ss__sec-icon" style="color:#a78bfa"><i class="fas fa-server"></i></span>
+            </div>
+            <div class="ss__sec-body">
+              <div class="ss__row2">
+                <div class="ss__field">
+                  <label class="ss__lbl" for="site_name">Site Name</label>
+                  <input type="text" class="ss__input" id="site_name" name="site_name"
+                    value="{{ settings.site_name }}" required placeholder="Digital Notice Board">
+                  <span class="ss__hint">Name of your application</span>
+                </div>
+                <div class="ss__field">
+                  <label class="ss__lbl" for="site_url">Site URL</label>
+                  <input type="url" class="ss__input" id="site_url" name="site_url"
+                    value="{{ settings.site_url }}" required placeholder="https://yourdomain.com">
+                  <span class="ss__hint">Base URL of your application</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FORM ACTIONS -->
+          <div class="ss__actions anim-up" style="--i:4">
+            <a href="{% url 'admin_app:dashboard' %}" class="ss__btn-sec">
+              <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+            <button type="submit" class="ss__btn-primary">
+              <i class="fas fa-save"></i> Save Settings
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ── RIGHT: SIDEBAR ── -->
+      <aside class="ss__right">
+
+        <!-- Scheduler Status -->
+        <div class="ss__card anim-up" style="--i:1">
+          <div class="ss__card-head">
+            <span class="ss__card-title">
+              <i class="bi bi-clock-fill" style="color:{% if scheduler_running %}#10b981{% else %}#fbbf24{% endif %}"></i>
+              Scheduler Status
+            </span>
+            <span class="ss__sched-badge {% if scheduler_running %}ss__sched-badge--g{% else %}ss__sched-badge--y{% endif %}">
+              <span class="ss__sbdot"></span>
+              {% if scheduler_running %}Running{% else %}Stopped{% endif %}
+            </span>
+          </div>
+          <div class="ss__card-body">
+            <div class="ss__sched-info">
+              <div class="ss__sched-row">
+                <span class="ss__sched-lbl">Last Run</span>
+                <span class="ss__sched-val ss__mono">
+                  {% if last_reminder_run %}{{ last_reminder_run|date:"d M Y, H:i" }}{% else %}Never{% endif %}
+                </span>
+              </div>
+              <div class="ss__sched-row">
+                <span class="ss__sched-lbl">Interval</span>
+                <span class="ss__sched-val ss__mono">{{ settings.get_reminder_interval_display }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Test Email -->
+        <div class="ss__card anim-up" style="--i:2">
+          <div class="ss__card-head">
+            <span class="ss__card-title"><i class="bi bi-send-fill" style="color:#06b6d4"></i> Test Email</span>
+          </div>
+          <div class="ss__card-body">
+            <p class="ss__card-desc">Send a test email to verify Gmail config is working.</p>
+            <form id="testEmailForm">
+              {% csrf_token %}
+              <div class="ss__field" style="margin-bottom:10px">
+                <label class="ss__lbl" for="test_email">Test Email Address</label>
+                <input type="email" class="ss__input" id="test_email" name="test_email"
+                  placeholder="test@example.com" required>
+              </div>
+              <button type="submit" class="ss__action-btn ss__action-btn--cyan">
+                <i class="bi bi-send"></i> Send Test Email
+              </button>
+            </form>
+            <div id="testEmailResult" class="ss__result-area"></div>
+          </div>
+        </div>
+
+        <!-- Manual Trigger -->
+        <div class="ss__card anim-up" style="--i:3">
+          <div class="ss__card-head">
+            <span class="ss__card-title"><i class="bi bi-bell-fill" style="color:#fbbf24"></i> Manual Trigger</span>
+          </div>
+          <div class="ss__card-body">
+            <p class="ss__card-desc">Manually send reminder emails for pending drive responses.</p>
+            <button type="button" class="ss__action-btn ss__action-btn--amber" id="triggerReminders">
+              <i class="fas fa-bell"></i> Send Reminders Now
+            </button>
+            <div id="reminderResult" class="ss__result-area"></div>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="ss__card anim-up" style="--i:4">
+          <div class="ss__card-head">
+            <span class="ss__card-title"><i class="bi bi-lightning-charge-fill" style="color:#a78bfa"></i> Quick Links</span>
+          </div>
+          <div class="ss__card-body ss__qa-body">
+            <a href="{% url 'admin_app:email_logs' %}" class="ss__qa">
+              <span class="ss__qa-ic" style="--qc:#06b6d4"><i class="fas fa-history"></i></span>
+              <span>Email Logs</span>
+              <i class="bi bi-chevron-right ss__qa-arr"></i>
+            </a>
+            <a href="{% url 'admin_app:system_status' %}" class="ss__qa">
+              <span class="ss__qa-ic" style="--qc:#10b981"><i class="fas fa-heartbeat"></i></span>
+              <span>System Status</span>
+              <i class="bi bi-chevron-right ss__qa-arr"></i>
+            </a>
+            <a href="{% url 'admin_app:manage_students' %}" class="ss__qa">
+              <span class="ss__qa-ic" style="--qc:#a78bfa"><i class="fas fa-users"></i></span>
+              <span>Manage Students</span>
+              <i class="bi bi-chevron-right ss__qa-arr"></i>
+            </a>
+            <a href="{% url 'admin_app:manage_drives' %}" class="ss__qa">
+              <span class="ss__qa-ic" style="--qc:#fbbf24"><i class="fas fa-briefcase"></i></span>
+              <span>Manage Drives</span>
+              <i class="bi bi-chevron-right ss__qa-arr"></i>
+            </a>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;}
+
+.ss{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;--ora:#fb923c;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.ss__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.ss__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.ss__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.ss__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* TOPBAR */
+.ss__top{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;background:rgba(13,31,45,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(6,182,212,.13);padding:0 24px;height:52px;}
+.ss__top-l,.ss__top-r{display:flex;align-items:center;gap:12px;}
+.ss__logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.ss__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.ss__brand b{font-weight:800;color:#fff;}
+.ss__div{width:1px;height:16px;background:var(--t3);}
+.ss__bc{display:flex;align-items:center;gap:5px;}
+.ss__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.ss__bc-a:hover{color:var(--acc);}
+.ss__bc-sep{font-size:10px;color:var(--t3);}
+.ss__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.ss__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.ss__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+
+/* BODY */
+.ss__body{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:20px;}
+
+/* PAGE HEAD */
+.ss__head{display:flex;align-items:center;gap:16px;}
+.ss__head-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 4px 20px rgba(6,182,212,.3);}
+.ss__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.ss__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* GRID */
+.ss__grid{display:grid;grid-template-columns:1fr 310px;gap:20px;align-items:start;}
+@media(max-width:1050px){.ss__grid{grid-template-columns:1fr;}}
+.ss__left{display:flex;flex-direction:column;gap:14px;}
+.ss__right{display:flex;flex-direction:column;gap:16px;}
+
+/* FORM SECTIONS */
+.ss__sec{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.ss__sec-head{display:flex;align-items:center;gap:14px;padding:14px 22px 12px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.ss__sec-num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:rgba(6,182,212,.28);line-height:1;flex-shrink:0;}
+.ss__sec-head>div{flex:1;}
+.ss__sec-title{font-size:14px;font-weight:700;color:var(--t1);}
+.ss__sec-hint{font-size:11.5px;color:var(--t3);margin-top:2px;}
+.ss__sec-icon{font-size:18px;flex-shrink:0;}
+.ss__sec-body{padding:20px 22px;display:flex;flex-direction:column;gap:16px;}
+.ss__row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.ss__row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:640px){.ss__row2,.ss__row3{grid-template-columns:1fr;}}
+
+/* FIELDS */
+.ss__field{display:flex;flex-direction:column;gap:5px;}
+.ss__field--center{justify-content:center;}
+.ss__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.ss__hint{font-size:11px;color:var(--t3);}
+.ss__input{
+  width:100%;background:var(--b3);
+  border:1px solid rgba(6,182,212,.18);border-radius:10px;
+  color:var(--t1);font-family:'Urbanist',sans-serif;
+  font-size:14px;font-weight:500;padding:10px 14px;outline:none;
+  transition:border-color .18s,box-shadow .18s;-webkit-appearance:none;
+}
+.ss__input::placeholder{color:var(--t3);}
+.ss__input:focus{border-color:rgba(6,182,212,.5);box-shadow:0 0 0 3px rgba(6,182,212,.12);}
+.ss__mono-input{font-family:'JetBrains Mono',monospace;font-size:13px;}
+
+/* password toggle */
+.ss__pw-wrap{position:relative;}
+.ss__pw-wrap .ss__input{padding-right:42px;}
+.ss__pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t3);font-size:15px;cursor:pointer;transition:color .15s;padding:4px;}
+.ss__pw-eye:hover{color:var(--acc);}
+
+/* toggle switch */
+.ss__toggle-row{display:flex;align-items:flex-start;gap:12px;cursor:pointer;}
+.ss__toggle-row--card{padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:11px;transition:background .18s;}
+.ss__toggle-row--card:hover{background:rgba(255,255,255,.06);}
+.ss__toggle-cb{display:none;}
+.ss__toggle-track{width:40px;height:22px;border-radius:99px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);position:relative;flex-shrink:0;margin-top:1px;transition:background .2s;}
+.ss__toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--t3);transition:all .2s;}
+.ss__toggle-cb:checked + .ss__toggle-track{background:rgba(6,182,212,.3);border-color:rgba(6,182,212,.5);}
+.ss__toggle-cb:checked + .ss__toggle-track .ss__toggle-thumb{transform:translateX(18px);background:var(--acc);}
+.ss__toggle-lbl{font-size:13.5px;font-weight:700;color:var(--t1);display:block;margin-bottom:2px;}
+.ss__toggle-hint{font-size:11.5px;color:var(--t3);}
+
+/* info box */
+.ss__info-box{background:rgba(6,182,212,.05);border:1px solid rgba(6,182,212,.15);border-radius:11px;padding:14px 16px;}
+.ss__info-box-head{font-size:13px;font-weight:700;color:var(--acc);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.ss__info-list{padding-left:18px;display:flex;flex-direction:column;gap:5px;}
+.ss__info-list li{font-size:12.5px;color:var(--t2);line-height:1.4;}
+.ss__info-list em{color:var(--acc);font-style:normal;font-weight:600;}
+
+/* interval display */
+.ss__interval-display{font-size:12.5px;color:var(--t3);display:flex;align-items:center;gap:6px;}
+.ss__interval-display strong{color:var(--t2);}
+.ss__mono{font-family:'JetBrains Mono',monospace;}
+
+/* ACTIONS */
+.ss__actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 22px;background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.ss__btn-sec{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:13.5px;font-weight:700;padding:10px 20px;border-radius:10px;text-decoration:none;transition:all .18s;}
+.ss__btn-sec:hover{background:rgba(255,255,255,.09);color:var(--t1);}
+.ss__btn-primary{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#0891b2,#06b6d4);border:1px solid rgba(6,182,212,.4);color:#fff;font-size:13.5px;font-weight:800;padding:10px 24px;border-radius:10px;box-shadow:0 0 18px rgba(6,182,212,.28);transition:all .18s;}
+.ss__btn-primary:hover{box-shadow:0 0 28px rgba(6,182,212,.48);transform:translateY(-1px);}
+
+/* SIDEBAR CARDS */
+.ss__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.1s);}
+.ss__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 18px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.ss__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.ss__card-body{padding:16px 18px;}
+.ss__card-desc{font-size:13px;color:var(--t2);margin-bottom:12px;line-height:1.5;}
+
+/* scheduler status */
+.ss__sched-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;}
+.ss__sbdot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:dp 2s infinite;}
+@keyframes dp{0%{box-shadow:0 0 0 0 currentColor;}70%{box-shadow:0 0 0 5px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+.ss__sched-badge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.ss__sched-badge--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+.ss__sched-info{display:flex;flex-direction:column;gap:10px;}
+.ss__sched-row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:9px;}
+.ss__sched-lbl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;}
+.ss__sched-val{font-size:12.5px;color:var(--t1);font-weight:600;}
+
+/* action buttons in sidebar */
+.ss__action-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font-size:13.5px;font-weight:700;padding:10px 16px;border-radius:10px;transition:all .18s;border:1px solid transparent;}
+.ss__action-btn--cyan{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.28);color:var(--acc);}
+.ss__action-btn--cyan:hover{background:rgba(6,182,212,.18);border-color:rgba(6,182,212,.55);}
+.ss__action-btn--amber{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.25);color:#fbbf24;}
+.ss__action-btn--amber:hover{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.5);}
+.ss__action-btn:disabled{opacity:.45;cursor:not-allowed;}
+
+/* result area */
+.ss__result-area{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.ss__result-success{display:flex;align-items:flex-start;gap:8px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:9px;padding:10px 12px;font-size:12.5px;color:#34d399;}
+.ss__result-error{display:flex;align-items:flex-start;gap:8px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:9px;padding:10px 12px;font-size:12.5px;color:#f87171;}
+
+/* quick links */
+.ss__qa-body{padding:10px 14px 14px;display:flex;flex-direction:column;gap:3px;}
+.ss__qa{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;text-decoration:none;color:var(--t2);font-size:13px;font-weight:500;transition:all .18s;}
+.ss__qa:hover{background:var(--b3);color:var(--t1);transform:translateX(3px);}
+.ss__qa-ic{width:30px;height:30px;border-radius:8px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--qc);display:flex;align-items:center;justify-content:center;font-size:13px;transition:box-shadow .18s;}
+.ss__qa:hover .ss__qa-ic{box-shadow:0 0 12px var(--qc);}
+.ss__qa span{flex:1;}
+.ss__qa-arr{font-size:11px;color:var(--t3);opacity:0;transition:opacity .18s,transform .18s;}
+.ss__qa:hover .ss__qa-arr{opacity:1;transform:translateX(2px);}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;animation-delay:calc(var(--i,0)*.08s);}
+</style>
+
+<script>
+function togglePw(btn){
+  const input=btn.previousElementSibling;
+  const icon=btn.querySelector('i');
+  if(input.type==='password'){
+    input.type='text';
+    icon.className='bi bi-eye-slash';
+  } else {
+    input.type='password';
+    icon.className='bi bi-eye';
+  }
+}
+
+function showResult(container, msg, isSuccess){
+  container.innerHTML=`
+    <div class="${isSuccess?'ss__result-success':'ss__result-error'}">
+      <i class="fas fa-${isSuccess?'check-circle':'times-circle'}" style="flex-shrink:0;margin-top:1px"></i>
+      <span>${msg}</span>
+    </div>`;
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+
+  /* Test Email */
+  document.getElementById('testEmailForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const fd=new FormData(this);
+    const res=document.getElementById('testEmailResult');
+    const btn=this.querySelector('button[type=submit]');
+    btn.disabled=true;
+    btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Sending…';
+    fetch('{% url "admin_app:test_email_configuration" %}',{
+      method:'POST',body:fd,
+      headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}
+    })
+    .then(r=>r.json())
+    .then(d=>showResult(res,d.message,d.success))
+    .catch(e=>showResult(res,'Error: '+e,false))
+    .finally(()=>{
+      btn.disabled=false;
+      btn.innerHTML='<i class="bi bi-send"></i> Send Test Email';
+    });
+  });
+
+  /* Trigger Reminders */
+  const trigBtn=document.getElementById('triggerReminders');
+  trigBtn.addEventListener('click', function(){
+    const res=document.getElementById('reminderResult');
+    trigBtn.disabled=true;
+    trigBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Sending…';
+    fetch('{% url "admin_app:trigger_reminder_emails" %}',{
+      method:'POST',
+      headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}
+    })
+    .then(r=>r.json())
+    .then(d=>showResult(res,d.message,d.success))
+    .catch(e=>showResult(res,'Error: '+e,false))
+    .finally(()=>{
+      trigBtn.disabled=false;
+      trigBtn.innerHTML='<i class="fas fa-bell"></i> Send Reminders Now';
+    });
+  });
+
+});
+</script>
+
+{% endblock %}

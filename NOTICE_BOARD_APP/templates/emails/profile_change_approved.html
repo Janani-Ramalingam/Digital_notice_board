@@ -1,0 +1,60 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Profile Change Approved - Digital Notice Board{% endblock %}
+
+{% block header_subtitle %}Profile Update Confirmation{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Dear {{ student_name }},
+</div>
+
+<div class="info-box success">
+    <h3>✅ Profile Change Request Approved</h3>
+    <p>Your profile update request has been reviewed and approved by the admin team.</p>
+</div>
+
+<div class="content">
+    <p>Your profile has been successfully updated with the requested changes. The new information is now active in the system.</p>
+</div>
+
+<table class="details-table">
+    <tr>
+        <td>Request ID</td>
+        <td>{{ request_id }}</td>
+    </tr>
+    <tr>
+        <td>Requested On</td>
+        <td>{{ requested_date }}</td>
+    </tr>
+    <tr>
+        <td>Approved By</td>
+        <td>{{ approved_by }}</td>
+    </tr>
+    <tr>
+        <td>Approval Date</td>
+        <td>{{ approval_date }}</td>
+    </tr>
+</table>
+
+{% if admin_notes %}
+<div class="info-box">
+    <h3>💬 Admin Notes</h3>
+    <p>{{ admin_notes }}</p>
+</div>
+{% endif %}
+
+<div class="button-container">
+    <a href="{{ profile_url }}" class="btn btn-success">View Your Profile</a>
+</div>
+
+<div class="content">
+    <p>You can now view your updated profile information by logging into your account. Make sure all details are correct and up-to-date.</p>
+    
+    <p style="margin-top: 25px;">
+        <strong>Regards,</strong><br>
+        Placement Cell Team<br>
+        Digital Notice Board
+    </p>
+</div>
+{% endblock %}

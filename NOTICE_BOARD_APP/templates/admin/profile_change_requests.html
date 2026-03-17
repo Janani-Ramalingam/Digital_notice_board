@@ -1,0 +1,502 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile Change Requests{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="pr">
+
+  <div class="pr__mesh"></div>
+  <div class="pr__orb pr__orb--1"></div>
+  <div class="pr__orb pr__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="pr__top">
+    <div class="pr__top-l">
+      <div class="pr__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="pr__brand">DNB <b>Admin</b></span>
+      <span class="pr__div"></span>
+      <nav class="pr__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="pr__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right pr__bc-sep"></i>
+        <span class="pr__bc-cur">Profile Requests</span>
+      </nav>
+    </div>
+    <div class="pr__top-r">
+      <a href="{% url 'admin_app:dashboard' %}" class="pr__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+      <a href="{% url 'admin_app:manage_students' %}" class="pr__btn-cyan">
+        <i class="bi bi-people-fill"></i> Manage Students
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="pr__body">
+
+    <!-- PAGE HEAD -->
+    <div class="pr__head anim-up">
+      <div class="pr__head-icon"><i class="bi bi-clipboard2-pulse-fill"></i></div>
+      <div>
+        <h1 class="pr__h1">Profile Change Requests</h1>
+        <p class="pr__sub">Review and action student profile update submissions.</p>
+      </div>
+      <span class="pr__total-chip">{{ page_obj.paginator.count }} total</span>
+    </div>
+
+    <!-- ══ FILTER ══ -->
+    <div class="pr__filter anim-up" style="--i:1">
+      <form method="get" class="pr__filter-form">
+        <div class="pr__ff pr__ff--wide">
+          <i class="bi bi-search pr__fic"></i>
+          <input type="text" name="search" class="pr__finput"
+            placeholder="Student name or username…"
+            value="{{ search_query }}">
+        </div>
+        <div class="pr__ff">
+          <i class="bi bi-funnel pr__fic"></i>
+          <select name="status" class="pr__finput pr__fsel">
+            {% for status_code, status_name in status_choices %}
+            <option value="{{ status_code }}" {% if status_filter == status_code %}selected{% endif %}>{{ status_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="pr__btn-search">
+          <i class="bi bi-search"></i> Filter
+        </button>
+        {% if search_query or status_filter %}
+        <a href="{% url 'admin_app:profile_change_requests' %}" class="pr__btn-clear">
+          <i class="bi bi-x-lg"></i> Clear
+        </a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- ══ TABLE ══ -->
+    <div class="pr__card anim-up" style="--i:2">
+      <div class="pr__card-head">
+        <span class="pr__card-title">
+          <i class="bi bi-clipboard-check-fill" style="color:var(--acc)"></i> Change Requests
+        </span>
+        <span class="pr__count-chip">{{ page_obj.paginator.count }}</span>
+      </div>
+
+      {% if page_obj %}
+      <div class="pr__tw">
+        <table class="pr__tbl">
+          <thead><tr>
+            <th>Student</th>
+            <th>Requested Changes</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Requested</th>
+            <th>Reviewed By</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            {% for req in page_obj %}
+            <tr class="pr__tr
+              {% if req.status == 'pending' %}pr__tr--pending{% endif %}"
+              style="--ri:{{ forloop.counter0 }}">
+
+              <!-- Student -->
+              <td>
+                <div class="pr__stu">
+                  <div class="pr__av pr__av--{% if req.status == 'pending' %}y{% elif req.status == 'approved' %}g{% else %}r{% endif %}">
+                    {{ req.student.studentprofile.name|first|upper }}
+                  </div>
+                  <div>
+                    <div class="pr__stu-nm">{{ req.student.studentprofile.name }}</div>
+                    <div class="pr__stu-un">@{{ req.student.username }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Changes -->
+              <td>
+                <div class="pr__changes">
+                  {% for field, value in req.requested_changes.items %}
+                  <div class="pr__change-row">
+                    <span class="pr__change-field">{{ field|title }}</span>
+                    <span class="pr__change-val">{{ value }}</span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </td>
+
+              <!-- Reason -->
+              <td class="pr__mu">
+                {% if req.reason %}
+                  {{ req.reason|truncatechars:50 }}
+                {% else %}
+                  <span class="pr__dash">—</span>
+                {% endif %}
+              </td>
+
+              <!-- Status -->
+              <td>
+                {% if req.status == 'pending' %}
+                  <span class="pr__badge pr__badge--y pr__badge--pulse"><span class="pr__bdot"></span>Pending</span>
+                {% elif req.status == 'approved' %}
+                  <span class="pr__badge pr__badge--g"><span class="pr__bdot"></span>Approved</span>
+                {% elif req.status == 'rejected' %}
+                  <span class="pr__badge pr__badge--r"><span class="pr__bdot"></span>Rejected</span>
+                {% endif %}
+              </td>
+
+              <!-- Date -->
+              <td class="pr__mu pr__mono">{{ req.requested_at|date:"d M Y, H:i" }}</td>
+
+              <!-- Reviewed By -->
+              <td>
+                {% if req.reviewed_by %}
+                <div class="pr__reviewer">
+                  <span class="pr__reviewer-nm">{{ req.reviewed_by.adminprofile.name }}</span>
+                  <span class="pr__reviewer-dt pr__mono">{{ req.reviewed_at|date:"d M Y" }}</span>
+                </div>
+                {% else %}
+                  <span class="pr__dash">—</span>
+                {% endif %}
+              </td>
+
+              <!-- Actions -->
+              <td>
+                {% if req.status == 'pending' %}
+                <div class="pr__acts">
+                  <button class="pr__act pr__act--g" title="Approve"
+                    onclick="openApprove('approveModal{{ req.id }}')">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="pr__act pr__act--r" title="Reject"
+                    onclick="openReject('rejectModal{{ req.id }}')">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                {% else %}
+                  <span class="pr__reviewed-chip">Reviewed</span>
+                {% endif %}
+              </td>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      {% if page_obj.has_other_pages %}
+      <div class="pr__pg">
+        {% if page_obj.has_previous %}
+          <a class="pr__pg-btn" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+          <a class="pr__pg-btn" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+        {% endif %}
+        <span class="pr__pg-info">Page <b>{{ page_obj.number }}</b> of <b>{{ page_obj.paginator.num_pages }}</b></span>
+        {% if page_obj.has_next %}
+          <a class="pr__pg-btn" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+          <a class="pr__pg-btn" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="pr__empty">
+        <div class="pr__empty-ring"><i class="bi bi-clipboard2-x"></i></div>
+        <h3>No Requests Found</h3>
+        <p>Students haven't submitted any profile change requests yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════
+     PER-REQUEST MODALS
+══════════════════════════════ -->
+{% for req in page_obj %}
+
+<!-- APPROVE MODAL -->
+<div class="pr-modal-overlay" id="approveModal{{ req.id }}">
+  <div class="pr-modal pr-modal--g">
+    <div class="pr-modal__head">
+      <span class="pr-modal__title">
+        <i class="bi bi-check-circle-fill" style="color:#10b981"></i> Approve Profile Change
+      </span>
+      <button class="pr-modal__close" onclick="closeModal('approveModal{{ req.id }}')">×</button>
+    </div>
+    <form method="post" action="{% url 'admin_app:approve_profile_change' req.id %}">
+      {% csrf_token %}
+      <div class="pr-modal__body">
+        <div class="pr-modal__info-block">
+          <p class="pr-modal__info-text">
+            Approving changes for <strong style="color:#10b981">{{ req.student.studentprofile.name }}</strong>. The following will be updated:
+          </p>
+          <div class="pr-modal__changes">
+            {% for field, value in req.requested_changes.items %}
+            <div class="pr-modal__change-row pr-modal__change-row--g">
+              <span class="pr-modal__change-field">{{ field|title }}</span>
+              <span class="pr-modal__change-val">{{ value }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="pr-modal__field">
+          <label class="pr-modal__lbl">Admin Notes <span class="pr-modal__opt">(Optional)</span></label>
+          <textarea class="pr-modal__input" name="admin_notes" rows="3"
+            placeholder="Add any notes about this approval…"></textarea>
+        </div>
+      </div>
+      <div class="pr-modal__foot">
+        <button type="button" class="pr-modal__btn-sec" onclick="closeModal('approveModal{{ req.id }}')">
+          <i class="bi bi-x-lg"></i> Cancel
+        </button>
+        <button type="submit" class="pr-modal__btn-grn">
+          <i class="fas fa-check"></i> Approve Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- REJECT MODAL -->
+<div class="pr-modal-overlay" id="rejectModal{{ req.id }}">
+  <div class="pr-modal pr-modal--r">
+    <div class="pr-modal__head" style="border-color:rgba(248,113,113,.18);background:rgba(248,113,113,.04)">
+      <span class="pr-modal__title">
+        <i class="bi bi-x-circle-fill" style="color:#f87171"></i> Reject Profile Change
+      </span>
+      <button class="pr-modal__close" onclick="closeModal('rejectModal{{ req.id }}')">×</button>
+    </div>
+    <form method="post" action="{% url 'admin_app:reject_profile_change' req.id %}">
+      {% csrf_token %}
+      <div class="pr-modal__body">
+        <div class="pr-modal__info-block pr-modal__info-block--warn">
+          <p class="pr-modal__info-text">
+            Rejecting request from <strong style="color:#fbbf24">{{ req.student.studentprofile.name }}</strong>. Please provide a clear reason.
+          </p>
+        </div>
+        <div class="pr-modal__field">
+          <label class="pr-modal__lbl">Reason for Rejection <span style="color:#f87171">*</span></label>
+          <textarea class="pr-modal__input pr-modal__input--r" name="admin_notes" rows="3"
+            placeholder="Provide a reason — this will be communicated to the student." required></textarea>
+        </div>
+      </div>
+      <div class="pr-modal__foot">
+        <button type="button" class="pr-modal__btn-sec" onclick="closeModal('rejectModal{{ req.id }}')">
+          <i class="bi bi-x-lg"></i> Cancel
+        </button>
+        <button type="submit" class="pr-modal__btn-red">
+          <i class="fas fa-times"></i> Reject Request
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endfor %}
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+.pr{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.pr__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.pr__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.pr__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.pr__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* TOPBAR */
+.pr__top{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;background:rgba(13,31,45,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(6,182,212,.13);padding:0 24px;height:52px;}
+.pr__top-l,.pr__top-r{display:flex;align-items:center;gap:12px;}
+.pr__logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.pr__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.pr__brand b{font-weight:800;color:#fff;}
+.pr__div{width:1px;height:16px;background:var(--t3);}
+.pr__bc{display:flex;align-items:center;gap:5px;}
+.pr__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.pr__bc-a:hover{color:var(--acc);}
+.pr__bc-sep{font-size:10px;color:var(--t3);}
+.pr__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.pr__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.pr__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+.pr__btn-cyan{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0891b2,#06b6d4);border:1px solid rgba(6,182,212,.4);color:#fff;font-size:12.5px;font-weight:700;padding:7px 16px;border-radius:8px;text-decoration:none;box-shadow:0 0 12px rgba(6,182,212,.22);transition:all .18s;}
+.pr__btn-cyan:hover{box-shadow:0 0 22px rgba(6,182,212,.42);transform:translateY(-1px);color:#fff;}
+
+/* BODY */
+.pr__body{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:18px;}
+
+/* PAGE HEAD */
+.pr__head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.pr__head-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 4px 20px rgba(6,182,212,.3);}
+.pr__head>div{flex:1;}
+.pr__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.pr__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+.pr__total-chip{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;padding:5px 14px;border-radius:99px;background:rgba(6,182,212,.1);color:var(--acc);border:1px solid rgba(6,182,212,.2);}
+
+/* FILTER */
+.pr__filter{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;padding:15px 20px;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.pr__filter-form{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pr__ff{position:relative;display:flex;align-items:center;flex:1;min-width:150px;}
+.pr__ff--wide{flex:2;min-width:220px;}
+.pr__fic{position:absolute;left:11px;color:var(--t3);font-size:13px;pointer-events:none;}
+.pr__finput{width:100%;background:var(--b3);border:1px solid rgba(6,182,212,.15);border-radius:10px;color:var(--t1);font-family:'Urbanist',sans-serif;font-size:13.5px;font-weight:500;padding:10px 14px 10px 33px;outline:none;transition:border-color .18s,box-shadow .18s;-webkit-appearance:none;}
+.pr__finput::placeholder{color:var(--t3);}
+.pr__finput:focus{border-color:rgba(6,182,212,.45);box-shadow:0 0 0 3px rgba(6,182,212,.1);}
+.pr__fsel{cursor:pointer;}
+.pr__fsel option{background:var(--b2);color:var(--t1);}
+.pr__btn-search{display:inline-flex;align-items:center;gap:6px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:var(--acc);font-size:13px;font-weight:700;padding:10px 18px;border-radius:10px;transition:all .18s;white-space:nowrap;}
+.pr__btn-search:hover{background:rgba(6,182,212,.18);}
+.pr__btn-clear{display:inline-flex;align-items:center;gap:6px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red);font-size:13px;font-weight:700;padding:10px 16px;border-radius:10px;text-decoration:none;transition:all .18s;white-space:nowrap;}
+.pr__btn-clear:hover{background:rgba(248,113,113,.15);color:var(--red);}
+
+/* CARD */
+.pr__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.pr__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 20px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.pr__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.pr__count-chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(6,182,212,.1);color:var(--acc);border:1px solid rgba(6,182,212,.2);}
+
+/* TABLE */
+.pr__tw{overflow-x:auto;}
+.pr__tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.pr__tbl thead tr{border-bottom:1px solid rgba(6,182,212,.1);}
+.pr__tbl th{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:10px 16px;text-align:left;white-space:nowrap;}
+.pr__tbl td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;}
+.pr__tr{transition:background .15s;animation:rowIn .4s ease both;animation-delay:calc(var(--ri)*.04s);}
+.pr__tr:hover{background:rgba(6,182,212,.05);}
+.pr__tr--pending{background:rgba(251,191,36,.025);}
+.pr__tr--pending:hover{background:rgba(251,191,36,.05);}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+
+/* student cell */
+.pr__stu{display:flex;align-items:center;gap:10px;}
+.pr__av{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+.pr__av--y{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25);}
+.pr__av--g{background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.22);}
+.pr__av--r{background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.22);}
+.pr__stu-nm{font-weight:700;color:var(--t1);font-size:13px;}
+.pr__stu-un{font-size:11px;color:var(--t3);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+.pr__mu{color:var(--t2);font-size:12.5px;}
+.pr__mono{font-family:'JetBrains Mono',monospace;font-size:11.5px !important;}
+.pr__dash{color:var(--t3);}
+
+/* changes */
+.pr__changes{display:flex;flex-direction:column;gap:5px;}
+.pr__change-row{display:flex;align-items:flex-start;gap:6px;font-size:12px;}
+.pr__change-field{font-weight:700;color:var(--t3);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;min-width:55px;padding-top:1px;}
+.pr__change-val{color:var(--acc);font-weight:600;font-size:12.5px;word-break:break-word;}
+
+/* reviewer */
+.pr__reviewer{display:flex;flex-direction:column;gap:2px;}
+.pr__reviewer-nm{font-size:13px;font-weight:600;color:var(--t1);}
+.pr__reviewer-dt{font-size:11px;color:var(--t3);}
+
+/* badges */
+.pr__badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;}
+.pr__bdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.pr__badge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.pr__badge--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+.pr__badge--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+.pr__badge--pulse .pr__bdot{animation:dp 1.8s infinite;}
+@keyframes dp{0%{box-shadow:0 0 0 0 rgba(251,191,36,.5);}70%{box-shadow:0 0 0 5px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+
+/* actions */
+.pr__acts{display:flex;gap:6px;}
+.pr__act{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;transition:transform .15s,filter .15s;border:1px solid transparent;}
+.pr__act:hover{transform:scale(1.18);filter:brightness(1.3);}
+.pr__act--g{background:rgba(16,185,129,.1);color:#10b981;border-color:rgba(16,185,129,.2);}
+.pr__act--r{background:rgba(248,113,113,.1);color:#f87171;border-color:rgba(248,113,113,.2);}
+.pr__reviewed-chip{font-size:11px;font-weight:600;color:var(--t3);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:3px 10px;border-radius:6px;}
+
+/* EMPTY */
+.pr__empty{display:flex;flex-direction:column;align-items:center;padding:60px 24px;color:var(--t3);}
+.pr__empty-ring{width:72px;height:72px;border-radius:50%;background:rgba(6,182,212,.07);border:1px solid rgba(6,182,212,.15);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--acc);margin-bottom:18px;}
+.pr__empty h3{font-size:17px;font-weight:800;color:var(--t1);margin-bottom:6px;}
+.pr__empty p{font-size:13px;}
+
+/* PAGINATION */
+.pr__pg{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-top:1px solid rgba(6,182,212,.08);flex-wrap:wrap;}
+.pr__pg-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--t2);font-size:13px;text-decoration:none;transition:all .18s;}
+.pr__pg-btn:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+.pr__pg-info{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t2);padding:0 4px;}
+.pr__pg-info b{color:var(--acc);}
+
+/* ══ MODALS ══ */
+.pr-modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(7,12,25,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .22s;}
+.pr-modal-overlay.open{opacity:1;pointer-events:all;}
+.pr-modal{background:var(--b2);border-radius:18px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(22px);transition:transform .25s cubic-bezier(.34,1.2,.64,1);overflow:hidden;}
+.pr-modal-overlay.open .pr-modal{transform:translateY(0);}
+.pr-modal--g{border:1px solid rgba(16,185,129,.2);}
+.pr-modal--r{border:1px solid rgba(248,113,113,.2);}
+.pr-modal__head{display:flex;justify-content:space-between;align-items:center;padding:15px 22px 13px;border-bottom:1px solid rgba(16,185,129,.12);background:rgba(16,185,129,.04);}
+.pr-modal__title{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800;color:#fff;}
+.pr-modal__close{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--t2);width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;transition:all .15s;cursor:pointer;}
+.pr-modal__close:hover{background:rgba(248,113,113,.15);color:#f87171;}
+.pr-modal__body{padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+.pr-modal__foot{padding:14px 22px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:flex-end;gap:10px;background:rgba(255,255,255,.015);}
+
+.pr-modal__info-block{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:14px 16px;}
+.pr-modal__info-block--warn{background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.18);}
+.pr-modal__info-text{font-size:13.5px;color:var(--t2);margin-bottom:10px;line-height:1.5;}
+.pr-modal__changes{display:flex;flex-direction:column;gap:7px;}
+.pr-modal__change-row{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;}
+.pr-modal__change-row--g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.12);}
+.pr-modal__change-field{font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;min-width:60px;padding-top:1px;}
+.pr-modal__change-val{font-size:13px;font-weight:600;color:#10b981;}
+
+.pr-modal__field{display:flex;flex-direction:column;gap:6px;}
+.pr-modal__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.pr-modal__opt{font-size:10px;color:var(--t3);text-transform:lowercase;font-weight:400;}
+.pr-modal__input{width:100%;background:var(--b3);border:1px solid rgba(6,182,212,.18);border-radius:10px;color:var(--t1);font-family:'Urbanist',sans-serif;font-size:14px;font-weight:500;padding:11px 14px;outline:none;resize:vertical;transition:border-color .18s,box-shadow .18s;}
+.pr-modal__input::placeholder{color:var(--t3);}
+.pr-modal__input:focus{border-color:rgba(6,182,212,.5);box-shadow:0 0 0 3px rgba(6,182,212,.12);}
+.pr-modal__input--r{border-color:rgba(248,113,113,.2);}
+.pr-modal__input--r:focus{border-color:rgba(248,113,113,.5);box-shadow:0 0 0 3px rgba(248,113,113,.1);}
+
+.pr-modal__btn-sec{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:13.5px;font-weight:700;padding:9px 18px;border-radius:10px;cursor:pointer;transition:all .18s;}
+.pr-modal__btn-sec:hover{background:rgba(255,255,255,.09);color:var(--t1);}
+.pr-modal__btn-grn{display:inline-flex;align-items:center;gap:7px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:#10b981;font-size:13.5px;font-weight:800;padding:9px 20px;border-radius:10px;cursor:pointer;transition:all .18s;}
+.pr-modal__btn-grn:hover{background:rgba(16,185,129,.22);border-color:rgba(16,185,129,.55);}
+.pr-modal__btn-red{display:inline-flex;align-items:center;gap:7px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#f87171;font-size:13.5px;font-weight:800;padding:9px 20px;border-radius:10px;cursor:pointer;transition:all .18s;}
+.pr-modal__btn-red:hover{background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.55);}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;animation-delay:calc(var(--i,0)*.08s);}
+</style>
+
+<script>
+function openApprove(id){
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function openReject(id){
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow='';
+}
+document.querySelectorAll('.pr-modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{ if(e.target===o) closeModal(o.id); });
+});
+</script>
+
+{% endblock %}

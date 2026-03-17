@@ -1,0 +1,588 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Drive - Digital Notice Board{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="dd">
+
+  <!-- ambient layers -->
+  <div class="dd__mesh"></div>
+  <div class="dd__orb dd__orb--1"></div>
+  <div class="dd__orb dd__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="dd__top">
+    <div class="dd__top-l">
+      <div class="dd__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="dd__brand">DNB <b>Admin</b></span>
+      <span class="dd__div"></span>
+      <nav class="dd__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="dd__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right dd__bc-sep"></i>
+        <a href="{% url 'admin_app:manage_drives' %}" class="dd__bc-a">Manage Drives</a>
+        <i class="bi bi-chevron-right dd__bc-sep"></i>
+        <span class="dd__bc-cur">Delete Drive</span>
+      </nav>
+    </div>
+    <div class="dd__top-r">
+      <a href="{% url 'admin_app:manage_drives' %}" class="dd__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="dd__body">
+
+    <!-- ── DANGER HERO BANNER ── -->
+    <div class="dd__hero anim-up">
+      <div class="dd__hero-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div>
+        <h1 class="dd__hero-title">Delete Placement Drive</h1>
+        <p class="dd__hero-sub">This action is <strong>permanent and irreversible.</strong> Review all details carefully before proceeding.</p>
+      </div>
+    </div>
+
+    <!-- ── MAIN CONTENT ── -->
+    <div class="dd__grid">
+
+      <!-- LEFT: Drive info + stats -->
+      <div class="dd__left">
+
+        <!-- Drive Info Card -->
+        <div class="dd__card anim-up" style="--i:1">
+          <div class="dd__card-head">
+            <span class="dd__card-title">
+              <i class="bi bi-briefcase-fill" style="color:#06b6d4"></i> Drive Information
+            </span>
+            <span class="dd__status-badge
+              {% if object.status == 'Active' %}dd__status-badge--g
+              {% elif object.status == 'Inactive' %}dd__status-badge--sl
+              {% else %}dd__status-badge--y{% endif %}">
+              <span class="dd__bdot"></span>{{ object.status }}
+            </span>
+          </div>
+          <div class="dd__card-body">
+
+            <!-- Drive title block -->
+            <div class="dd__drive-title-block">
+              <div class="dd__drive-av">{{ object.company_name|first }}</div>
+              <div>
+                <h2 class="dd__drive-name">{{ object.title }}</h2>
+                <p class="dd__drive-co">{{ object.company_name }}</p>
+              </div>
+            </div>
+
+            <div class="dd__info-grid">
+              <div class="dd__info-item">
+                <span class="dd__info-ic" style="--ic:#06b6d4"><i class="bi bi-calendar3"></i></span>
+                <div>
+                  <span class="dd__info-lbl">Created</span>
+                  <span class="dd__info-val dd__mono">{{ object.created_at|date:"d M Y" }}</span>
+                </div>
+              </div>
+              <div class="dd__info-item">
+                <span class="dd__info-ic" style="--ic:#f87171"><i class="bi bi-calendar-x"></i></span>
+                <div>
+                  <span class="dd__info-lbl">Application Deadline</span>
+                  <span class="dd__info-val dd__mono">{{ object.application_deadline|date:"d M Y" }}</span>
+                </div>
+              </div>
+              <div class="dd__info-item">
+                <span class="dd__info-ic" style="--ic:#10b981"><i class="bi bi-mortarboard"></i></span>
+                <div>
+                  <span class="dd__info-lbl">Min. CGPA Required</span>
+                  <span class="dd__info-val dd__mono">{{ object.min_cgpa }}</span>
+                </div>
+              </div>
+              <div class="dd__info-item">
+                <span class="dd__info-ic" style="--ic:#a78bfa"><i class="bi bi-building"></i></span>
+                <div>
+                  <span class="dd__info-lbl">Eligible Departments</span>
+                  <div class="dd__dept-tags">
+                    {% for dept in object.eligible_departments %}
+                      <span class="dd__tag">{{ dept }}</span>
+                    {% empty %}
+                      <span class="dd__info-val">All Departments</span>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Response Stats -->
+        <div class="dd__card anim-up" style="--i:2">
+          <div class="dd__card-head">
+            <span class="dd__card-title">
+              <i class="bi bi-bar-chart-fill" style="color:#a78bfa"></i> Response Statistics
+            </span>
+          </div>
+          <div class="dd__card-body">
+            <div class="dd__stats-row">
+              <div class="dd__stat-tile" style="--sc:#06b6d4">
+                <span class="dd__stat-n">{{ object.responses.count }}</span>
+                <span class="dd__stat-l">Total Responses</span>
+                <div class="dd__stat-bar-wrap"><div class="dd__stat-bar" style="background:#06b6d4;--w:100%"></div></div>
+              </div>
+              <div class="dd__stat-tile" style="--sc:#10b981">
+                <span class="dd__stat-n">{{ opt_in_count }}</span>
+                <span class="dd__stat-l">Opt-In</span>
+                <div class="dd__stat-bar-wrap"><div class="dd__stat-bar" style="background:#10b981;--w:60%"></div></div>
+              </div>
+              <div class="dd__stat-tile" style="--sc:#f87171">
+                <span class="dd__stat-n">{{ opt_out_count }}</span>
+                <span class="dd__stat-l">Opt-Out</span>
+                <div class="dd__stat-bar-wrap"><div class="dd__stat-bar" style="background:#f87171;--w:40%"></div></div>
+              </div>
+            </div>
+
+            {% if object.responses.count > 0 %}
+            <div class="dd__resp-warn">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>This drive has <strong>{{ object.responses.count }} student response(s)</strong>. Deleting will permanently remove all associated data.</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Danger zone + actions -->
+      <div class="dd__right">
+
+        <!-- Consequences list -->
+        <div class="dd__card dd__card--danger anim-up" style="--i:1">
+          <div class="dd__card-head">
+            <span class="dd__card-title">
+              <i class="fas fa-skull-crossbones" style="color:#f87171"></i> Danger Zone
+            </span>
+          </div>
+          <div class="dd__card-body">
+            <p class="dd__dz-intro">By confirming deletion, you acknowledge:</p>
+            <div class="dd__consequence-list">
+              <div class="dd__consequence">
+                <div class="dd__con-ic"><i class="bi bi-trash3-fill"></i></div>
+                <span>Drive and all its data will be <strong>permanently deleted</strong></span>
+              </div>
+              <div class="dd__consequence">
+                <div class="dd__con-ic"><i class="bi bi-person-x-fill"></i></div>
+                <span>All <strong>student responses</strong> will be lost forever</span>
+              </div>
+              <div class="dd__consequence">
+                <div class="dd__con-ic"><i class="bi bi-arrow-counterclockwise"></i></div>
+                <span>This action <strong>cannot be reversed</strong> or undone</span>
+              </div>
+              <div class="dd__consequence">
+                <div class="dd__con-ic"><i class="bi bi-eye-slash-fill"></i></div>
+                <span>Students will <strong>no longer see</strong> this drive</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm / Cancel -->
+        <div class="dd__card anim-up" style="--i:2">
+          <div class="dd__card-head">
+            <span class="dd__card-title">
+              <i class="bi bi-shield-exclamation" style="color:#fbbf24"></i> Confirm Action
+            </span>
+          </div>
+          <div class="dd__card-body">
+            <p class="dd__confirm-note">Type the drive title to confirm deletion:</p>
+            <input
+              type="text"
+              id="js-confirm-input"
+              class="dd__confirm-input"
+              placeholder="{{ object.title }}"
+              autocomplete="off"
+            />
+            <p class="dd__confirm-hint" id="js-confirm-hint">Enter exact title to enable deletion</p>
+
+            <form method="post" id="js-delete-form" class="dd__form-actions">
+              {% csrf_token %}
+              <a href="{% url 'admin_app:manage_drives' %}" class="dd__btn-cancel">
+                <i class="bi bi-arrow-left"></i> Cancel
+              </a>
+              <button type="submit" class="dd__btn-delete" id="js-delete-btn" disabled>
+                <i class="fas fa-trash"></i> Delete Permanently
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Alternative tip -->
+        <div class="dd__tip anim-up" style="--i:3">
+          <div class="dd__tip-icon"><i class="bi bi-lightbulb-fill"></i></div>
+          <p>
+            <strong>Better alternative:</strong> Set the drive status to
+            <span class="dd__tip-hl">Inactive</span> to preserve historical data
+            while removing it from active listings.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;}
+
+/* ══ ROOT ══ */
+.dd{
+  --b0:#0d1f2d;
+  --b1:#102436;
+  --b2:#133044;
+  --b3:#1a3a52;
+  --b4:#1f3d50;
+  --t1:#e0f4f8;
+  --t2:#7ec8d8;
+  --t3:#3d7a8a;
+  --acc:#06b6d4;
+  --grn:#10b981;
+  --pur:#a78bfa;
+  --red:#f87171;
+  --yel:#fbbf24;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);
+  color:var(--t1);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+}
+
+/* mesh + orbs */
+.dd__mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(6,182,212,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(6,182,212,.03) 1px,transparent 1px);
+  background-size:38px 38px;
+}
+.dd__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.dd__orb--1{width:420px;height:420px;background:radial-gradient(circle,rgba(248,113,113,.14),transparent);top:-100px;right:-80px;}
+.dd__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(6,182,212,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(20px,16px)scale(1.07);}}
+
+/* ══ TOPBAR ══ */
+.dd__top{
+  position:sticky;top:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(13,31,45,.88);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(6,182,212,.13);
+  padding:0 24px;height:52px;
+}
+.dd__top-l,.dd__top-r{display:flex;align-items:center;gap:12px;}
+.dd__logo{
+  width:28px;height:28px;border-radius:7px;
+  background:linear-gradient(135deg,#0891b2,#7c3aed);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;
+}
+.dd__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.dd__brand b{font-weight:800;color:#fff;}
+.dd__div{width:1px;height:16px;background:var(--t3);}
+.dd__bc{display:flex;align-items:center;gap:5px;}
+.dd__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.dd__bc-a:hover{color:var(--acc);}
+.dd__bc-sep{font-size:10px;color:var(--t3);}
+.dd__bc-cur{font-size:12.5px;color:var(--red);font-weight:700;}
+.dd__btn-ghost{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  color:var(--t2);font-size:12.5px;font-weight:600;
+  padding:7px 15px;border-radius:8px;text-decoration:none;transition:all .18s;
+}
+.dd__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+
+/* ══ BODY ══ */
+.dd__body{
+  position:relative;z-index:1;
+  max-width:1200px;margin:0 auto;
+  padding:28px 24px 64px;
+  display:flex;flex-direction:column;gap:22px;
+}
+
+/* ── HERO BANNER ── */
+.dd__hero{
+  display:flex;align-items:center;gap:18px;
+  background:rgba(248,113,113,.07);
+  border:1px solid rgba(248,113,113,.22);
+  border-radius:18px;padding:24px 28px;
+  box-shadow:0 0 28px rgba(248,113,113,.08);
+  animation:fu .5s ease both;
+}
+.dd__hero-icon{
+  width:56px;height:56px;border-radius:16px;flex-shrink:0;
+  background:rgba(248,113,113,.12);
+  border:1px solid rgba(248,113,113,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;color:var(--red);
+  animation:warn-pulse 2.5s ease-in-out infinite;
+}
+@keyframes warn-pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.3);}
+  50%{box-shadow:0 0 0 10px rgba(248,113,113,0);}
+}
+.dd__hero-title{font-size:22px;font-weight:800;color:var(--red);line-height:1.2;}
+.dd__hero-sub{font-size:13.5px;color:var(--t2);margin-top:5px;line-height:1.5;}
+.dd__hero-sub strong{color:var(--red);}
+
+/* ══ GRID ══ */
+.dd__grid{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start;}
+@media(max-width:1050px){.dd__grid{grid-template-columns:1fr;}}
+
+.dd__left,.dd__right{display:flex;flex-direction:column;gap:16px;}
+
+/* ══ CARD ══ */
+.dd__card{
+  background:var(--b2);
+  border:1px solid rgba(6,182,212,.1);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,.22);
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--i)*.09s);
+}
+.dd__card--danger{border-color:rgba(248,113,113,.18);}
+.dd__card-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:13px 18px 11px;
+  border-bottom:1px solid rgba(6,182,212,.07);
+  background:rgba(6,182,212,.025);
+}
+.dd__card--danger .dd__card-head{
+  border-bottom-color:rgba(248,113,113,.1);
+  background:rgba(248,113,113,.04);
+}
+.dd__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.dd__card-body{padding:20px 20px;}
+
+/* status badge in card head */
+.dd__status-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;
+}
+.dd__bdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.dd__status-badge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.dd__status-badge--sl{background:rgba(100,116,139,.12);color:#64748b;border:1px solid rgba(100,116,139,.2);}
+.dd__status-badge--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+
+/* drive title block */
+.dd__drive-title-block{
+  display:flex;align-items:center;gap:14px;
+  padding:16px;
+  background:var(--b3);border:1px solid rgba(6,182,212,.1);border-radius:12px;
+  margin-bottom:20px;
+}
+.dd__drive-av{
+  width:44px;height:44px;border-radius:11px;flex-shrink:0;
+  background:linear-gradient(135deg,#0891b2,#06b6d4);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:18px;color:#fff;
+  box-shadow:0 3px 12px rgba(6,182,212,.3);
+}
+.dd__drive-name{font-size:16px;font-weight:800;color:#fff;}
+.dd__drive-co{font-size:12.5px;color:var(--t3);margin-top:2px;}
+
+/* info grid */
+.dd__info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.dd__info-grid{grid-template-columns:1fr;}}
+.dd__info-item{display:flex;align-items:flex-start;gap:10px;}
+.dd__info-ic{
+  width:30px;height:30px;border-radius:8px;flex-shrink:0;
+  background:rgba(255,255,255,.05);color:var(--ic);
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+}
+.dd__info-lbl{display:block;font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.dd__info-val{font-size:13px;color:var(--t1);font-weight:500;}
+.dd__mono{font-family:'JetBrains Mono',monospace;font-size:12.5px;}
+.dd__dept-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px;}
+.dd__tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:6px;background:rgba(6,182,212,.1);color:#22d3ee;}
+
+/* response stats */
+.dd__stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.dd__stat-tile{
+  background:var(--b3);border:1px solid rgba(255,255,255,.06);border-radius:12px;
+  padding:14px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.dd__stat-tile::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--sc);opacity:.5;
+}
+.dd__stat-n{
+  display:block;font-family:'JetBrains Mono',monospace;
+  font-size:26px;font-weight:700;color:#fff;line-height:1;
+}
+.dd__stat-l{display:block;font-size:11px;color:var(--t3);margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.dd__stat-bar-wrap{height:3px;background:rgba(255,255,255,.07);border-radius:99px;margin-top:10px;overflow:hidden;}
+.dd__stat-bar{height:100%;border-radius:99px;width:0;transition:width 1s ease .3s;}
+
+/* response warning */
+.dd__resp-warn{
+  display:flex;align-items:flex-start;gap:10px;
+  background:rgba(251,191,36,.07);
+  border:1px solid rgba(251,191,36,.2);
+  border-radius:10px;padding:12px 14px;
+  font-size:13px;color:var(--t2);line-height:1.5;
+}
+.dd__resp-warn i{color:var(--yel);font-size:15px;margin-top:1px;flex-shrink:0;}
+.dd__resp-warn strong{color:var(--yel);}
+
+/* ── DANGER ZONE ── */
+.dd__dz-intro{font-size:13px;color:var(--t2);margin-bottom:14px;}
+.dd__consequence-list{display:flex;flex-direction:column;gap:10px;}
+.dd__consequence{
+  display:flex;align-items:flex-start;gap:11px;
+  padding:11px 13px;
+  background:rgba(248,113,113,.05);
+  border:1px solid rgba(248,113,113,.12);
+  border-radius:10px;
+  font-size:13px;color:var(--t2);line-height:1.4;
+}
+.dd__consequence strong{color:var(--red);}
+.dd__con-ic{
+  width:28px;height:28px;border-radius:7px;flex-shrink:0;
+  background:rgba(248,113,113,.1);color:var(--red);
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+}
+
+/* ── CONFIRM INPUT ── */
+.dd__confirm-note{font-size:12.5px;color:var(--t3);margin-bottom:8px;}
+.dd__confirm-input{
+  width:100%;
+  background:var(--b3);
+  border:1px solid rgba(248,113,113,.2);
+  border-radius:10px;
+  color:var(--t1);
+  font-family:'Urbanist',sans-serif;
+  font-size:14px;font-weight:500;
+  padding:11px 14px;outline:none;
+  transition:border-color .18s,box-shadow .18s;
+  margin-bottom:6px;
+}
+.dd__confirm-input::placeholder{color:var(--t3);}
+.dd__confirm-input:focus{border-color:rgba(248,113,113,.5);box-shadow:0 0 0 3px rgba(248,113,113,.1);}
+.dd__confirm-input.valid{border-color:rgba(248,113,113,.6);box-shadow:0 0 0 3px rgba(248,113,113,.15);}
+.dd__confirm-hint{font-size:11.5px;color:var(--t3);margin-bottom:18px;}
+.dd__confirm-hint.ready{color:var(--red);}
+
+/* form actions */
+.dd__form-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.dd__btn-cancel{
+  flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  color:var(--t2);font-size:13.5px;font-weight:700;
+  padding:11px 18px;border-radius:10px;text-decoration:none;transition:all .18s;
+}
+.dd__btn-cancel:hover{background:rgba(255,255,255,.09);color:var(--t1);}
+.dd__btn-delete{
+  flex:2;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:rgba(248,113,113,.1);
+  border:1px solid rgba(248,113,113,.25);
+  color:var(--red);font-size:13.5px;font-weight:800;
+  padding:11px 18px;border-radius:10px;cursor:pointer;
+  transition:all .2s;font-family:'Urbanist',sans-serif;
+}
+.dd__btn-delete:not(:disabled):hover{
+  background:rgba(248,113,113,.18);
+  border-color:rgba(248,113,113,.5);
+  box-shadow:0 0 20px rgba(248,113,113,.25);
+}
+.dd__btn-delete:disabled{
+  opacity:.35;cursor:not-allowed;
+  filter:grayscale(.4);
+}
+.dd__btn-delete.armed{
+  background:linear-gradient(135deg,#dc2626,#f87171);
+  color:#fff;border-color:rgba(248,113,113,.5);
+  box-shadow:0 0 22px rgba(248,113,113,.4);
+}
+
+/* tip */
+.dd__tip{
+  display:flex;align-items:flex-start;gap:12px;
+  background:rgba(251,191,36,.06);
+  border:1px solid rgba(251,191,36,.18);
+  border-radius:14px;padding:14px 16px;
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--i)*.1s);
+}
+.dd__tip-icon{color:var(--yel);font-size:18px;flex-shrink:0;margin-top:1px;}
+.dd__tip p{font-size:12.5px;color:var(--t2);line-height:1.5;}
+.dd__tip strong{color:var(--yel);}
+.dd__tip-hl{
+  display:inline-block;background:rgba(16,185,129,.12);color:#10b981;
+  font-weight:700;font-size:12px;padding:1px 8px;border-radius:5px;
+}
+
+/* ══ ANIMATIONS ══ */
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;}
+</style>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+  const input   = document.getElementById('js-confirm-input');
+  const btn     = document.getElementById('js-delete-btn');
+  const hint    = document.getElementById('js-confirm-hint');
+  const form    = document.getElementById('js-delete-form');
+  const TARGET  = '{{ object.title|escapejs }}';
+
+  /* Animate stat bars on load */
+  setTimeout(()=>{
+    document.querySelectorAll('.dd__stat-bar').forEach(el=>{
+      el.style.width = getComputedStyle(el).getPropertyValue('--w');
+    });
+  }, 300);
+
+  /* Confirm input logic */
+  if(input){
+    input.addEventListener('input', function(){
+      const match = this.value.trim() === TARGET.trim();
+      btn.disabled = !match;
+      if(match){
+        btn.classList.add('armed');
+        input.classList.add('valid');
+        hint.textContent = '✓ Title confirmed — deletion enabled';
+        hint.classList.add('ready');
+      } else {
+        btn.classList.remove('armed');
+        input.classList.remove('valid');
+        hint.textContent = 'Enter exact title to enable deletion';
+        hint.classList.remove('ready');
+      }
+    });
+  }
+
+  /* Double-confirm on submit */
+  if(form){
+    form.addEventListener('submit', function(e){
+      const ok = confirm(
+        'FINAL WARNING: You are about to permanently delete this placement drive and all associated data.\n\n' +
+        'This action CANNOT be undone. Are you absolutely certain?'
+      );
+      if(!ok) e.preventDefault();
+    });
+  }
+
+});
+</script>
+
+{% endblock %}

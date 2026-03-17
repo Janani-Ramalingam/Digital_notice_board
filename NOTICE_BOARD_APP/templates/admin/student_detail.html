@@ -1,0 +1,602 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Student Details - {{ student_profile.name }}{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+{% csrf_token %}
+
+<div class="sd">
+
+  <div class="sd__mesh"></div>
+  <div class="sd__orb sd__orb--1"></div>
+  <div class="sd__orb sd__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="sd__top">
+    <div class="sd__top-l">
+      <div class="sd__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="sd__brand">DNB <b>Admin</b></span>
+      <span class="sd__div"></span>
+      <nav class="sd__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="sd__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right sd__bc-sep"></i>
+        <a href="{% url 'admin_app:manage_students' %}" class="sd__bc-a">Students</a>
+        <i class="bi bi-chevron-right sd__bc-sep"></i>
+        <span class="sd__bc-cur">{{ student_profile.name }}</span>
+      </nav>
+    </div>
+    <div class="sd__top-r">
+      <a href="{% url 'admin_app:manage_students' %}" class="sd__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="sd__body">
+
+    <!-- FLASH MESSAGES -->
+    {% if messages %}
+    <div class="sd__msgs anim-up">
+      {% for message in messages %}
+      <div class="sd__msg sd__msg--{{ message.tags }}">
+        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+        {{ message }}
+        <button class="sd__msg-close" onclick="this.parentElement.remove()">×</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- PAGE HEAD -->
+    <div class="sd__head anim-up">
+      <div class="sd__head-icon"><i class="bi bi-person-vcard-fill"></i></div>
+      <div>
+        <h1 class="sd__h1">Student Details</h1>
+        <p class="sd__sub">Full profile for <strong style="color:var(--acc)">{{ student_profile.name }}</strong></p>
+      </div>
+    </div>
+
+    <!-- ══ TWO-COL ══ -->
+    <div class="sd__grid">
+
+      <!-- ── LEFT COLUMN ── -->
+      <aside class="sd__left">
+
+        <!-- Identity card -->
+        <div class="sd__card anim-up" style="--i:1">
+          <div class="sd__card-head">
+            <span class="sd__card-title"><i class="bi bi-person-badge-fill" style="color:var(--acc)"></i> Identity</span>
+          </div>
+          <div class="sd__card-body">
+            <div class="sd__av-hero">
+              <div class="sd__av">{{ student_profile.name|first|upper }}</div>
+              <div>
+                <h2 class="sd__av-name">{{ student_profile.name }}</h2>
+                <p class="sd__av-un">@{{ student_profile.user.username }}</p>
+                <div class="sd__av-badges">
+                  {% if student_profile.is_approved %}
+                    <span class="sd__pill sd__pill--g"><span class="sd__pdot"></span>Approved</span>
+                  {% else %}
+                    <span class="sd__pill sd__pill--y sd__pill--pulse"><span class="sd__pdot"></span>Pending Approval</span>
+                  {% endif %}
+                  {% if student_profile.user.is_active %}
+                    <span class="sd__pill sd__pill--c"><i class="bi bi-circle-fill" style="font-size:7px"></i> Active</span>
+                  {% else %}
+                    <span class="sd__pill sd__pill--r"><i class="bi bi-circle-fill" style="font-size:7px"></i> Inactive</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="sd__divider"></div>
+
+            <!-- Action buttons -->
+            <div class="sd__profile-actions">
+              {% if not student_profile.is_approved %}
+                <button onclick="approveStudent({{ student_profile.id }},'{{ student_profile.name }}')" class="sd__abtn sd__abtn--g">
+                  <i class="fas fa-check"></i> Approve Student
+                </button>
+                <button onclick="showRejectModal({{ student_profile.id }},'{{ student_profile.name }}')" class="sd__abtn sd__abtn--r">
+                  <i class="fas fa-times"></i> Reject Registration
+                </button>
+              {% else %}
+                <a href="{% url 'admin_app:edit_student_profile' student_profile.id %}" class="sd__abtn sd__abtn--amber">
+                  <i class="fas fa-edit"></i> Edit Profile
+                </a>
+              {% endif %}
+              <a href="mailto:{{ student_profile.email }}" class="sd__abtn sd__abtn--outline">
+                <i class="fas fa-envelope"></i> Send Email
+              </a>
+              {% if student_profile.is_approved %}
+                <button onclick="deleteStudent({{ student_profile.id }},'{{ student_profile.name }}')" class="sd__abtn sd__abtn--del">
+                  <i class="fas fa-trash"></i> Delete Student
+                </button>
+              {% endif %}
+            </div>
+
+            <div class="sd__divider"></div>
+
+            <!-- Contact info rows -->
+            <div class="sd__info-list">
+              <div class="sd__info-row">
+                <span class="sd__info-ic" style="--ic:#a78bfa"><i class="bi bi-envelope"></i></span>
+                <div>
+                  <span class="sd__info-lbl">Email</span>
+                  <span class="sd__info-val">{{ student_profile.email }}</span>
+                </div>
+              </div>
+              <div class="sd__info-row">
+                <span class="sd__info-ic" style="--ic:#fb923c"><i class="bi bi-telephone"></i></span>
+                <div>
+                  <span class="sd__info-lbl">Phone</span>
+                  <span class="sd__info-val">{{ student_profile.phone|default:"Not provided" }}</span>
+                </div>
+              </div>
+              <div class="sd__info-row">
+                <span class="sd__info-ic" style="--ic:#06b6d4"><i class="bi bi-card-text"></i></span>
+                <div>
+                  <span class="sd__info-lbl">Roll Number</span>
+                  <span class="sd__info-val sd__mono">{{ student_profile.roll_number }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approval details -->
+        {% if student_profile.is_approved %}
+        <div class="sd__card anim-up" style="--i:2">
+          <div class="sd__card-head">
+            <span class="sd__card-title"><i class="bi bi-check2-all" style="color:#10b981"></i> Approval Details</span>
+          </div>
+          <div class="sd__card-body">
+            <div class="sd__info-list">
+              <div class="sd__info-row">
+                <span class="sd__info-ic" style="--ic:#06b6d4"><i class="bi bi-shield-check"></i></span>
+                <div>
+                  <span class="sd__info-lbl">Approved By</span>
+                  <span class="sd__info-val sd__mono">
+                    {% if student_profile.approved_by %}{{ student_profile.approved_by.username }}{% else %}System{% endif %}
+                  </span>
+                </div>
+              </div>
+              <div class="sd__info-row">
+                <span class="sd__info-ic" style="--ic:#10b981"><i class="bi bi-calendar-check"></i></span>
+                <div>
+                  <span class="sd__info-lbl">Approval Date</span>
+                  <span class="sd__info-val sd__mono">
+                    {% if student_profile.approved_at %}{{ student_profile.approved_at|date:"d M Y, g:i A" }}{% else %}N/A{% endif %}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </aside>
+
+      <!-- ── RIGHT COLUMN ── -->
+      <div class="sd__right">
+
+        <!-- Academic Info -->
+        <div class="sd__card anim-up" style="--i:3">
+          <div class="sd__card-head">
+            <span class="sd__card-title"><i class="bi bi-mortarboard-fill" style="color:#a78bfa"></i> Academic Information</span>
+          </div>
+          <div class="sd__card-body">
+            <div class="sd__acad-grid">
+              <div class="sd__acad-item">
+                <span class="sd__acad-lbl">Department</span>
+                <span class="sd__tag sd__tag--c">{{ student_profile.get_department_display }}</span>
+              </div>
+              <div class="sd__acad-item">
+                <span class="sd__acad-lbl">Academic Year</span>
+                <span class="sd__tag sd__tag--g">{{ student_profile.get_year_display }}</span>
+              </div>
+              <div class="sd__acad-item sd__acad-item--full">
+                <span class="sd__acad-lbl">CGPA</span>
+                <div class="sd__cgpa-row">
+                  <span class="sd__cgpa-num
+                    {% if student_profile.cgpa >= 8.0 %}sd__cgpa--hi
+                    {% elif student_profile.cgpa >= 6.0 %}sd__cgpa--md
+                    {% else %}sd__cgpa--lo{% endif %}">
+                    {{ student_profile.cgpa }}
+                  </span>
+                  <span class="sd__cgpa-denom">/10.0</span>
+                  <div class="sd__cgpa-track">
+                    <div class="sd__cgpa-fill
+                      {% if student_profile.cgpa >= 8.0 %}sd__cgpa-fill--hi
+                      {% elif student_profile.cgpa >= 6.0 %}sd__cgpa-fill--md
+                      {% else %}sd__cgpa-fill--lo{% endif %}"
+                      style="width:{{ student_profile.cgpa }}0%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drive Responses -->
+        <div class="sd__card anim-up" style="--i:4">
+          <div class="sd__card-head">
+            <span class="sd__card-title"><i class="bi bi-clipboard-check-fill" style="color:#06b6d4"></i> Drive Responses</span>
+            <span class="sd__count-chip">{{ responses|length }} total</span>
+          </div>
+          {% if responses %}
+          <div style="padding:0">
+            <div class="sd__tw">
+              <table class="sd__tbl">
+                <thead><tr>
+                  <th>Drive</th>
+                  <th>Company</th>
+                  <th>Response</th>
+                  <th>Date</th>
+                </tr></thead>
+                <tbody>
+                  {% for resp in responses %}
+                  <tr class="sd__tr" style="--ri:{{ forloop.counter0 }}">
+                    <td class="sd__td-main">{{ resp.drive.title }}</td>
+                    <td>
+                      <div class="sd__co">
+                        <div class="sd__co-av">{{ resp.drive.company_name|first }}</div>
+                        <span>{{ resp.drive.company_name }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      {% if resp.response == 'Opt-In' %}
+                        <span class="sd__badge sd__badge--g"><span class="sd__bdot"></span>Opt-In</span>
+                      {% else %}
+                        <span class="sd__badge sd__badge--sl"><span class="sd__bdot"></span>Opt-Out</span>
+                      {% endif %}
+                    </td>
+                    <td class="sd__mu sd__mono">{{ resp.responded_at|date:"d M Y" }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% else %}
+          <div class="sd__card-body">
+            <div class="sd__empty">
+              <i class="bi bi-clipboard2-x"></i>
+              <p>No drive responses yet</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Profile Change Requests -->
+        {% if pending_requests or recent_requests %}
+        <div class="sd__card anim-up" style="--i:5">
+          <div class="sd__card-head">
+            <span class="sd__card-title"><i class="bi bi-pencil-square" style="color:#fbbf24"></i> Profile Change Requests</span>
+            {% if pending_requests %}
+            <span class="sd__count-chip sd__count-chip--y">{{ pending_requests|length }} pending</span>
+            {% endif %}
+          </div>
+          <div class="sd__card-body">
+            {% if pending_requests %}
+            <div class="sd__alert-tip">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>This student has pending profile change requests.
+                <a href="{% url 'admin_app:profile_change_requests' %}" class="sd__alert-link">Review requests →</a>
+              </span>
+            </div>
+            {% endif %}
+            {% if recent_requests %}
+            <div class="sd__req-list">
+              {% for req in recent_requests %}
+              <div class="sd__req-row">
+                <div>
+                  <div class="sd__req-title">Profile Update Request</div>
+                  <div class="sd__req-date sd__mono">{{ req.requested_at|date:"d M Y, g:i A" }}</div>
+                </div>
+                <span class="sd__badge
+                  {% if req.status == 'approved' %}sd__badge--g
+                  {% elif req.status == 'rejected' %}sd__badge--r
+                  {% else %}sd__badge--y{% endif %}">
+                  <span class="sd__bdot"></span>{{ req.get_status_display }}
+                </span>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ REJECT MODAL ══ -->
+<div class="sd-modal-overlay" id="rejectModal">
+  <div class="sd-modal">
+    <div class="sd-modal__head">
+      <span class="sd-modal__title">
+        <i class="bi bi-person-x-fill" style="color:#f87171"></i> Reject Registration
+      </span>
+      <button class="sd-modal__close" onclick="closeRejectModal()">×</button>
+    </div>
+    <form id="rejectForm" method="post">
+      {% csrf_token %}
+      <div class="sd-modal__body">
+        <div class="sd-modal__warn">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <p>Rejecting <strong id="rejectStudentName" style="color:#fbbf24"></strong>'s account will delete it permanently and send a rejection email.</p>
+        </div>
+        <div class="sd-modal__field">
+          <label class="sd-modal__lbl">Reason for Rejection <span style="color:#f87171">*</span></label>
+          <textarea class="sd-modal__input" id="rejectionReason" name="reason" rows="4"
+            placeholder="Provide a clear reason — this will be sent to the student." required></textarea>
+          <span class="sd-modal__hint">Sent to the student via email.</span>
+        </div>
+      </div>
+      <div class="sd-modal__foot">
+        <button type="button" class="sd-modal__btn-sec" onclick="closeRejectModal()">
+          <i class="bi bi-x-lg"></i> Cancel
+        </button>
+        <button type="submit" class="sd-modal__btn-red">
+          <i class="fas fa-ban"></i> Reject Registration
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+.sd{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;--ora:#fb923c;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.sd__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.sd__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.sd__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.sd__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* TOPBAR */
+.sd__top{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;background:rgba(13,31,45,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(6,182,212,.13);padding:0 24px;height:52px;}
+.sd__top-l,.sd__top-r{display:flex;align-items:center;gap:12px;}
+.sd__logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.sd__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.sd__brand b{font-weight:800;color:#fff;}
+.sd__div{width:1px;height:16px;background:var(--t3);}
+.sd__bc{display:flex;align-items:center;gap:5px;}
+.sd__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.sd__bc-a:hover{color:var(--acc);}
+.sd__bc-sep{font-size:10px;color:var(--t3);}
+.sd__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.sd__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.sd__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+
+/* BODY */
+.sd__body{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:20px;}
+
+/* MESSAGES */
+.sd__msgs{display:flex;flex-direction:column;gap:8px;}
+.sd__msg{display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:10px;font-size:13.5px;font-weight:500;}
+.sd__msg--success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#34d399;}
+.sd__msg--error{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#f87171;}
+.sd__msg--info{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);color:#22d3ee;}
+.sd__msg-close{margin-left:auto;font-size:18px;opacity:.6;line-height:1;cursor:pointer;}
+
+/* PAGE HEAD */
+.sd__head{display:flex;align-items:center;gap:16px;}
+.sd__head-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 4px 20px rgba(6,182,212,.3);}
+.sd__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.sd__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* GRID */
+.sd__grid{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start;}
+@media(max-width:1050px){.sd__grid{grid-template-columns:1fr;}}
+.sd__left,.sd__right{display:flex;flex-direction:column;gap:16px;}
+
+/* CARD */
+.sd__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.09s);}
+.sd__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 18px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.sd__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.sd__card-body{padding:18px 18px;}
+
+/* avatar hero */
+.sd__av-hero{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.sd__av{width:60px;height:60px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;box-shadow:0 4px 18px rgba(6,182,212,.35);border:2px solid rgba(6,182,212,.3);}
+.sd__av-name{font-size:17px;font-weight:800;color:#fff;margin-bottom:3px;}
+.sd__av-un{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t3);margin-bottom:8px;}
+.sd__av-badges{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* pills */
+.sd__pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;}
+.sd__pdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.sd__pill--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.sd__pill--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+.sd__pill--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+.sd__pill--c{background:rgba(6,182,212,.1);color:#22d3ee;border:1px solid rgba(6,182,212,.2);}
+.sd__pill--pulse .sd__pdot{animation:dp 1.8s infinite;}
+@keyframes dp{0%{box-shadow:0 0 0 0 rgba(251,191,36,.5);}70%{box-shadow:0 0 0 5px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+
+.sd__divider{height:1px;background:rgba(6,182,212,.08);margin:14px 0;}
+
+/* profile action buttons */
+.sd__profile-actions{display:flex;flex-direction:column;gap:8px;}
+.sd__abtn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;font-size:13.5px;font-weight:700;padding:10px 16px;border-radius:10px;text-decoration:none;transition:all .18s;}
+.sd__abtn--g{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.28);color:#10b981;}
+.sd__abtn--g:hover{background:rgba(16,185,129,.18);border-color:rgba(16,185,129,.55);}
+.sd__abtn--r{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.28);color:#f87171;}
+.sd__abtn--r:hover{background:rgba(248,113,113,.18);border-color:rgba(248,113,113,.55);}
+.sd__abtn--amber{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:#fbbf24;}
+.sd__abtn--amber:hover{background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.5);color:#fbbf24;}
+.sd__abtn--outline{background:rgba(6,182,212,.07);border:1px solid rgba(6,182,212,.25);color:var(--acc);}
+.sd__abtn--outline:hover{background:rgba(6,182,212,.14);}
+.sd__abtn--del{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.18);color:rgba(248,113,113,.7);font-size:12.5px;padding:8px 16px;}
+.sd__abtn--del:hover{background:rgba(248,113,113,.1);color:#f87171;border-color:rgba(248,113,113,.4);}
+
+/* info list */
+.sd__info-list{display:flex;flex-direction:column;gap:11px;}
+.sd__info-row{display:flex;align-items:flex-start;gap:10px;}
+.sd__info-ic{width:28px;height:28px;border-radius:7px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--ic);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.sd__info-lbl{display:block;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.sd__info-val{font-size:13px;color:var(--t1);font-weight:500;}
+.sd__mono{font-family:'JetBrains Mono',monospace;font-size:12.5px !important;}
+
+/* academic grid */
+.sd__acad-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.sd__acad-item{display:flex;flex-direction:column;gap:6px;}
+.sd__acad-item--full{grid-column:1/-1;}
+.sd__acad-lbl{font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;}
+.sd__tag{display:inline-block;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:8px;}
+.sd__tag--c{background:rgba(6,182,212,.1);color:#22d3ee;}
+.sd__tag--g{background:rgba(16,185,129,.1);color:#34d399;}
+
+/* CGPA bar */
+.sd__cgpa-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.sd__cgpa-num{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:800;line-height:1;}
+.sd__cgpa--hi{color:#10b981;}
+.sd__cgpa--md{color:#fbbf24;}
+.sd__cgpa--lo{color:#f87171;}
+.sd__cgpa-denom{font-size:13px;color:var(--t3);}
+.sd__cgpa-track{flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;min-width:80px;}
+.sd__cgpa-fill{height:100%;border-radius:99px;transition:width .8s ease .3s;}
+.sd__cgpa-fill--hi{background:linear-gradient(90deg,#059669,#10b981);}
+.sd__cgpa-fill--md{background:linear-gradient(90deg,#d97706,#fbbf24);}
+.sd__cgpa-fill--lo{background:linear-gradient(90deg,#dc2626,#f87171);}
+
+/* count chips */
+.sd__count-chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(6,182,212,.1);color:var(--acc);border:1px solid rgba(6,182,212,.2);}
+.sd__count-chip--y{background:rgba(251,191,36,.1);color:#fbbf24;border-color:rgba(251,191,36,.2);}
+
+/* TABLE */
+.sd__tw{overflow-x:auto;}
+.sd__tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.sd__tbl thead tr{border-bottom:1px solid rgba(6,182,212,.1);}
+.sd__tbl th{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:10px 16px;text-align:left;white-space:nowrap;}
+.sd__tbl td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;}
+.sd__tr{transition:background .15s;animation:rowIn .4s ease both;animation-delay:calc(var(--ri)*.04s);}
+.sd__tr:hover{background:rgba(6,182,212,.05);}
+.sd__td-main{font-weight:600;color:var(--t1);}
+.sd__mu{color:var(--t2);font-size:12.5px;}
+
+.sd__co{display:flex;align-items:center;gap:8px;}
+.sd__co-av{width:28px;height:28px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;}
+
+.sd__badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;}
+.sd__bdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.sd__badge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.sd__badge--sl{background:rgba(71,85,105,.12);color:#64748b;border:1px solid rgba(71,85,105,.2);}
+.sd__badge--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+.sd__badge--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+
+/* empty */
+.sd__empty{text-align:center;padding:36px 20px;color:var(--t3);}
+.sd__empty i{font-size:28px;margin-bottom:10px;display:block;}
+.sd__empty p{font-size:13px;}
+
+/* alert tip */
+.sd__alert-tip{display:flex;align-items:flex-start;gap:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.18);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);line-height:1.5;margin-bottom:12px;}
+.sd__alert-tip i{color:var(--yel);flex-shrink:0;margin-top:1px;}
+.sd__alert-link{color:var(--acc);font-weight:700;text-decoration:none;}
+.sd__alert-link:hover{text-decoration:underline;}
+
+/* profile request list */
+.sd__req-list{display:flex;flex-direction:column;gap:8px;}
+.sd__req-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:10px;}
+.sd__req-title{font-size:13px;font-weight:600;color:var(--t1);}
+.sd__req-date{font-size:11px;color:var(--t3);margin-top:2px;}
+
+/* ══ REJECT MODAL ══ */
+.sd-modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(7,12,25,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .22s;}
+.sd-modal-overlay.open{opacity:1;pointer-events:all;}
+.sd-modal{background:var(--b2);border:1px solid rgba(248,113,113,.22);border-radius:18px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(20px);transition:transform .25s cubic-bezier(.34,1.2,.64,1);overflow:hidden;}
+.sd-modal-overlay.open .sd-modal{transform:translateY(0);}
+.sd-modal__head{display:flex;justify-content:space-between;align-items:center;padding:15px 22px 13px;border-bottom:1px solid rgba(248,113,113,.15);background:rgba(248,113,113,.04);}
+.sd-modal__title{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800;color:#fff;}
+.sd-modal__close{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--t2);width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;transition:all .15s;cursor:pointer;}
+.sd-modal__close:hover{background:rgba(248,113,113,.15);color:#f87171;}
+.sd-modal__body{padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+.sd-modal__foot{padding:14px 22px;border-top:1px solid rgba(248,113,113,.1);display:flex;justify-content:flex-end;gap:10px;}
+.sd-modal__warn{display:flex;align-items:flex-start;gap:10px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);line-height:1.5;}
+.sd-modal__warn i{color:var(--yel);flex-shrink:0;font-size:15px;}
+.sd-modal__field{display:flex;flex-direction:column;gap:6px;}
+.sd-modal__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.sd-modal__hint{font-size:11px;color:var(--t3);}
+.sd-modal__input{width:100%;background:var(--b3);border:1px solid rgba(248,113,113,.2);border-radius:10px;color:var(--t1);font-family:'Urbanist',sans-serif;font-size:14px;font-weight:500;padding:11px 14px;outline:none;resize:vertical;transition:border-color .18s,box-shadow .18s;}
+.sd-modal__input::placeholder{color:var(--t3);}
+.sd-modal__input:focus{border-color:rgba(248,113,113,.5);box-shadow:0 0 0 3px rgba(248,113,113,.1);}
+.sd-modal__btn-sec{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:13.5px;font-weight:700;padding:9px 18px;border-radius:10px;cursor:pointer;transition:all .18s;}
+.sd-modal__btn-sec:hover{background:rgba(255,255,255,.09);color:var(--t1);}
+.sd-modal__btn-red{display:inline-flex;align-items:center;gap:7px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#f87171;font-size:13.5px;font-weight:800;padding:9px 20px;border-radius:10px;cursor:pointer;transition:all .18s;}
+.sd-modal__btn-red:hover{background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.55);}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+.anim-up{animation:fu .55s ease both;animation-delay:calc(var(--i,0)*.09s);}
+</style>
+
+<script>
+function approveStudent(studentId,studentName){
+  if(!confirm(`Approve ${studentName}'s registration?\n\nThis activates their account and sends an approval email.`)) return;
+  const f=document.createElement('form');
+  f.method='POST';f.action=`/admin-panel/students/${studentId}/approve/`;
+  const c=document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const i=document.createElement('input');i.type='hidden';i.name='csrfmiddlewaretoken';i.value=c;
+  f.appendChild(i);document.body.appendChild(f);f.submit();
+}
+
+function showRejectModal(studentId,studentName){
+  document.getElementById('rejectStudentName').textContent=studentName;
+  document.getElementById('rejectForm').action=`/admin-panel/students/${studentId}/reject/`;
+  document.getElementById('rejectionReason').value='';
+  document.getElementById('rejectModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeRejectModal(){
+  document.getElementById('rejectModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.getElementById('rejectModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('rejectModal')) closeRejectModal();
+});
+
+function deleteStudent(studentId,studentName){
+  if(!confirm(`⚠️ WARNING: Delete ${studentName}?\n\nThis permanently removes their account, data and responses.\n\nCannot be undone.`)) return;
+  const confirmed=prompt(`Type "${studentName}" to confirm deletion:`);
+  if(confirmed===studentName){
+    const f=document.createElement('form');
+    f.method='POST';f.action=`/admin-panel/students/${studentId}/delete/`;
+    const c=document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const i=document.createElement('input');i.type='hidden';i.name='csrfmiddlewaretoken';i.value=c;
+    f.appendChild(i);document.body.appendChild(f);f.submit();
+  } else {
+    alert('Deletion cancelled. Name did not match.');
+  }
+}
+
+/* Auto-dismiss success */
+document.querySelectorAll('.sd__msg--success').forEach(el=>{
+  setTimeout(()=>el.remove(),5000);
+});
+</script>
+
+{% endblock %}

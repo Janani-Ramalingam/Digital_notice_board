@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Notices{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Placement Drive Notices</h2>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'student:home' %}">Home</a></li>
+                            <li class="breadcrumb-item active">All Notices</li>
+                        </ol>
+                    </nav>
+                </div>
+                <a href="{% url 'student:my_responses' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-history"></i> My Responses
+                </a>
+            </div>
+
+            <!-- Filter and Search -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="search" 
+                                   placeholder="Search by company or title..." 
+                                   value="{{ request.GET.search }}">
+                        </div>
+                        <div class="col-md-3">
+                            <select name="status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="Active" {% if request.GET.status == 'Active' %}selected{% endif %}>Active</option>
+                                <option value="Closed" {% if request.GET.status == 'Closed' %}selected{% endif %}>Closed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="eligibility" class="form-select">
+                                <option value="">All Drives</option>
+                                <option value="eligible" {% if request.GET.eligibility == 'eligible' %}selected{% endif %}>Eligible for Me</option>
+                                <option value="responded" {% if request.GET.eligibility == 'responded' %}selected{% endif %}>Already Responded</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Notices Grid -->
+            {% if drives %}
+                <div class="row">
+                    {% for drive in drives %}
+                        <div class="col-lg-6 col-xl-4 mb-4">
+                            <div class="card h-100 {% if drive.user_response %}border-success{% elif drive.is_eligible %}border-primary{% endif %}">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="card-title mb-0">{{ drive.company_name }}</h6>
+                                    <span class="badge {% if drive.status == 'Active' %}bg-success{% elif drive.status == 'Closed' %}bg-secondary{% else %}bg-warning{% endif %}">
+                                        {{ drive.status }}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ drive.title }}</h5>
+                                    <p class="card-text text-muted">
+                                        {{ drive.description|truncatewords:20 }}
+                                    </p>
+                                    
+                                    <!-- Eligibility Info -->
+                                    <div class="mb-3">
+                                        <small class="text-muted">
+                                            <strong>CGPA:</strong> {{ drive.min_cgpa }}+ | 
+                                            <strong>Year:</strong> {{ drive.get_eligible_year_display }} | 
+                                            <strong>Dept:</strong> 
+                                            {% for dept in drive.eligible_departments %}
+                                                {{ dept }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </small>
+                                    </div>
+
+                                    <!-- Response Status -->
+                                    {% if drive.user_response %}
+                                        <div class="alert {% if drive.user_response.response == 'Opt-In' %}alert-success{% else %}alert-danger{% endif %} py-2">
+                                            <small>
+                                                <i class="fas fa-check-circle"></i> 
+                                                You {{ drive.user_response.response|lower }}ed for this drive
+                                            </small>
+                                        </div>
+                                    {% elif drive.is_eligible %}
+                                        {% if drive.status == 'Active' and drive.days_remaining > 0 %}
+                                            <div class="alert alert-info py-2">
+                                                <small>
+                                                    <i class="fas fa-info-circle"></i> 
+                                                    You are eligible - Response pending
+                                                </small>
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-warning py-2">
+                                                <small>
+                                                    <i class="fas fa-clock"></i> 
+                                                    Drive closed
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="alert alert-secondary py-2">
+                                            <small>
+                                                <i class="fas fa-times-circle"></i> 
+                                                Not eligible
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i>
+                                            Last date: {{ drive.last_date|date:"M d, Y" }}
+                                        </small>
+                                        <a href="{% url 'student:notice_detail' drive.id %}" class="btn btn-sm btn-primary">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}">Last</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Notices Found</h4>
+                    <p class="text-muted">
+                        {% if request.GET.search or request.GET.status or request.GET.eligibility %}
+                            No placement drives match your search criteria.
+                        {% else %}
+                            No placement drives are currently available.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'student:home' %}" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Response Modal -->
+<div class="modal fade" id="quickResponseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quick Response</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Submit your response for <strong id="modalDriveTitle"></strong>:</p>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-success" onclick="submitQuickResponse('Opt-In')">
+                        <i class="fas fa-thumbs-up"></i> Opt-In
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="submitQuickResponse('Opt-Out')">
+                        <i class="fas fa-thumbs-down"></i> Opt-Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentDriveId = null;
+
+function showQuickResponse(driveId, driveTitle) {
+    currentDriveId = driveId;
+    document.getElementById('modalDriveTitle').textContent = driveTitle;
+    new bootstrap.Modal(document.getElementById('quickResponseModal')).show();
+}
+
+function submitQuickResponse(response) {
+    if (!currentDriveId) {
+        console.error('No drive ID available for quick response');
+        alert('Error: No drive selected. Please try again.');
+        return;
+    }
+    
+    // Validate currentDriveId is not undefined or null string
+    if (currentDriveId === 'undefined' || currentDriveId === 'null' || currentDriveId === '') {
+        console.error('Invalid currentDriveId:', currentDriveId);
+        alert('Error: Invalid drive ID. Please refresh the page and try again.');
+        return;
+    }
+    
+    // Create a form and submit it
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/student/submit-response/${currentDriveId}/`;
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // Add response
+    const responseInput = document.createElement('input');
+    responseInput.type = 'hidden';
+    responseInput.name = 'response';
+    responseInput.value = response;
+    form.appendChild(responseInput);
+    
+    // Submit form
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock %}

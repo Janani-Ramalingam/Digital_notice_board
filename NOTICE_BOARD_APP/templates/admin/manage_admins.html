@@ -1,0 +1,626 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Admins{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+{% csrf_token %}
+
+<div class="ma">
+
+  <div class="ma__mesh"></div>
+  <div class="ma__orb ma__orb--1"></div>
+  <div class="ma__orb ma__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="ma__top">
+    <div class="ma__top-l">
+      <div class="ma__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="ma__brand">DNB <b>Admin</b></span>
+      <span class="ma__div"></span>
+      <nav class="ma__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="ma__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right ma__bc-sep"></i>
+        <span class="ma__bc-cur">Manage Admins</span>
+      </nav>
+    </div>
+    <div class="ma__top-r">
+      <a href="{% url 'admin_app:dashboard' %}" class="ma__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+      <button class="ma__btn-primary" onclick="openModal('addAdminModal')">
+        <i class="fas fa-user-plus"></i> Add New Admin
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="ma__body">
+
+    <!-- FLASH MESSAGES -->
+    {% if messages %}
+    <div class="ma__msgs anim-up">
+      {% for message in messages %}
+      <div class="ma__msg ma__msg--{{ message.tags }}">
+        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+        {{ message }}
+        <button class="ma__msg-close" onclick="this.parentElement.remove()">×</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- PAGE HEAD -->
+    <div class="ma__head anim-up">
+      <div class="ma__head-icon"><i class="bi bi-shield-fill"></i></div>
+      <div>
+        <h1 class="ma__h1">Admin Management</h1>
+        <p class="ma__sub">Manage admin accounts, roles and permissions.</p>
+      </div>
+    </div>
+
+    <!-- ══ STAT STRIP ══ -->
+    <div class="ma__stats">
+      <div class="ma__sc" style="--g:#06b6d4;--i:1">
+        <div class="ma__sc-shine"></div>
+        <div class="ma__sc-top">
+          <span class="ma__sc-lbl">Total Admins</span>
+          <span class="ma__sc-ico" style="color:#06b6d4"><i class="fas fa-users-cog"></i></span>
+        </div>
+        <span class="ma__sc-n" data-count="{{ admins.count }}">0</span>
+        <div class="ma__sc-bar"><div class="ma__sc-fill" style="--c:#06b6d4;--w:100%"></div></div>
+      </div>
+      <div class="ma__sc" style="--g:#10b981;--i:2">
+        <div class="ma__sc-shine"></div>
+        <div class="ma__sc-top">
+          <span class="ma__sc-lbl">Active Admins</span>
+          <span class="ma__sc-ico" style="color:#10b981"><i class="fas fa-user-check"></i></span>
+        </div>
+        <span class="ma__sc-n" data-count="{{ active_admins }}">0</span>
+        <div class="ma__sc-bar"><div class="ma__sc-fill" style="--c:#10b981;--w:80%"></div></div>
+      </div>
+      <div class="ma__sc" style="--g:#fbbf24;--i:3">
+        <div class="ma__sc-shine"></div>
+        <div class="ma__sc-top">
+          <span class="ma__sc-lbl">Super Admins</span>
+          <span class="ma__sc-ico" style="color:#fbbf24"><i class="fas fa-crown"></i></span>
+        </div>
+        <span class="ma__sc-n" data-count="{{ super_admins }}">0</span>
+        <div class="ma__sc-bar"><div class="ma__sc-fill" style="--c:#fbbf24;--w:30%"></div></div>
+      </div>
+    </div>
+
+    <!-- ══ ADMINS TABLE ══ -->
+    <div class="ma__card anim-up" style="--i:4">
+      <div class="ma__card-head">
+        <span class="ma__card-title"><i class="bi bi-list-ul" style="color:var(--acc)"></i> Admin Users</span>
+        <span class="ma__count-chip">{{ admins.count }} total</span>
+      </div>
+
+      {% if admins %}
+      <div style="padding:0">
+        <div class="ma__tw">
+          <table class="ma__tbl">
+            <thead><tr>
+              <th>Admin</th>
+              <th>Email</th>
+              <th>Department</th>
+              <th>Employee ID</th>
+              <th>Phone</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr></thead>
+            <tbody>
+              {% for admin in admins %}
+              <tr class="ma__tr">
+                <td>
+                  <div class="ma__admin-cell">
+                    <div class="ma__av">{{ admin.user.username|first|upper }}</div>
+                    <div>
+                      <div class="ma__av-nm">{{ admin.user.username }}</div>
+                      {% if admin.user.is_superuser %}
+                      <span class="ma__crown-badge"><i class="fas fa-crown" style="font-size:8px"></i> Super Admin</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td class="ma__mu">{{ admin.email|default:"Not set" }}</td>
+                <td>
+                  {% if admin.department %}
+                    <span class="ma__tag ma__tag--c">{{ admin.department }}</span>
+                  {% else %}
+                    <span class="ma__dash">—</span>
+                  {% endif %}
+                </td>
+                <td class="ma__mu ma__mono">{{ admin.employee_id|default:"—" }}</td>
+                <td class="ma__mu">{{ admin.phone|default:"—" }}</td>
+                <td>
+                  {% if admin.user.is_active %}
+                    <span class="ma__badge ma__badge--g"><span class="ma__bdot"></span>Active</span>
+                  {% else %}
+                    <span class="ma__badge ma__badge--r"><span class="ma__bdot"></span>Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="ma__acts">
+                    <a href="{% url 'admin_app:admin_detail' admin.id %}" class="ma__act ma__act--c" title="View Details">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <button class="ma__act ma__act--y" title="Edit"
+                      onclick="editAdmin({{ admin.id }},'{{ admin.user.username }}','{{ admin.email }}','{{ admin.department }}','{{ admin.employee_id }}','{{ admin.phone }}')">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    {% if not admin.user.is_superuser and admin.user != request.user %}
+                    <button class="ma__act {% if admin.user.is_active %}ma__act--r{% else %}ma__act--g{% endif %}" title="{% if admin.user.is_active %}Deactivate{% else %}Activate{% endif %}"
+                      onclick="toggleAdminStatus({{ admin.id }},'{{ admin.user.username }}',{{ admin.user.is_active|yesno:'true,false' }})">
+                      <i class="fas fa-{% if admin.user.is_active %}ban{% else %}check{% endif %}"></i>
+                    </button>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div class="ma__card-body">
+        <div class="ma__empty">
+          <i class="fas fa-user-shield"></i>
+          <p>No admin users found</p>
+          <button class="ma__btn-primary" onclick="openModal('addAdminModal')">
+            <i class="fas fa-user-plus"></i> Add First Admin
+          </button>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     MODALS
+══════════════════════════════════════ -->
+
+<!-- ADD ADMIN MODAL -->
+<div class="ma-modal-overlay" id="addAdminModal">
+  <div class="ma-modal anim-up">
+    <div class="ma-modal__head">
+      <span class="ma-modal__title"><i class="fas fa-user-plus" style="color:var(--acc)"></i> Add New Admin</span>
+      <button class="ma-modal__close" onclick="closeModal('addAdminModal')">×</button>
+    </div>
+    <form method="post" action="{% url 'admin_app:add_admin' %}">
+      {% csrf_token %}
+      <div class="ma-modal__body">
+        <div class="ma-modal__row2">
+          <div class="ma-modal__field">
+            <label class="ma-modal__lbl">Username <span class="ma-req">*</span></label>
+            <input type="text" class="ma-modal__input ma-mono-input" name="username" required placeholder="login_username">
+            <span class="ma-modal__hint">Used for login</span>
+          </div>
+          <div class="ma-modal__field">
+            <label class="ma-modal__lbl">Full Name <span class="ma-req">*</span></label>
+            <input type="text" class="ma-modal__input" name="name" required placeholder="Display name">
+          </div>
+        </div>
+        <div class="ma-modal__row2">
+          <div class="ma-modal__field">
+            <label class="ma-modal__lbl">Email <span class="ma-req">*</span></label>
+            <input type="email" class="ma-modal__input" name="email" required placeholder="admin@college.edu">
+          </div>
+          <div class="ma-modal__field">
+            <label class="ma-modal__lbl">Password <span class="ma-req">*</span></label>
+            <input type="password" class="ma-modal__input" name="password" required minlength="8" placeholder="Min 8 characters">
+          </div>
+        </div>
+        <div class="ma-modal__row2">
+          <div class="ma-modal__field">
+            <label class="ma-modal__lbl">Department</label>
+            <input type="text" class="ma-modal__input" name="department" placeholder="e.g. Placement Cell">
+          </div>
+          <div class="ma-modal__field">
+            <label class="ma-modal__lbl">Employee ID</label>
+            <input type="text" class="ma-modal__input ma-mono-input" name="employee_id" placeholder="e.g. EMP001">
+          </div>
+        </div>
+        <div class="ma-modal__field">
+          <label class="ma-modal__lbl">Phone</label>
+          <input type="text" class="ma-modal__input" name="phone" placeholder="+91 9876543210">
+        </div>
+        <!-- Super admin toggle -->
+        <label class="ma-toggle-row">
+          <input type="checkbox" id="is_superuser" name="is_superuser" class="ma-toggle-cb">
+          <span class="ma-toggle-track">
+            <span class="ma-toggle-thumb"></span>
+          </span>
+          <div>
+            <span class="ma-toggle-label"><i class="fas fa-crown" style="color:#fbbf24;font-size:12px"></i> Make Super Admin</span>
+            <span class="ma-toggle-hint">Full system access</span>
+          </div>
+        </label>
+      </div>
+      <div class="ma-modal__foot">
+        <button type="button" class="ma-modal__btn-sec" onclick="closeModal('addAdminModal')">
+          <i class="bi bi-x-lg"></i> Cancel
+        </button>
+        <button type="submit" class="ma-modal__btn-pri">
+          <i class="fas fa-save"></i> Create Admin
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT ADMIN MODAL -->
+<div class="ma-modal-overlay" id="editAdminModal">
+  <div class="ma-modal anim-up">
+    <div class="ma-modal__head" style="border-bottom-color:rgba(251,191,36,.15)">
+      <span class="ma-modal__title"><i class="fas fa-edit" style="color:#fbbf24"></i> Edit Admin</span>
+      <button class="ma-modal__close" onclick="closeModal('editAdminModal')">×</button>
+    </div>
+    <form id="editAdminForm" method="post">
+      {% csrf_token %}
+      <div class="ma-modal__body">
+        <div class="ma-modal__field">
+          <label class="ma-modal__lbl">Username</label>
+          <input type="text" class="ma-modal__input ma-mono-input" id="edit_username" readonly style="opacity:.5;cursor:not-allowed">
+        </div>
+        <div class="ma-modal__row2">
+          <div class="ma-modal__field">
+            <label class="ma-modal__lbl">Email <span class="ma-req">*</span></label>
+            <input type="email" class="ma-modal__input" id="edit_email" name="email" required>
+          </div>
+          <div class="ma-modal__field">
+            <label class="ma-modal__lbl">Department</label>
+            <input type="text" class="ma-modal__input" id="edit_department" name="department">
+          </div>
+        </div>
+        <div class="ma-modal__row2">
+          <div class="ma-modal__field">
+            <label class="ma-modal__lbl">Employee ID</label>
+            <input type="text" class="ma-modal__input ma-mono-input" id="edit_employee_id" name="employee_id">
+          </div>
+          <div class="ma-modal__field">
+            <label class="ma-modal__lbl">Phone</label>
+            <input type="text" class="ma-modal__input" id="edit_phone" name="phone">
+          </div>
+        </div>
+      </div>
+      <div class="ma-modal__foot">
+        <button type="button" class="ma-modal__btn-sec" onclick="closeModal('editAdminModal')">
+          <i class="bi bi-x-lg"></i> Cancel
+        </button>
+        <button type="submit" class="ma-modal__btn-amber">
+          <i class="fas fa-save"></i> Update Admin
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- VIEW ADMIN MODAL -->
+<div class="ma-modal-overlay" id="viewAdminModal">
+  <div class="ma-modal anim-up">
+    <div class="ma-modal__head" style="border-bottom-color:rgba(167,139,250,.15)">
+      <span class="ma-modal__title"><i class="bi bi-person-badge-fill" style="color:#a78bfa"></i> Admin Details</span>
+      <button class="ma-modal__close" onclick="closeModal('viewAdminModal')">×</button>
+    </div>
+    <div class="ma-modal__body" id="viewAdminContent">
+      <div class="ma__empty"><i class="fas fa-spinner fa-spin"></i><p>Loading...</p></div>
+    </div>
+    <div class="ma-modal__foot">
+      <button type="button" class="ma-modal__btn-sec" onclick="closeModal('viewAdminModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;border:none;}
+
+.ma{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;--ora:#fb923c;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.ma__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.ma__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.ma__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.ma__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* TOPBAR */
+.ma__top{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;background:rgba(13,31,45,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(6,182,212,.13);padding:0 24px;height:52px;}
+.ma__top-l,.ma__top-r{display:flex;align-items:center;gap:12px;}
+.ma__logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.ma__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.ma__brand b{font-weight:800;color:#fff;}
+.ma__div{width:1px;height:16px;background:var(--t3);}
+.ma__bc{display:flex;align-items:center;gap:5px;}
+.ma__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.ma__bc-a:hover{color:var(--acc);}
+.ma__bc-sep{font-size:10px;color:var(--t3);}
+.ma__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.ma__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.ma__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+.ma__btn-primary{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0891b2,#06b6d4);border:1px solid rgba(6,182,212,.4);color:#fff;font-size:13px;font-weight:700;padding:8px 18px;border-radius:9px;box-shadow:0 0 14px rgba(6,182,212,.25);transition:all .18s;}
+.ma__btn-primary:hover{box-shadow:0 0 24px rgba(6,182,212,.45);transform:translateY(-1px);}
+
+/* BODY */
+.ma__body{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:18px;}
+
+/* MESSAGES */
+.ma__msgs{display:flex;flex-direction:column;gap:8px;}
+.ma__msg{display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:10px;font-size:13.5px;font-weight:500;position:relative;}
+.ma__msg--success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#34d399;}
+.ma__msg--error{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:#f87171;}
+.ma__msg--info{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);color:#22d3ee;}
+.ma__msg-close{margin-left:auto;background:none;border:none;color:inherit;font-size:18px;cursor:pointer;opacity:.6;line-height:1;}
+
+/* PAGE HEAD */
+.ma__head{display:flex;align-items:center;gap:16px;}
+.ma__head-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 4px 20px rgba(6,182,212,.3);}
+.ma__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.ma__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* STATS */
+.ma__stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:700px){.ma__stats{grid-template-columns:1fr;}}
+.ma__sc{background:var(--b2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 18px 14px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .22s,box-shadow .22s;animation:fu .5s ease both;animation-delay:calc(var(--i)*.07s);}
+.ma__sc:hover{transform:translateY(-3px);box-shadow:0 0 20px rgba(var(--g),.12),0 8px 24px rgba(0,0,0,.3);}
+.ma__sc-shine{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);opacity:.5;}
+.ma__sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.ma__sc-lbl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;}
+.ma__sc-ico{font-size:17px;}
+.ma__sc-n{display:block;font-size:34px;font-weight:800;color:#fff;line-height:1;font-family:'JetBrains Mono',monospace;}
+.ma__sc-bar{height:3px;background:rgba(255,255,255,.07);border-radius:99px;margin-top:12px;overflow:hidden;}
+.ma__sc-fill{height:100%;border-radius:99px;background:var(--c);width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1) .3s;}
+
+/* TABLE CARD */
+.ma__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.07s);}
+.ma__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 18px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.ma__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.ma__card-body{padding:18px;}
+.ma__count-chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(6,182,212,.1);color:var(--acc);border:1px solid rgba(6,182,212,.2);}
+
+/* TABLE */
+.ma__tw{overflow-x:auto;}
+.ma__tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.ma__tbl thead tr{border-bottom:1px solid rgba(6,182,212,.1);}
+.ma__tbl th{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:10px 16px;text-align:left;white-space:nowrap;}
+.ma__tbl td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;}
+.ma__tr{transition:background .15s;}
+.ma__tr:hover{background:rgba(6,182,212,.05);}
+.ma__mu{color:var(--t2);font-size:12.5px;}
+.ma__mono{font-family:'JetBrains Mono',monospace;font-size:12px !important;}
+.ma__dash{color:var(--t3);}
+
+.ma__admin-cell{display:flex;align-items:center;gap:11px;}
+.ma__av{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;box-shadow:0 2px 10px rgba(6,182,212,.3);}
+.ma__av-nm{font-weight:700;color:var(--t1);font-size:13.5px;}
+.ma__crown-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);margin-top:2px;}
+
+.ma__tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;}
+.ma__tag--c{background:rgba(6,182,212,.1);color:#22d3ee;}
+
+.ma__badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;}
+.ma__bdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.ma__badge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.ma__badge--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+
+.ma__acts{display:flex;gap:6px;align-items:center;}
+.ma__act{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;text-decoration:none;transition:transform .15s,filter .15s;cursor:pointer;}
+.ma__act:hover{transform:scale(1.18);filter:brightness(1.3);}
+.ma__act--c{background:rgba(6,182,212,.1);color:#22d3ee;border:1px solid rgba(6,182,212,.2);}
+.ma__act--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+.ma__act--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+.ma__act--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+
+.ma__empty{text-align:center;padding:42px 20px;color:var(--t3);display:flex;flex-direction:column;align-items:center;gap:12px;}
+.ma__empty i{font-size:30px;}
+.ma__empty p{font-size:13px;}
+
+/* ══ MODALS ══ */
+.ma-modal-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(7,12,25,.75);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;
+  opacity:0;pointer-events:none;
+  transition:opacity .22s;
+}
+.ma-modal-overlay.open{opacity:1;pointer-events:all;}
+
+.ma-modal{
+  background:var(--b2);
+  border:1px solid rgba(6,182,212,.18);
+  border-radius:18px;
+  width:100%;max-width:580px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  transform:translateY(20px);
+  transition:transform .25s cubic-bezier(.34,1.2,.64,1);
+  max-height:90vh;overflow-y:auto;
+}
+.ma-modal-overlay.open .ma-modal{transform:translateY(0);}
+
+.ma-modal__head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 22px 14px;
+  border-bottom:1px solid rgba(6,182,212,.1);
+  background:rgba(6,182,212,.025);
+  position:sticky;top:0;z-index:1;
+}
+.ma-modal__title{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800;color:#fff;}
+.ma-modal__close{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:var(--t2);width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;transition:all .15s;}
+.ma-modal__close:hover{background:rgba(248,113,113,.15);color:#f87171;border-color:rgba(248,113,113,.3);}
+.ma-modal__body{padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+.ma-modal__foot{padding:16px 22px;border-top:1px solid rgba(6,182,212,.08);display:flex;justify-content:flex-end;gap:10px;background:rgba(255,255,255,.015);}
+
+.ma-modal__row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:520px){.ma-modal__row2{grid-template-columns:1fr;}}
+.ma-modal__field{display:flex;flex-direction:column;gap:5px;}
+.ma-modal__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.ma-req{color:#f87171;}
+.ma-modal__hint{font-size:10.5px;color:var(--t3);}
+.ma-modal__input{
+  width:100%;background:var(--b3);
+  border:1px solid rgba(6,182,212,.18);border-radius:10px;
+  color:var(--t1);font-family:'Urbanist',sans-serif;
+  font-size:14px;font-weight:500;padding:10px 14px;outline:none;
+  transition:border-color .18s,box-shadow .18s;
+}
+.ma-modal__input::placeholder{color:var(--t3);}
+.ma-modal__input:focus{border-color:rgba(6,182,212,.5);box-shadow:0 0 0 3px rgba(6,182,212,.12);}
+.ma-mono-input{font-family:'JetBrains Mono',monospace;font-size:13px;}
+
+/* super admin toggle */
+.ma-toggle-row{display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;transition:background .18s;}
+.ma-toggle-row:hover{background:rgba(255,255,255,.06);}
+.ma-toggle-cb{display:none;}
+.ma-toggle-track{width:40px;height:22px;border-radius:99px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);position:relative;flex-shrink:0;transition:background .2s;}
+.ma-toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--t3);transition:all .2s;}
+.ma-toggle-cb:checked + .ma-toggle-track{background:rgba(6,182,212,.3);border-color:rgba(6,182,212,.5);}
+.ma-toggle-cb:checked + .ma-toggle-track .ma-toggle-thumb{transform:translateX(18px);background:var(--acc);}
+.ma-toggle-label{font-size:13.5px;font-weight:700;color:var(--t1);display:block;}
+.ma-toggle-hint{font-size:11px;color:var(--t3);}
+
+/* modal buttons */
+.ma-modal__btn-sec{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:13.5px;font-weight:700;padding:9px 18px;border-radius:10px;transition:all .18s;}
+.ma-modal__btn-sec:hover{background:rgba(255,255,255,.09);color:var(--t1);}
+.ma-modal__btn-pri{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#0891b2,#06b6d4);border:1px solid rgba(6,182,212,.4);color:#fff;font-size:13.5px;font-weight:800;padding:9px 20px;border-radius:10px;box-shadow:0 0 16px rgba(6,182,212,.25);transition:all .18s;}
+.ma-modal__btn-pri:hover{box-shadow:0 0 26px rgba(6,182,212,.45);transform:translateY(-1px);}
+.ma-modal__btn-amber{display:inline-flex;align-items:center;gap:7px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fbbf24;font-size:13.5px;font-weight:800;padding:9px 20px;border-radius:10px;transition:all .18s;}
+.ma-modal__btn-amber:hover{background:rgba(251,191,36,.18);border-color:rgba(251,191,36,.55);}
+
+/* view modal content */
+.ma-view-hero{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.ma-view-av{width:56px;height:56px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;box-shadow:0 3px 14px rgba(6,182,212,.3);border:2px solid rgba(6,182,212,.3);}
+.ma-view-nm{font-size:17px;font-weight:800;color:#fff;}
+.ma-view-info{display:flex;flex-direction:column;gap:10px;}
+.ma-view-row{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:9px;}
+.ma-view-ic{width:26px;height:26px;border-radius:7px;flex-shrink:0;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.ma-view-lbl{display:block;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.ma-view-val{font-size:13px;color:var(--t1);font-weight:500;}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;}
+</style>
+
+<script>
+/* ── Modal helpers ── */
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow='';
+}
+document.querySelectorAll('.ma-modal-overlay').forEach(overlay=>{
+  overlay.addEventListener('click',e=>{
+    if(e.target===overlay) closeModal(overlay.id);
+  });
+});
+
+/* ── Count-up ── */
+document.querySelectorAll('.ma__sc-n[data-count]').forEach(el=>{
+  const t=parseInt(el.dataset.count)||0;
+  const dur=1200,s=performance.now();
+  (function run(now){
+    const p=Math.min((now-s)/dur,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.floor(e*t);
+    if(p<1) requestAnimationFrame(run);
+    else el.textContent=t;
+  })(s);
+});
+
+/* ── Stat bars ── */
+requestAnimationFrame(()=>{
+  document.querySelectorAll('.ma__sc-fill').forEach(el=>{
+    el.style.width=getComputedStyle(el).getPropertyValue('--w');
+  });
+});
+
+/* ── Edit admin ── */
+function editAdmin(adminId,username,email,department,employeeId,phone){
+  document.getElementById('edit_username').value=username;
+  document.getElementById('edit_email').value=email||'';
+  document.getElementById('edit_department').value=department||'';
+  document.getElementById('edit_employee_id').value=employeeId||'';
+  document.getElementById('edit_phone').value=phone||'';
+  document.getElementById('editAdminForm').action=`/admin-panel/admins/${adminId}/edit/`;
+  openModal('editAdminModal');
+}
+
+/* ── View admin ── */
+function viewAdmin(adminId){
+  openModal('viewAdminModal');
+  document.getElementById('viewAdminContent').innerHTML=`<div class="ma__empty"><i class="fas fa-spinner fa-spin"></i><p>Loading...</p></div>`;
+  fetch(`/admin-panel/admins/${adminId}/view/`)
+    .then(r=>r.json())
+    .then(data=>{
+      const badgesHtml=(data.is_active?`<span class="ma__badge ma__badge--g"><span class="ma__bdot"></span>Active</span>`:`<span class="ma__badge ma__badge--r"><span class="ma__bdot"></span>Inactive</span>`)
+        +(data.is_superuser?` <span class="ma__crown-badge"><i class="fas fa-crown" style="font-size:8px"></i> Super Admin</span>`:'');
+      document.getElementById('viewAdminContent').innerHTML=`
+        <div class="ma-view-hero">
+          <div class="ma-view-av">${data.username.charAt(0).toUpperCase()}</div>
+          <div>
+            <div class="ma-view-nm">${data.username}</div>
+            <div style="margin-top:5px;display:flex;gap:6px;flex-wrap:wrap">${badgesHtml}</div>
+          </div>
+        </div>
+        <div class="ma-view-info">
+          ${row('bi bi-envelope','#a78bfa','Email',data.email||'Not set')}
+          ${row('bi bi-building','#06b6d4','Department',data.department||'—')}
+          ${row('bi bi-card-text','#10b981','Employee ID',data.employee_id||'—','mono')}
+          ${row('bi bi-telephone','#fb923c','Phone',data.phone||'—')}
+          ${row('bi bi-clock-history','#38bdf8','Last Login',data.last_login||'Never','mono')}
+          ${row('bi bi-calendar-check','#f87171','Date Joined',data.date_joined,'mono')}
+        </div>`;
+    })
+    .catch(()=>{
+      document.getElementById('viewAdminContent').innerHTML=`<div class="ma__empty"><i class="bi bi-exclamation-circle"></i><p>Error loading admin details</p></div>`;
+    });
+}
+function row(iconCls,color,lbl,val,extra=''){
+  return `<div class="ma-view-row"><span class="ma-view-ic" style="color:${color}"><i class="${iconCls}"></i></span><div><span class="ma-view-lbl">${lbl}</span><span class="ma-view-val${extra==='mono'?' ma__mono':''}">${val}</span></div></div>`;
+}
+
+/* ── Toggle status ── */
+function toggleAdminStatus(adminId,username,isActive){
+  const action=isActive?'deactivate':'activate';
+  if(!confirm(`Are you sure you want to ${action} ${username}?`)) return;
+  const form=document.createElement('form');
+  form.method='POST';
+  form.action=`/admin-panel/admins/${adminId}/toggle-status/`;
+  const csrf=document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const inp=document.createElement('input');
+  inp.type='hidden';inp.name='csrfmiddlewaretoken';inp.value=csrf;
+  form.appendChild(inp);
+  document.body.appendChild(form);
+  form.submit();
+}
+
+/* ── Auto-dismiss success messages ── */
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.ma__msg--success').forEach(el=>{
+    setTimeout(()=>el.remove(),5000);
+  });
+});
+</script>
+
+{% endblock %}

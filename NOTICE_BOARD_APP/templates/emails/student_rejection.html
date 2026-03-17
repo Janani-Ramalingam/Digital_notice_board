@@ -1,0 +1,49 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Registration Status - Digital Notice Board{% endblock %}
+
+{% block header_subtitle %}Registration Update{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Dear {{ student_name }},
+</div>
+
+<div class="info-box danger">
+    <h3>Registration Status Update</h3>
+    <p>We regret to inform you that your registration could not be approved at this time.</p>
+</div>
+
+<div class="content">
+    <p>Thank you for your interest in registering with the Digital Notice Board placement portal. After careful review, we are unable to approve your registration for the following reason:</p>
+</div>
+
+<div class="info-box warning">
+    <h3>📝 Reason for Rejection</h3>
+    <p><strong>{{ rejection_reason }}</strong></p>
+</div>
+
+<div class="content">
+    <p><strong>What You Can Do:</strong></p>
+    <ul style="margin-left: 20px; margin-bottom: 20px;">
+        <li>Review the reason provided above</li>
+        <li>Contact your placement coordinator for clarification</li>
+        <li>If eligible, you may re-register with correct information</li>
+        <li>Ensure all details are accurate before submitting</li>
+    </ul>
+    
+    <p>If you believe this decision was made in error or if you have any questions, please reach out to the placement cell office during working hours.</p>
+    
+    <p style="margin-top: 25px;">We appreciate your understanding.</p>
+    
+    <p style="margin-top: 15px;">
+        <strong>Regards,</strong><br>
+        Placement Cell Team<br>
+        Digital Notice Board
+    </p>
+</div>
+
+<div class="button-container">
+    <a href="{{ site_url }}" class="btn btn-primary">Visit Portal</a>
+</div>
+{% endblock %}

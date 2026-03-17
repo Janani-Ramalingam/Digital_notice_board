@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Student Home - Digital Notice Board{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="bi bi-house me-2"></i>
+                        Welcome, {{ student_profile.name }}!
+                    </h2>
+                    <p class="card-text mb-0">
+                        {{ student_profile.department }} - Year {{ student_profile.year }} - CGPA: {{ student_profile.cgpa }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <i class="bi bi-bell text-primary" style="font-size: 2rem;"></i>
+                    <h4 class="mt-2">{{ total_eligible_drives }}</h4>
+                    <p class="text-muted">Eligible Drives</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                    <h4 class="mt-2">{{ total_responses }}</h4>
+                    <p class="text-muted">Total Responses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <i class="bi bi-hand-thumbs-up text-info" style="font-size: 2rem;"></i>
+                    <h4 class="mt-2">{{ opt_in_count }}</h4>
+                    <p class="text-muted">Opt-In Responses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                    <h4 class="mt-2">{{ unanswered_drives|length }}</h4>
+                    <p class="text-muted">Pending Responses</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Recent Drives -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bell me-2"></i>Recent Active Drives
+                    </h5>
+                    <a href="{% url 'student:notices' %}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_drives %}
+                        <div class="row">
+                            {% for drive in recent_drives %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-left-primary h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ drive.company_name }}</h6>
+                                            <p class="card-text small">{{ drive.title|truncatechars:50 }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-calendar me-1"></i>
+                                                    {{ drive.last_date|date:"M d, Y" }}
+                                                </small>
+                                                <a href="{% url 'student:notice_detail' drive.id %}" class="btn btn-sm btn-primary">
+                                                    View Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-bell-slash text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">No active drives available.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- My Recent Responses -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle me-2"></i>My Recent Responses
+                    </h5>
+                    <a href="{% url 'student:my_responses' %}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if my_responses %}
+                        {% for response in my_responses %}
+                            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                <div>
+                                    <h6 class="mb-1">{{ response.drive.company_name }}</h6>
+                                    <small class="text-muted">{{ response.responded_at|date:"M d, Y" }}</small>
+                                </div>
+                                <span class="badge bg-{% if response.response == 'Opt-In' %}success{% else %}danger{% endif %}">
+                                    {{ response.response }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="bi bi-chat-dots text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">No responses yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'student:notices' %}" class="btn btn-primary">
+                            <i class="bi bi-bell me-2"></i>View All Notices
+                        </a>
+                        <a href="{% url 'student:my_responses' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-check-circle me-2"></i>My Responses
+                        </a>
+                        <a href="{% url 'student:profile_update' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-person-gear me-2"></i>Update Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Modals for Unanswered Drives -->
+{% for drive in unanswered_drives %}
+    <div class="modal fade" id="driveModal{{ drive.id }}" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-bell me-2"></i>
+                        New Placement Drive - {{ drive.company_name }}
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>{{ drive.title }}</h6>
+                            <p class="text-muted">{{ drive.description|truncatechars:200 }}</p>
+                            
+                            <div class="row mt-3">
+                                <div class="col-6">
+                                    <strong>Minimum CGPA:</strong> {{ drive.min_cgpa }}
+                                </div>
+                                <div class="col-6">
+                                    <strong>Eligible Year:</strong> {{ drive.eligible_year }}
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <strong>Eligible Departments:</strong>
+                                {% for dept in drive.eligible_departments %}
+                                    <span class="badge bg-secondary me-1">{{ dept }}</span>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="mt-2">
+                                <strong>Last Date:</strong> 
+                                <span class="text-danger">{{ drive.last_date|date:"M d, Y H:i" }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="bi bi-building text-primary" style="font-size: 4rem;"></i>
+                            <h5 class="mt-2">{{ drive.company_name }}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="w-100">
+                        <p class="text-center mb-3">
+                            <strong>Please select your response:</strong>
+                        </p>
+                        <div class="row">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-success w-100" onclick="submitResponse({{ drive.id }}, 'Opt-In')">
+                                    <i class="bi bi-check-circle me-2"></i>Opt-In
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-danger w-100" onclick="submitResponse({{ drive.id }}, 'Opt-Out')">
+                                    <i class="bi bi-x-circle me-2"></i>Opt-Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<style>
+    .border-left-primary {
+        border-left: 4px solid #007bff !important;
+    }
+    .card.border-primary {
+        border-color: #007bff !important;
+    }
+    .card.border-success {
+        border-color: #28a745 !important;
+    }
+    .card.border-info {
+        border-color: #17a2b8 !important;
+    }
+    .card.border-warning {
+        border-color: #ffc107 !important;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+// Ensure DOM is fully loaded and jQuery is available
+$(document).ready(function() {
+    console.log('DOM ready, checking for unanswered drives...');
+    
+    // Debug: Log unanswered drives
+    {% if unanswered_drives %}
+        console.log('Found {{ unanswered_drives|length }} unanswered drive(s)');
+        {% for drive in unanswered_drives %}
+            console.log('Showing modal for drive: {{ drive.company_name }}');
+        {% endfor %}
+    {% else %}
+        console.log('No unanswered drives found');
+    {% endif %}
+    
+    // Show notification modals for unanswered drives with delay to ensure Bootstrap is ready
+    setTimeout(function() {
+        {% for drive in unanswered_drives %}
+            try {
+                const modalElement = document.getElementById('driveModal{{ drive.id }}');
+                if (modalElement) {
+                    console.log('Initializing modal for drive {{ drive.id }}');
+                    const modal = new bootstrap.Modal(modalElement, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    modal.show();
+                } else {
+                    console.error('Modal element not found for drive {{ drive.id }}');
+                }
+            } catch (error) {
+                console.error('Error showing modal for drive {{ drive.id }}:', error);
+            }
+        {% endfor %}
+    }, 500); // 500ms delay to ensure Bootstrap is fully loaded
+});
+
+function submitResponse(driveId, response) {
+    console.log('Submitting response:', driveId, response);
+    
+    // Validate driveId parameter
+    if (!driveId || driveId === 'undefined' || driveId === 'null') {
+        console.error('Invalid driveId:', driveId);
+        showAlert('danger', 'Invalid drive ID. Please refresh the page and try again.');
+        return;
+    }
+    
+    // Get CSRF token
+    const csrfToken = $('[name=csrfmiddlewaretoken]').val() || 
+                     document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                     '{{ csrf_token }}';
+    
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        showAlert('danger', 'Security token not found. Please refresh the page.');
+        return;
+    }
+    
+    $.ajax({
+        url: `/student/submit-response/${driveId}/`,
+        type: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+        },
+        data: JSON.stringify({
+            'drive_id': driveId,
+            'response': response
+        }),
+        success: function(data) {
+            console.log('Response submitted successfully:', data);
+            if (data.success) {
+                // Hide the modal
+                const modalElement = document.getElementById('driveModal' + driveId);
+                if (modalElement) {
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
+                        modal.hide();
+                    }
+                }
+                
+                // Show success message
+                showAlert('success', data.message);
+                
+                // Reload page after a short delay to update statistics
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            } else {
+                showAlert('danger', data.error || 'An error occurred');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX error:', xhr, status, error);
+            showAlert('danger', 'Failed to submit response. Please try again.');
+        }
+    });
+}
+
+function showAlert(type, message) {
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert alert at the top of the container
+    $('.container-fluid').prepend(alertHtml);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(function() {
+        $('.alert').alert('close');
+    }, 5000);
+}
+
+// Alternative method using vanilla JavaScript if jQuery fails
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof $ === 'undefined') {
+        console.log('jQuery not available, using vanilla JavaScript');
+        
+        // Show modals using vanilla JavaScript
+        setTimeout(function() {
+            {% for drive in unanswered_drives %}
+                const modalElement{{ drive.id }} = document.getElementById('driveModal{{ drive.id }}');
+                if (modalElement{{ drive.id }} && typeof bootstrap !== 'undefined') {
+                    const modal{{ drive.id }} = new bootstrap.Modal(modalElement{{ drive.id }}, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    modal{{ drive.id }}.show();
+                }
+            {% endfor %}
+        }, 1000);
+    }
+});
+</script>
+{% endblock %}

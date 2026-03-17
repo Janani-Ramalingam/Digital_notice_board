@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ drive.title }} - Notice Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'student:home' %}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'student:notices' %}">All Notices</a></li>
+                        <li class="breadcrumb-item active">{{ drive.title }}</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Drive Details Card -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h4 class="card-title mb-0">{{ drive.title }}</h4>
+                            <span class="badge {% if drive.status == 'Active' %}bg-success{% elif drive.status == 'Closed' %}bg-secondary{% else %}bg-warning{% endif %}">
+                                {{ drive.status }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h6 class="text-primary">Company Information</h6>
+                                    <p class="mb-2"><strong>Company:</strong> {{ drive.company_name }}</p>
+                                    <p class="mb-2"><strong>Posted by:</strong> {{ drive.created_by.adminprofile.name }}</p>
+                                    <p class="mb-0"><strong>Posted on:</strong> {{ drive.created_at|date:"M d, Y" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-primary">Important Dates</h6>
+                                    <p class="mb-2"><strong>Last Date to Apply:</strong> {{ drive.last_date|date:"M d, Y H:i" }}</p>
+                                    <p class="mb-0">
+                                        <strong>Time Remaining:</strong> 
+                                        <span class="{% if drive.days_remaining <= 0 %}text-danger{% elif drive.days_remaining <= 7 %}text-warning{% else %}text-success{% endif %}">
+                                            {% if drive.days_remaining > 0 %}
+                                                {{ drive.days_remaining }} days left
+                                            {% else %}
+                                                Expired
+                                            {% endif %}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="text-primary">Drive Description</h6>
+                                <p class="text-justify">{{ drive.description|linebreaks }}</p>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h6 class="text-primary">Eligibility Criteria</h6>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="border rounded p-3 text-center">
+                                                <i class="fas fa-graduation-cap fa-2x text-info mb-2"></i>
+                                                <h6>Minimum CGPA</h6>
+                                                <span class="badge bg-info">{{ drive.min_cgpa }}+</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="border rounded p-3 text-center">
+                                                <i class="fas fa-calendar-alt fa-2x text-success mb-2"></i>
+                                                <h6>Academic Year</h6>
+                                                <span class="badge bg-success">{{ drive.get_eligible_year_display }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="border rounded p-3 text-center">
+                                                <i class="fas fa-building fa-2x text-warning mb-2"></i>
+                                                <h6>Departments</h6>
+                                                {% for dept in drive.eligible_departments %}
+                                                    <span class="badge bg-warning me-1">{{ dept }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Response Section -->
+                            {% if user_response %}
+                                <div class="alert {% if user_response.response == 'Opt-In' %}alert-success{% else %}alert-danger{% endif %}">
+                                    <h6><i class="fas fa-check-circle"></i> Your Response</h6>
+                                    <p class="mb-2">You have <strong>{{ user_response.response }}</strong> for this drive.</p>
+                                    <small class="text-muted">Responded on: {{ user_response.responded_at|date:"M d, Y H:i" }}</small>
+                                </div>
+                            {% elif is_eligible %}
+                                {% if drive.status == 'Active' and drive.days_remaining > 0 %}
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-info-circle"></i> You are eligible for this drive!</h6>
+                                        <p class="mb-3">Please submit your response below:</p>
+                                        
+                                        <form method="post" action="{% url 'student:submit_response' drive.id %}">
+                                            {% csrf_token %}
+                                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                                <button type="submit" name="response" value="Opt-In" class="btn btn-success me-md-2">
+                                                    <i class="fas fa-thumbs-up"></i> Opt-In
+                                                </button>
+                                                <button type="submit" name="response" value="Opt-Out" class="btn btn-danger">
+                                                    <i class="fas fa-thumbs-down"></i> Opt-Out
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        <h6><i class="fas fa-clock"></i> Drive Closed</h6>
+                                        <p class="mb-0">This drive is no longer accepting responses.</p>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-secondary">
+                                    <h6><i class="fas fa-times-circle"></i> Not Eligible</h6>
+                                    <p class="mb-0">You do not meet the eligibility criteria for this drive.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Quick Stats -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-chart-pie text-primary"></i> Response Statistics
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <h4 class="text-success mb-0">{{ opt_in_count }}</h4>
+                                    <small class="text-muted">Opted In</small>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-danger mb-0">{{ opt_out_count }}</h4>
+                                    <small class="text-muted">Opted Out</small>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="text-center">
+                                <h5 class="text-primary mb-0">{{ total_responses }}</h5>
+                                <small class="text-muted">Total Responses</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Eligibility Check -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-user-check text-info"></i> Eligibility Status
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% if is_eligible %}
+                                <div class="text-success">
+                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                    <h6>You are eligible!</h6>
+                                    <small class="text-muted">You meet all the criteria for this placement drive.</small>
+                                </div>
+                            {% else %}
+                                <div class="text-danger">
+                                    <i class="fas fa-times-circle fa-2x mb-2"></i>
+                                    <h6>Not eligible</h6>
+                                    <small class="text-muted">You do not meet the eligibility criteria.</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-cog text-secondary"></i> Actions
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'student:notices' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-list"></i> View All Notices
+                                </a>
+                                <a href="{% url 'student:my_responses' %}" class="btn btn-outline-info">
+                                    <i class="fas fa-history"></i> My Responses
+                                </a>
+                                <a href="{% url 'student:home' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-home"></i> Back to Home
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

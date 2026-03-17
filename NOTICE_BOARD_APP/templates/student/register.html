@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Student Registration - Digital Notice Board{% endblock %}
+
+{% block extra_css %}
+<style>
+    .registration-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    .registration-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #0d6efd;
+    }
+    .registration-header h2 {
+        color: #0d6efd;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    .registration-header p {
+        color: #6c757d;
+        margin: 0;
+    }
+    .form-section {
+        margin-bottom: 25px;
+    }
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .info-box {
+        background: #e7f3ff;
+        border-left: 4px solid #0d6efd;
+        padding: 15px;
+        margin-bottom: 25px;
+        border-radius: 4px;
+    }
+    .info-box i {
+        color: #0d6efd;
+        margin-right: 8px;
+    }
+    .login-link {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="registration-container">
+        <div class="registration-header">
+            <h2><i class="fas fa-user-plus"></i> Student Registration</h2>
+            <p>Register for Digital Notice Board - Placement Drive Management System</p>
+        </div>
+
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <strong>Note:</strong> Your account will be pending admin approval after registration. 
+            You will receive an email notification once your registration is approved.
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-user"></i> Account Information
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_username" class="form-label">Username *</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small">{{ form.username.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_email" class="form-label">Email Address *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small">{{ form.email.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">For notifications and password reset</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-id-card"></i> Personal Information
+                </div>
+                <div class="mb-3">
+                    <label for="id_name" class="form-label">Full Name *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="text-danger small">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_phone" class="form-label">Phone Number</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <div class="text-danger small">{{ form.phone.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_roll_number" class="form-label">Roll Number *</label>
+                        {{ form.roll_number }}
+                        {% if form.roll_number.errors %}
+                            <div class="text-danger small">{{ form.roll_number.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-graduation-cap"></i> Academic Information
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="id_department" class="form-label">Department *</label>
+                        {{ form.department }}
+                        {% if form.department.errors %}
+                            <div class="text-danger small">{{ form.department.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="id_year" class="form-label">Year *</label>
+                        {{ form.year }}
+                        {% if form.year.errors %}
+                            <div class="text-danger small">{{ form.year.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="id_cgpa" class="form-label">CGPA *</label>
+                        {{ form.cgpa }}
+                        {% if form.cgpa.errors %}
+                            <div class="text-danger small">{{ form.cgpa.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">0.00 to 10.00</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-lock"></i> Password
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_password1" class="form-label">Password *</label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <div class="text-danger small">{{ form.password1.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            <ul class="mb-0 ps-3">
+                                <li>At least 8 characters</li>
+                                <li>Not entirely numeric</li>
+                                <li>Not too common</li>
+                            </ul>
+                        </small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_password2" class="form-label">Confirm Password *</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <div class="text-danger small">{{ form.password2.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Enter the same password as before, for verification.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus"></i> Register
+                </button>
+            </div>
+        </form>
+
+        <div class="login-link">
+            <p class="text-muted mb-0">
+                Already have an account? 
+                <a href="{% url 'login' %}" class="text-decoration-none">
+                    <i class="fas fa-sign-in-alt"></i> Login here
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

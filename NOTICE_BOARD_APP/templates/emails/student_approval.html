@@ -1,0 +1,80 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Registration Approved - Digital Notice Board{% endblock %}
+
+{% block header_subtitle %}Welcome to the Placement Portal!{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Dear {{ student_name }},
+</div>
+
+<div class="info-box success">
+    <h3>🎉 Congratulations! Your Registration Has Been Approved</h3>
+    <p>Your account has been successfully activated by the admin team.</p>
+</div>
+
+<div class="content">
+    <p>We're excited to welcome you to the Digital Notice Board - your one-stop portal for all campus placement activities.</p>
+    
+    <p>Your account is now active and you can access all placement drives, notifications, and opportunities available for your profile.</p>
+</div>
+
+<table class="details-table">
+    <tr>
+        <td>Student Name</td>
+        <td><strong>{{ student_name }}</strong></td>
+    </tr>
+    <tr>
+        <td>Email Address</td>
+        <td>{{ student_email }}</td>
+    </tr>
+    <tr>
+        <td>Roll Number</td>
+        <td>{{ roll_number }}</td>
+    </tr>
+    <tr>
+        <td>Department</td>
+        <td>{{ department }}</td>
+    </tr>
+    <tr>
+        <td>Academic Year</td>
+        <td>{{ year }}</td>
+    </tr>
+    <tr>
+        <td>Approved By</td>
+        <td>{{ approved_by }}</td>
+    </tr>
+    <tr>
+        <td>Approval Date</td>
+        <td>{{ approval_date }}</td>
+    </tr>
+</table>
+
+<div class="button-container">
+    <a href="{{ login_url }}" class="btn btn-success">Login to Your Account</a>
+</div>
+
+<div class="info-box">
+    <h3>📋 What's Next?</h3>
+    <p><strong>1.</strong> Login to your account using your credentials<br>
+    <strong>2.</strong> Complete your profile with all required details<br>
+    <strong>3.</strong> Browse available placement drives<br>
+    <strong>4.</strong> Respond to drives you're eligible for<br>
+    <strong>5.</strong> Stay updated with notifications</p>
+</div>
+
+<div class="content">
+    <p><strong>Important:</strong> Make sure to keep your profile information up-to-date and respond to placement drives promptly. You'll receive email notifications for new opportunities.</p>
+    
+    <p>If you have any questions or need assistance, please contact your placement coordinator.</p>
+    
+    <p style="margin-top: 25px;">Best wishes for your placement journey!</p>
+    
+    <p style="margin-top: 15px;">
+        <strong>Regards,</strong><br>
+        Placement Cell Team<br>
+        Digital Notice Board
+    </p>
+</div>
+{% endblock %}

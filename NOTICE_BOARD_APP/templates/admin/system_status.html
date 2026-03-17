@@ -1,0 +1,582 @@
+{% extends 'base.html' %}
+
+{% block title %}System Status - Digital Notice Board{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+{% csrf_token %}
+
+<div class="sys">
+
+  <div class="sys__mesh"></div>
+  <div class="sys__orb sys__orb--1"></div>
+  <div class="sys__orb sys__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="sys__top">
+    <div class="sys__top-l">
+      <div class="sys__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="sys__brand">DNB <b>Admin</b></span>
+      <span class="sys__div"></span>
+      <nav class="sys__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="sys__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right sys__bc-sep"></i>
+        <a href="{% url 'admin_app:system_settings' %}" class="sys__bc-a">Settings</a>
+        <i class="bi bi-chevron-right sys__bc-sep"></i>
+        <span class="sys__bc-cur">System Status</span>
+      </nav>
+    </div>
+    <div class="sys__top-r">
+      <a href="{% url 'admin_app:system_settings' %}" class="sys__btn-ghost">
+        <i class="bi bi-gear-fill"></i> Settings
+      </a>
+      <a href="{% url 'admin_app:dashboard' %}" class="sys__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="sys__body">
+
+    <!-- PAGE HEAD -->
+    <div class="sys__head anim-up">
+      <div class="sys__head-icon"><i class="fas fa-heartbeat"></i></div>
+      <div>
+        <h1 class="sys__h1">System Status</h1>
+        <p class="sys__sub">Real-time health, statistics and diagnostics for DNB.</p>
+      </div>
+      <div class="sys__all-ok">
+        <span class="sys__ok-dot"></span>
+        <span>All Systems Operational</span>
+      </div>
+    </div>
+
+    <!-- ══ HEALTH STRIP ══ -->
+    <div class="sys__health">
+
+      <div class="sys__hc sys__hc--{% if db_status == 'Connected' %}g{% else %}r{% endif %} anim-up" style="--i:1">
+        <div class="sys__hc-icon">
+          <i class="fas fa-database"></i>
+        </div>
+        <div class="sys__hc-info">
+          <span class="sys__hc-label">Database</span>
+          <span class="sys__hc-val">{{ db_status }}</span>
+        </div>
+        <div class="sys__hc-badge sys__hc-badge--{% if db_status == 'Connected' %}g{% else %}r{% endif %}">
+          <span class="sys__hc-dot"></span>
+          {% if db_status == 'Connected' %}Online{% else %}Error{% endif %}
+        </div>
+      </div>
+
+      <div class="sys__hc sys__hc--{% if email_configured %}g{% else %}y{% endif %} anim-up" style="--i:2">
+        <div class="sys__hc-icon"><i class="fas fa-envelope"></i></div>
+        <div class="sys__hc-info">
+          <span class="sys__hc-label">Email</span>
+          <span class="sys__hc-val">{% if email_configured %}Configured{% else %}Not Set{% endif %}</span>
+        </div>
+        <div class="sys__hc-badge sys__hc-badge--{% if email_configured %}g{% else %}y{% endif %}">
+          <span class="sys__hc-dot"></span>
+          {% if email_configured %}Ready{% else %}Warning{% endif %}
+        </div>
+      </div>
+
+      <div class="sys__hc sys__hc--{% if settings.reminder_enabled %}g{% else %}sl{% endif %} anim-up" style="--i:3">
+        <div class="sys__hc-icon"><i class="fas fa-bell"></i></div>
+        <div class="sys__hc-info">
+          <span class="sys__hc-label">Reminders</span>
+          <span class="sys__hc-val">{% if settings.reminder_enabled %}Enabled{% else %}Disabled{% endif %}</span>
+        </div>
+        <div class="sys__hc-badge sys__hc-badge--{% if settings.reminder_enabled %}g{% else %}sl{% endif %}">
+          <span class="sys__hc-dot"></span>
+          {% if settings.reminder_enabled %}Active{% else %}Off{% endif %}
+        </div>
+      </div>
+
+      <div class="sys__hc sys__hc--g anim-up" style="--i:4">
+        <div class="sys__hc-icon"><i class="fas fa-server"></i></div>
+        <div class="sys__hc-info">
+          <span class="sys__hc-label">Web Server</span>
+          <span class="sys__hc-val">Django 4.2</span>
+        </div>
+        <div class="sys__hc-badge sys__hc-badge--g">
+          <span class="sys__hc-dot"></span>Online
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ MIDDLE GRID ══ -->
+    <div class="sys__midgrid">
+
+      <!-- Stats panel -->
+      <div class="sys__card anim-up" style="--i:5">
+        <div class="sys__card-head">
+          <span class="sys__card-title"><i class="bi bi-bar-chart-fill" style="color:#a78bfa"></i> System Statistics</span>
+        </div>
+        <div class="sys__card-body">
+          <div class="sys__stats-grid">
+
+            <div class="sys__stat" style="--sc:#06b6d4">
+              <div class="sys__stat-icon"><i class="fas fa-briefcase"></i></div>
+              <span class="sys__stat-n" data-count="{{ stats.total_drives }}">0</span>
+              <span class="sys__stat-lbl">Total Drives</span>
+              <span class="sys__stat-sub" style="color:#10b981">{{ stats.active_drives }} active</span>
+              <div class="sys__stat-bar"><div class="sys__stat-fill" style="--c:#06b6d4;--w:75%"></div></div>
+            </div>
+
+            <div class="sys__stat" style="--sc:#a78bfa">
+              <div class="sys__stat-icon"><i class="fas fa-users"></i></div>
+              <span class="sys__stat-n" data-count="{{ stats.total_students }}">0</span>
+              <span class="sys__stat-lbl">Total Students</span>
+              <span class="sys__stat-sub" style="color:#10b981">{{ stats.approved_students }} approved</span>
+              <div class="sys__stat-bar"><div class="sys__stat-fill" style="--c:#a78bfa;--w:85%"></div></div>
+            </div>
+
+            <div class="sys__stat" style="--sc:#10b981">
+              <div class="sys__stat-icon"><i class="fas fa-reply"></i></div>
+              <span class="sys__stat-n" data-count="{{ stats.total_responses }}">0</span>
+              <span class="sys__stat-lbl">Total Responses</span>
+              <span class="sys__stat-sub">&nbsp;</span>
+              <div class="sys__stat-bar"><div class="sys__stat-fill" style="--c:#10b981;--w:60%"></div></div>
+            </div>
+
+            <div class="sys__stat" style="--sc:#fbbf24">
+              <div class="sys__stat-icon"><i class="fas fa-clock"></i></div>
+              <span class="sys__stat-n" data-count="{{ stats.pending_reminders }}">0</span>
+              <span class="sys__stat-lbl">Pending Reminders</span>
+              <span class="sys__stat-sub">&nbsp;</span>
+              <div class="sys__stat-bar"><div class="sys__stat-fill" style="--c:#fbbf24;--w:25%"></div></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Config panel -->
+      <div class="sys__card anim-up" style="--i:6">
+        <div class="sys__card-head">
+          <span class="sys__card-title"><i class="bi bi-sliders" style="color:#06b6d4"></i> Configuration</span>
+          <a href="{% url 'admin_app:system_settings' %}" class="sys__edit-link">
+            <i class="bi bi-pencil-square"></i> Edit
+          </a>
+        </div>
+        <div class="sys__card-body">
+          <div class="sys__cfg-list">
+            <div class="sys__cfg-row">
+              <span class="sys__cfg-ic" style="--ic:#06b6d4"><i class="bi bi-globe"></i></span>
+              <div>
+                <span class="sys__cfg-lbl">Site Name</span>
+                <span class="sys__cfg-val">{{ settings.site_name }}</span>
+              </div>
+            </div>
+            <div class="sys__cfg-row">
+              <span class="sys__cfg-ic" style="--ic:#a78bfa"><i class="bi bi-link-45deg"></i></span>
+              <div>
+                <span class="sys__cfg-lbl">Site URL</span>
+                <span class="sys__cfg-val sys__mono">{{ settings.site_url }}</span>
+              </div>
+            </div>
+            <div class="sys__cfg-row">
+              <span class="sys__cfg-ic" style="--ic:#fbbf24"><i class="bi bi-envelope"></i></span>
+              <div>
+                <span class="sys__cfg-lbl">Email Host</span>
+                <span class="sys__cfg-val sys__mono">{{ settings.email_host }}:{{ settings.email_port }}</span>
+              </div>
+            </div>
+            <div class="sys__cfg-row">
+              <span class="sys__cfg-ic" style="--ic:#10b981"><i class="bi bi-clock"></i></span>
+              <div>
+                <span class="sys__cfg-lbl">Reminder Interval</span>
+                <span class="sys__cfg-val sys__mono">{{ settings.reminder_interval_hours }}h</span>
+              </div>
+            </div>
+            <div class="sys__cfg-row">
+              <span class="sys__cfg-ic" style="--ic:#fb923c"><i class="bi bi-bell"></i></span>
+              <div>
+                <span class="sys__cfg-lbl">Max Reminders</span>
+                <span class="sys__cfg-val sys__mono">{{ settings.max_reminders }} per drive</span>
+              </div>
+            </div>
+            <div class="sys__cfg-row">
+              <span class="sys__cfg-ic" style="--ic:#38bdf8"><i class="bi bi-calendar-check"></i></span>
+              <div>
+                <span class="sys__cfg-lbl">Last Updated</span>
+                <span class="sys__cfg-val sys__mono">{{ settings.updated_at|date:"d M Y, g:i A" }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ ACTIONS & INFO ══ -->
+    <div class="sys__botgrid">
+
+      <!-- System Actions -->
+      <div class="sys__card anim-up" style="--i:7">
+        <div class="sys__card-head">
+          <span class="sys__card-title"><i class="bi bi-tools" style="color:#fbbf24"></i> System Actions</span>
+        </div>
+        <div class="sys__card-body sys__actions-grid">
+
+          <button class="sys__act-tile sys__act-tile--c" onclick="testDatabase()">
+            <div class="sys__at-icon"><i class="fas fa-database"></i></div>
+            <span class="sys__at-lbl">Test Database</span>
+            <span class="sys__at-hint">Check DB connection</span>
+          </button>
+
+          <button class="sys__act-tile sys__act-tile--g" onclick="testEmail()">
+            <div class="sys__at-icon"><i class="fas fa-envelope"></i></div>
+            <span class="sys__at-lbl">Test Email</span>
+            <span class="sys__at-hint">Send test message</span>
+          </button>
+
+          <button class="sys__act-tile sys__act-tile--y" id="btnReminder" onclick="triggerReminders()">
+            <div class="sys__at-icon"><i class="fas fa-bell"></i></div>
+            <span class="sys__at-lbl">Send Reminders</span>
+            <span class="sys__at-hint">Trigger pending emails</span>
+          </button>
+
+          <a href="{% url 'admin_app:system_settings' %}" class="sys__act-tile sys__act-tile--pur">
+            <div class="sys__at-icon"><i class="fas fa-cogs"></i></div>
+            <span class="sys__at-lbl">System Settings</span>
+            <span class="sys__at-hint">Edit configuration</span>
+          </a>
+
+        </div>
+        <!-- Action result -->
+        <div id="sys-action-result" class="sys__card-body" style="padding-top:0;display:none"></div>
+      </div>
+
+      <!-- App Info -->
+      <div class="sys__card anim-up" style="--i:8">
+        <div class="sys__card-head">
+          <span class="sys__card-title"><i class="bi bi-info-circle-fill" style="color:#06b6d4"></i> Application Info</span>
+        </div>
+        <div class="sys__card-body">
+          <div class="sys__info-cols">
+            <div>
+              <h3 class="sys__info-heading">App Details</h3>
+              <div class="sys__info-list">
+                <div class="sys__info-row"><span class="sys__info-lbl">Name</span><span class="sys__info-val">Digital Notice Board</span></div>
+                <div class="sys__info-row"><span class="sys__info-lbl">Version</span><span class="sys__info-val sys__mono">1.0.0</span></div>
+                <div class="sys__info-row"><span class="sys__info-lbl">Framework</span><span class="sys__info-val sys__mono">Django 4.2.10</span></div>
+                <div class="sys__info-row"><span class="sys__info-lbl">Database</span><span class="sys__info-val sys__mono">PostgreSQL</span></div>
+              </div>
+            </div>
+            <div>
+              <h3 class="sys__info-heading">Features</h3>
+              <div class="sys__feature-list">
+                <div class="sys__feature"><i class="bi bi-check-circle-fill" style="color:#10b981"></i> Student Registration &amp; Approval</div>
+                <div class="sys__feature"><i class="bi bi-check-circle-fill" style="color:#10b981"></i> Placement Drive Management</div>
+                <div class="sys__feature"><i class="bi bi-check-circle-fill" style="color:#10b981"></i> Automated Email Reminders</div>
+                <div class="sys__feature"><i class="bi bi-check-circle-fill" style="color:#10b981"></i> Response Tracking</div>
+                <div class="sys__feature"><i class="bi bi-check-circle-fill" style="color:#10b981"></i> Admin Management</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Email test modal -->
+<div class="sys-modal-overlay" id="emailModal">
+  <div class="sys-modal">
+    <div class="sys-modal__head">
+      <span class="sys-modal__title"><i class="fas fa-envelope" style="color:#06b6d4"></i> Test Email Configuration</span>
+      <button class="sys-modal__close" onclick="closeEmailModal()">×</button>
+    </div>
+    <div class="sys-modal__body">
+      <div class="sys-modal__field">
+        <label class="sys-modal__lbl">Test Email Address</label>
+        <input type="email" class="sys-modal__input" id="test_email_input" placeholder="test@example.com">
+      </div>
+    </div>
+    <div class="sys-modal__foot">
+      <button class="sys-modal__btn-sec" onclick="closeEmailModal()"><i class="bi bi-x-lg"></i> Cancel</button>
+      <button class="sys-modal__btn-pri" onclick="sendTestEmail()"><i class="bi bi-send"></i> Send Test</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="sys__toast" id="sys-toast">
+  <i id="sys-toast-icon" class="bi bi-check-circle-fill"></i>
+  <span id="sys-toast-msg"></span>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+.sys{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.sys__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.sys__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.sys__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.sys__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* TOPBAR */
+.sys__top{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;background:rgba(13,31,45,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(6,182,212,.13);padding:0 24px;height:52px;}
+.sys__top-l,.sys__top-r{display:flex;align-items:center;gap:12px;}
+.sys__logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.sys__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.sys__brand b{font-weight:800;color:#fff;}
+.sys__div{width:1px;height:16px;background:var(--t3);}
+.sys__bc{display:flex;align-items:center;gap:5px;}
+.sys__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.sys__bc-a:hover{color:var(--acc);}
+.sys__bc-sep{font-size:10px;color:var(--t3);}
+.sys__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.sys__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.sys__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+
+/* BODY */
+.sys__body{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:18px;}
+
+/* PAGE HEAD */
+.sys__head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:rgba(255,255,255,.03);border:1px solid rgba(6,182,212,.12);backdrop-filter:blur(18px);border-radius:18px;padding:22px 28px;box-shadow:0 8px 30px rgba(0,0,0,.2);}
+.sys__head-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 4px 20px rgba(6,182,212,.3);}
+.sys__head>div:nth-child(2){flex:1;}
+.sys__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.sys__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+.sys__all-ok{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--grn);}
+.sys__ok-dot{width:9px;height:9px;border-radius:50%;background:var(--grn);animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.4);}70%{box-shadow:0 0 0 7px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+
+/* HEALTH STRIP */
+.sys__health{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.sys__health{grid-template-columns:repeat(2,1fr);}}
+.sys__hc{background:var(--b2);border-radius:14px;padding:18px 16px;display:flex;align-items:center;gap:13px;border:1px solid rgba(255,255,255,.06);box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .22s;animation:fu .5s ease both;animation-delay:calc(var(--i)*.07s);}
+.sys__hc:hover{transform:translateY(-3px);}
+.sys__hc--g{border-top:2px solid rgba(16,185,129,.4);}
+.sys__hc--r{border-top:2px solid rgba(248,113,113,.4);}
+.sys__hc--y{border-top:2px solid rgba(251,191,36,.4);}
+.sys__hc--sl{border-top:2px solid rgba(71,85,105,.3);}
+.sys__hc-icon{width:44px;height:44px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.06);}
+.sys__hc--g .sys__hc-icon{color:#10b981;}
+.sys__hc--r .sys__hc-icon{color:#f87171;}
+.sys__hc--y .sys__hc-icon{color:#fbbf24;}
+.sys__hc--sl .sys__hc-icon{color:#64748b;}
+.sys__hc-info{flex:1;}
+.sys__hc-label{display:block;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;}
+.sys__hc-val{display:block;font-size:14px;font-weight:700;color:var(--t1);margin-top:2px;}
+.sys__hc-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:99px;flex-shrink:0;}
+.sys__hc-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.sys__hc-badge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.sys__hc-badge--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+.sys__hc-badge--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+.sys__hc-badge--sl{background:rgba(71,85,105,.1);color:#64748b;border:1px solid rgba(71,85,105,.2);}
+
+/* MID GRID */
+.sys__midgrid{display:grid;grid-template-columns:1fr 320px;gap:16px;}
+@media(max-width:1050px){.sys__midgrid{grid-template-columns:1fr;}}
+
+/* CARDS */
+.sys__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.07s);}
+.sys__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 18px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.sys__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.sys__card-body{padding:18px 18px;}
+.sys__edit-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--acc);text-decoration:none;transition:gap .18s;}
+.sys__edit-link:hover{gap:8px;color:var(--acc);}
+
+/* stats grid */
+.sys__stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:700px){.sys__stats-grid{grid-template-columns:repeat(2,1fr);}}
+.sys__stat{background:var(--b3);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px 12px;text-align:center;position:relative;overflow:hidden;}
+.sys__stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--sc);opacity:.6;}
+.sys__stat-icon{font-size:20px;color:var(--sc);margin-bottom:10px;}
+.sys__stat-n{display:block;font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:800;color:#fff;line-height:1;}
+.sys__stat-lbl{display:block;font-size:11px;color:var(--t3);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.sys__stat-sub{display:block;font-size:11px;margin-top:3px;font-weight:600;}
+.sys__stat-bar{height:3px;background:rgba(255,255,255,.07);border-radius:99px;margin-top:10px;overflow:hidden;}
+.sys__stat-fill{height:100%;border-radius:99px;background:var(--c);width:0;transition:width 1.1s ease .4s;}
+
+/* config list */
+.sys__cfg-list{display:flex;flex-direction:column;gap:10px;}
+.sys__cfg-row{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:9px;}
+.sys__cfg-ic{width:26px;height:26px;border-radius:7px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--ic);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.sys__cfg-lbl{display:block;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.sys__cfg-val{font-size:12.5px;color:var(--t1);font-weight:500;}
+.sys__mono{font-family:'JetBrains Mono',monospace;font-size:12px !important;}
+
+/* BOTTOM GRID */
+.sys__botgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:1050px){.sys__botgrid{grid-template-columns:1fr;}}
+
+/* action tiles */
+.sys__actions-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:700px){.sys__actions-grid{grid-template-columns:repeat(2,1fr);}}
+.sys__act-tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 12px;border-radius:12px;border:1px solid transparent;text-decoration:none;cursor:pointer;transition:all .2s;}
+.sys__at-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;transition:box-shadow .2s;}
+.sys__at-lbl{font-size:13px;font-weight:800;color:var(--t1);}
+.sys__at-hint{font-size:11px;color:var(--t3);text-align:center;}
+.sys__act-tile--c{background:rgba(6,182,212,.06);border-color:rgba(6,182,212,.15);}
+.sys__act-tile--c .sys__at-icon{background:rgba(6,182,212,.14);color:#22d3ee;}
+.sys__act-tile--c:hover{background:rgba(6,182,212,.12);border-color:rgba(6,182,212,.35);transform:translateY(-3px);}
+.sys__act-tile--c:hover .sys__at-icon{box-shadow:0 0 16px rgba(6,182,212,.4);}
+.sys__act-tile--g{background:rgba(16,185,129,.05);border-color:rgba(16,185,129,.15);}
+.sys__act-tile--g .sys__at-icon{background:rgba(16,185,129,.12);color:var(--grn);}
+.sys__act-tile--g:hover{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.35);transform:translateY(-3px);}
+.sys__act-tile--g:hover .sys__at-icon{box-shadow:0 0 16px rgba(16,185,129,.3);}
+.sys__act-tile--y{background:rgba(251,191,36,.05);border-color:rgba(251,191,36,.15);}
+.sys__act-tile--y .sys__at-icon{background:rgba(251,191,36,.12);color:var(--yel);}
+.sys__act-tile--y:hover{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.35);transform:translateY(-3px);}
+.sys__act-tile--y:hover .sys__at-icon{box-shadow:0 0 16px rgba(251,191,36,.3);}
+.sys__act-tile--pur{background:rgba(167,139,250,.05);border-color:rgba(167,139,250,.15);}
+.sys__act-tile--pur .sys__at-icon{background:rgba(167,139,250,.12);color:var(--pur);}
+.sys__act-tile--pur:hover{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.35);transform:translateY(-3px);}
+.sys__act-tile--pur:hover .sys__at-icon{box-shadow:0 0 16px rgba(167,139,250,.3);}
+
+/* app info */
+.sys__info-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:600px){.sys__info-cols{grid-template-columns:1fr;}}
+.sys__info-heading{font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
+.sys__info-list{display:flex;flex-direction:column;gap:8px;}
+.sys__info-row{display:flex;justify-content:space-between;gap:12px;padding:7px 11px;background:rgba(255,255,255,.03);border-radius:8px;}
+.sys__info-lbl{font-size:12px;color:var(--t3);}
+.sys__info-val{font-size:12px;color:var(--t1);font-weight:600;}
+.sys__feature-list{display:flex;flex-direction:column;gap:8px;}
+.sys__feature{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--t2);}
+
+/* MODAL */
+.sys-modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(7,12,25,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .22s;}
+.sys-modal-overlay.open{opacity:1;pointer-events:all;}
+.sys-modal{background:var(--b2);border:1px solid rgba(6,182,212,.2);border-radius:16px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(20px);transition:transform .25s cubic-bezier(.34,1.2,.64,1);overflow:hidden;}
+.sys-modal-overlay.open .sys-modal{transform:translateY(0);}
+.sys-modal__head{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;border-bottom:1px solid rgba(6,182,212,.1);background:rgba(6,182,212,.025);}
+.sys-modal__title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:#fff;}
+.sys-modal__close{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--t2);width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;transition:all .15s;cursor:pointer;}
+.sys-modal__close:hover{background:rgba(248,113,113,.15);color:#f87171;}
+.sys-modal__body{padding:18px 20px;display:flex;flex-direction:column;gap:12px;}
+.sys-modal__field{display:flex;flex-direction:column;gap:5px;}
+.sys-modal__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.sys-modal__input{width:100%;background:var(--b3);border:1px solid rgba(6,182,212,.18);border-radius:10px;color:var(--t1);font-family:'Urbanist',sans-serif;font-size:14px;font-weight:500;padding:10px 14px;outline:none;transition:border-color .18s,box-shadow .18s;}
+.sys-modal__input::placeholder{color:var(--t3);}
+.sys-modal__input:focus{border-color:rgba(6,182,212,.5);box-shadow:0 0 0 3px rgba(6,182,212,.12);}
+.sys-modal__foot{padding:12px 20px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:flex-end;gap:10px;}
+.sys-modal__btn-sec{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:13.5px;font-weight:700;padding:8px 16px;border-radius:9px;cursor:pointer;transition:all .18s;}
+.sys-modal__btn-sec:hover{color:var(--t1);}
+.sys-modal__btn-pri{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#0891b2,#06b6d4);border:1px solid rgba(6,182,212,.4);color:#fff;font-size:13.5px;font-weight:800;padding:8px 18px;border-radius:9px;cursor:pointer;box-shadow:0 0 14px rgba(6,182,212,.25);transition:all .18s;}
+.sys-modal__btn-pri:hover{box-shadow:0 0 24px rgba(6,182,212,.45);}
+
+/* TOAST */
+.sys__toast{position:fixed;bottom:28px;right:28px;z-index:999;display:flex;align-items:center;gap:10px;background:var(--b2);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:13px 18px;font-size:13.5px;font-weight:600;color:var(--t1);box-shadow:0 8px 30px rgba(0,0,0,.4);transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+.sys__toast.show{transform:translateY(0);opacity:1;}
+.sys__toast.error{border-color:rgba(248,113,113,.3);}
+.sys__toast i{font-size:16px;color:#10b981;}
+.sys__toast.error i{color:#f87171;}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;animation-delay:calc(var(--i,0)*.07s);}
+</style>
+
+<script>
+/* Count-up */
+document.querySelectorAll('.sys__stat-n[data-count]').forEach(el=>{
+  const t=parseInt(el.dataset.count)||0;
+  const dur=1200,s=performance.now();
+  (function run(now){
+    const p=Math.min((now-s)/dur,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.floor(e*t);
+    if(p<1) requestAnimationFrame(run);
+    else el.textContent=t;
+  })(s);
+});
+
+/* Stat bars */
+requestAnimationFrame(()=>{
+  document.querySelectorAll('.sys__stat-fill').forEach(el=>{
+    el.style.width=getComputedStyle(el).getPropertyValue('--w');
+  });
+});
+
+/* Toast */
+function showToast(msg,isError=false){
+  const t=document.getElementById('sys-toast');
+  const m=document.getElementById('sys-toast-msg');
+  const i=document.getElementById('sys-toast-icon');
+  m.textContent=msg;
+  t.className='sys__toast'+(isError?' error':'');
+  i.className=isError?'bi bi-x-circle-fill':'bi bi-check-circle-fill';
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>t.classList.remove('show'),4500);
+}
+
+/* Test Database */
+function testDatabase(){
+  showToast('Database status: {{ db_status }}', '{{ db_status }}'!=='Connected');
+}
+
+/* Email modal */
+function testEmail(){
+  document.getElementById('test_email_input').value='';
+  document.getElementById('emailModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeEmailModal(){
+  document.getElementById('emailModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.getElementById('emailModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('emailModal')) closeEmailModal();
+});
+function sendTestEmail(){
+  const email=document.getElementById('test_email_input').value.trim();
+  if(!email) return;
+  const btn=document.querySelector('.sys-modal__btn-pri');
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Sending…';
+  const fd=new FormData();fd.append('test_email',email);
+  fetch('{% url "admin_app:test_email_configuration" %}',{
+    method:'POST',body:fd,
+    headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}
+  })
+  .then(r=>r.json())
+  .then(d=>{closeEmailModal();showToast(d.message,!d.success);})
+  .catch(e=>{closeEmailModal();showToast('Error: '+e,true);})
+  .finally(()=>{btn.disabled=false;btn.innerHTML='<i class="bi bi-send"></i> Send Test';});
+}
+
+/* Trigger reminders */
+function triggerReminders(){
+  if(!confirm('Send reminder emails to all students with pending responses?')) return;
+  const btn=document.getElementById('btnReminder');
+  btn.disabled=true;
+  btn.querySelector('.sys__at-lbl').textContent='Sending…';
+  btn.querySelector('.sys__at-icon').innerHTML='<i class="fas fa-spinner fa-spin"></i>';
+  fetch('{% url "admin_app:trigger_reminder_emails" %}',{
+    method:'POST',
+    headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}
+  })
+  .then(r=>r.json())
+  .then(d=>showToast(d.message,!d.success))
+  .catch(e=>showToast('Error: '+e,true))
+  .finally(()=>{
+    btn.disabled=false;
+    btn.querySelector('.sys__at-lbl').textContent='Send Reminders';
+    btn.querySelector('.sys__at-icon').innerHTML='<i class="fas fa-bell"></i>';
+  });
+}
+</script>
+
+{% endblock %}

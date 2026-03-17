@@ -1,0 +1,73 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Placement Drive Reminder - Digital Notice Board{% endblock %}
+
+{% block header_subtitle %}Action Required: Respond to Placement Drive{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    Dear {{ student_name }},
+</div>
+
+<div class="info-box warning">
+    <h3>⏰ Reminder: Pending Response Required</h3>
+    <p>You have not yet responded to an active placement drive that matches your profile.</p>
+</div>
+
+<div class="content">
+    <p>This is a friendly reminder that the following placement drive is currently active and awaiting your response:</p>
+</div>
+
+<table class="details-table">
+    <tr>
+        <td>Company Name</td>
+        <td><strong>{{ company_name }}</strong></td>
+    </tr>
+    <tr>
+        <td>Drive Title</td>
+        <td>{{ drive_title }}</td>
+    </tr>
+    <tr>
+        <td>Position</td>
+        <td>{{ position }}</td>
+    </tr>
+    <tr>
+        <td>Package</td>
+        <td><strong>{{ package }}</strong></td>
+    </tr>
+    <tr>
+        <td>Deadline</td>
+        <td><strong style="color: #ef4444;">{{ deadline }}</strong></td>
+    </tr>
+    <tr>
+        <td>Eligibility</td>
+        <td>{{ eligibility }}</td>
+    </tr>
+</table>
+
+<div class="button-container">
+    <a href="{{ drive_url }}" class="btn btn-primary">View Drive & Respond</a>
+</div>
+
+<div class="info-box">
+    <h3>📌 Important Information</h3>
+    <p><strong>Why Respond?</strong><br>
+    Your response helps us coordinate with the company and ensures you don't miss out on opportunities that match your profile.</p>
+    
+    <p style="margin-top: 15px;"><strong>Response Options:</strong><br>
+    • <strong>Opt-In:</strong> You're interested and want to participate<br>
+    • <strong>Opt-Out:</strong> You're not interested in this opportunity</p>
+</div>
+
+<div class="content">
+    <p><strong>⚠️ Action Required:</strong> Please log in to your account and submit your response before the deadline. Failure to respond may result in you being excluded from this placement drive.</p>
+    
+    <p style="margin-top: 20px;">You will continue to receive reminders until you submit your response.</p>
+    
+    <p style="margin-top: 25px;">
+        <strong>Regards,</strong><br>
+        Placement Cell Team<br>
+        Digital Notice Board
+    </p>
+</div>
+{% endblock %}

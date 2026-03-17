@@ -1,0 +1,517 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Logs - Digital Notice Board{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+{% csrf_token %}
+
+<div class="el">
+
+  <div class="el__mesh"></div>
+  <div class="el__orb el__orb--1"></div>
+  <div class="el__orb el__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="el__top">
+    <div class="el__top-l">
+      <div class="el__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="el__brand">DNB <b>Admin</b></span>
+      <span class="el__div"></span>
+      <nav class="el__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="el__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right el__bc-sep"></i>
+        <a href="{% url 'admin_app:system_settings' %}" class="el__bc-a">Settings</a>
+        <i class="bi bi-chevron-right el__bc-sep"></i>
+        <span class="el__bc-cur">Email Logs</span>
+      </nav>
+    </div>
+    <div class="el__top-r">
+      <a href="{% url 'admin_app:system_settings' %}" class="el__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="el__body">
+
+    <!-- PAGE HEAD -->
+    <div class="el__head anim-up">
+      <div class="el__head-icon"><i class="bi bi-envelope-fill"></i></div>
+      <div>
+        <h1 class="el__h1">Email Logs</h1>
+        <p class="el__sub">Track reminder emails, delivery stats and student engagement.</p>
+      </div>
+      <!-- Send Now button -->
+      <button class="el__send-btn" id="triggerReminders">
+        <i class="fas fa-paper-plane"></i>
+        <span id="el-btn-txt">Send Reminders Now</span>
+      </button>
+    </div>
+
+    <!-- ══ STAT STRIP ══ -->
+    <div class="el__stats">
+
+      <div class="el__sc" style="--g:#06b6d4;--i:1">
+        <div class="el__sc-shine"></div>
+        <div class="el__sc-top">
+          <span class="el__sc-lbl">Total Reminders</span>
+          <span class="el__sc-ico" style="color:#06b6d4"><i class="fas fa-envelope"></i></span>
+        </div>
+        <span class="el__sc-n" data-count="{{ total_reminders }}">0</span>
+        <div class="el__sc-bar"><div class="el__sc-fill" style="--c:#06b6d4;--w:80%"></div></div>
+      </div>
+
+      <div class="el__sc" style="--g:#10b981;--i:2">
+        <div class="el__sc-shine"></div>
+        <div class="el__sc-top">
+          <span class="el__sc-lbl">This Week</span>
+          <span class="el__sc-ico" style="color:#10b981"><i class="fas fa-calendar-week"></i></span>
+        </div>
+        <span class="el__sc-n" data-count="{{ recent_reminders }}">0</span>
+        <div class="el__sc-bar"><div class="el__sc-fill" style="--c:#10b981;--w:50%"></div></div>
+      </div>
+
+      <div class="el__sc" style="--g:#a78bfa;--i:3">
+        <div class="el__sc-shine"></div>
+        <div class="el__sc-top">
+          <span class="el__sc-lbl">Active Students</span>
+          <span class="el__sc-ico" style="color:#a78bfa"><i class="fas fa-users"></i></span>
+        </div>
+        <span class="el__sc-n" data-count="{{ top_reminder_students|length }}">0</span>
+        <div class="el__sc-bar"><div class="el__sc-fill" style="--c:#a78bfa;--w:65%"></div></div>
+      </div>
+
+      <div class="el__sc" style="--g:#fbbf24;--i:4">
+        <div class="el__sc-shine"></div>
+        <div class="el__sc-top">
+          <span class="el__sc-lbl">Recent Activity</span>
+          <span class="el__sc-ico" style="color:#fbbf24"><i class="fas fa-clock"></i></span>
+        </div>
+        <span class="el__sc-n" data-count="{{ recent_activity|length }}">0</span>
+        <div class="el__sc-bar"><div class="el__sc-fill" style="--c:#fbbf24;--w:40%"></div></div>
+      </div>
+
+    </div>
+
+    <!-- ══ TWO-COL TABLES ══ -->
+    <div class="el__grid2">
+
+      <!-- Top Reminder Students -->
+      <div class="el__card anim-up" style="--i:5">
+        <div class="el__card-head">
+          <span class="el__card-title">
+            <i class="bi bi-exclamation-triangle-fill" style="color:#fbbf24"></i>
+            Students with Most Reminders
+          </span>
+          <span class="el__count-chip el__count-chip--y">{{ top_reminder_students|length }}</span>
+        </div>
+        {% if top_reminder_students %}
+        <div style="padding:0">
+          <div class="el__tw">
+            <table class="el__tbl">
+              <thead><tr>
+                <th>Student</th>
+                <th>Dept</th>
+                <th>Drive</th>
+                <th>Count</th>
+                <th>Last Sent</th>
+              </tr></thead>
+              <tbody>
+                {% for reminder in top_reminder_students %}
+                <tr class="el__tr">
+                  <td>
+                    <div class="el__stu">
+                      <div class="el__stu-av el__stu-av--y">{{ reminder.student.studentprofile.name|first|upper }}</div>
+                      <div>
+                        <div class="el__stu-nm">{{ reminder.student.studentprofile.name }}</div>
+                        <div class="el__stu-em">{{ reminder.student.studentprofile.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="el__tag el__tag--c">{{ reminder.student.studentprofile.get_department_display }}</span></td>
+                  <td>
+                    <div class="el__drive">
+                      <span class="el__drive-co">{{ reminder.drive.company_name }}</span>
+                      <span class="el__drive-ti">{{ reminder.drive.title|truncatechars:28 }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="el__count-badge">{{ reminder.reminder_count }}</span>
+                  </td>
+                  <td class="el__mu el__mono">{{ reminder.last_reminder_sent|timesince }} ago</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <div class="el__card-body">
+          <div class="el__empty">
+            <i class="fas fa-inbox"></i><p>No reminder data available</p>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="el__card anim-up" style="--i:6">
+        <div class="el__card-head">
+          <span class="el__card-title">
+            <i class="bi bi-activity" style="color:#06b6d4"></i>
+            Recent Email Activity
+          </span>
+          <span class="el__count-chip">{{ recent_activity|length }}</span>
+        </div>
+        {% if recent_activity %}
+        <div style="padding:0">
+          <div class="el__tw">
+            <table class="el__tbl">
+              <thead><tr>
+                <th>Student</th>
+                <th>Drive</th>
+                <th>Count</th>
+                <th>Last Sent</th>
+              </tr></thead>
+              <tbody>
+                {% for activity in recent_activity %}
+                <tr class="el__tr">
+                  <td>
+                    <div class="el__stu">
+                      <div class="el__stu-av el__stu-av--c">{{ activity.student.studentprofile.name|first|upper }}</div>
+                      <div>
+                        <div class="el__stu-nm">{{ activity.student.studentprofile.name }}</div>
+                        <div class="el__stu-em">{{ activity.student.studentprofile.department }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="el__drive">
+                      <span class="el__drive-co">{{ activity.drive.company_name }}</span>
+                      <span class="el__drive-ti">{{ activity.drive.title|truncatechars:24 }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="el__count-badge el__count-badge--c">{{ activity.reminder_count }}</span>
+                  </td>
+                  <td class="el__mu el__mono">{{ activity.last_reminder_sent|date:"d M Y, g:i A" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <div class="el__card-body">
+          <div class="el__empty">
+            <i class="fas fa-clock"></i><p>No recent activity</p>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- ══ ACTIONS BAR ══ -->
+    <div class="el__card el__card--actions anim-up" style="--i:7">
+      <div class="el__card-head">
+        <span class="el__card-title">
+          <i class="bi bi-tools" style="color:var(--acc)"></i> Email Management Actions
+        </span>
+      </div>
+      <div class="el__card-body el__action-grid">
+
+        <button type="button" class="el__action-tile el__action-tile--cyan" id="triggerReminders2">
+          <div class="el__at-icon"><i class="fas fa-paper-plane"></i></div>
+          <span class="el__at-label">Send Reminders Now</span>
+          <span class="el__at-hint">Trigger pending email reminders</span>
+        </button>
+
+        <a href="{% url 'admin_app:system_settings' %}" class="el__action-tile el__action-tile--pur">
+          <div class="el__at-icon"><i class="fas fa-cogs"></i></div>
+          <span class="el__at-label">Email Settings</span>
+          <span class="el__at-hint">Configure SMTP and templates</span>
+        </a>
+
+        <a href="{% url 'admin_app:system_status' %}" class="el__action-tile el__action-tile--grn">
+          <div class="el__at-icon"><i class="fas fa-heartbeat"></i></div>
+          <span class="el__at-label">System Status</span>
+          <span class="el__at-hint">Check service health</span>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="el__toast" id="el-toast">
+      <i class="bi bi-check-circle-fill" id="el-toast-icon"></i>
+      <span id="el-toast-msg">Reminders sent successfully!</span>
+    </div>
+
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;border:none;}
+
+.el{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;--ora:#fb923c;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.el__mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);
+  background-size:38px 38px;
+}
+.el__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.el__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.el__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* TOPBAR */
+.el__top{
+  position:sticky;top:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(13,31,45,.88);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(6,182,212,.13);
+  padding:0 24px;height:52px;
+}
+.el__top-l,.el__top-r{display:flex;align-items:center;gap:12px;}
+.el__logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.el__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.el__brand b{font-weight:800;color:#fff;}
+.el__div{width:1px;height:16px;background:var(--t3);}
+.el__bc{display:flex;align-items:center;gap:5px;}
+.el__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.el__bc-a:hover{color:var(--acc);}
+.el__bc-sep{font-size:10px;color:var(--t3);}
+.el__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.el__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.el__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+
+/* BODY */
+.el__body{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:18px;}
+
+/* PAGE HEAD */
+.el__head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:rgba(255,255,255,.035);border:1px solid rgba(6,182,212,.12);backdrop-filter:blur(18px);border-radius:18px;padding:22px 28px;box-shadow:0 8px 30px rgba(0,0,0,.2);}
+.el__head-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 4px 20px rgba(6,182,212,.3);}
+.el__head{flex-wrap:wrap;}
+.el__head>div{flex:1;}
+.el__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.el__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* send btn */
+.el__send-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,#0891b2,#06b6d4);
+  border:1px solid rgba(6,182,212,.4);
+  color:#fff;font-size:13.5px;font-weight:800;
+  padding:11px 22px;border-radius:11px;
+  box-shadow:0 0 18px rgba(6,182,212,.28);
+  transition:all .2s;white-space:nowrap;
+}
+.el__send-btn:hover{box-shadow:0 0 28px rgba(6,182,212,.48);transform:translateY(-1px);}
+.el__send-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* STAT STRIP */
+.el__stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.el__stats{grid-template-columns:repeat(2,1fr);}}
+.el__sc{background:var(--b2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 18px 14px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .22s,box-shadow .22s;animation:fu .5s ease both;animation-delay:calc(var(--i)*.07s);}
+.el__sc:hover{transform:translateY(-3px);box-shadow:0 0 20px rgba(var(--g),.12),0 8px 24px rgba(0,0,0,.3);}
+.el__sc-shine{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);opacity:.5;}
+.el__sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.el__sc-lbl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;}
+.el__sc-ico{font-size:17px;}
+.el__sc-n{display:block;font-size:34px;font-weight:800;color:#fff;line-height:1;font-family:'JetBrains Mono',monospace;}
+.el__sc-bar{height:3px;background:rgba(255,255,255,.07);border-radius:99px;margin-top:12px;overflow:hidden;}
+.el__sc-fill{height:100%;border-radius:99px;background:var(--c);width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1) .3s;}
+
+/* TWO COL */
+.el__grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:1050px){.el__grid2{grid-template-columns:1fr;}}
+
+/* CARD */
+.el__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.07s);}
+.el__card--actions{}
+.el__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 18px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.el__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.el__card-body{padding:18px 18px;}
+
+.el__count-chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(6,182,212,.1);color:var(--acc);border:1px solid rgba(6,182,212,.2);}
+.el__count-chip--y{background:rgba(251,191,36,.1);color:var(--yel);border-color:rgba(251,191,36,.2);}
+
+/* TABLE */
+.el__tw{overflow-x:auto;}
+.el__tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.el__tbl thead tr{border-bottom:1px solid rgba(6,182,212,.1);}
+.el__tbl th{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:10px 16px;text-align:left;white-space:nowrap;}
+.el__tbl td{padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;}
+.el__tr{transition:background .15s;}
+.el__tr:hover{background:rgba(6,182,212,.05);}
+.el__mu{color:var(--t2);font-size:12.5px;}
+.el__mono{font-family:'JetBrains Mono',monospace;font-size:11.5px !important;}
+
+.el__stu{display:flex;align-items:center;gap:10px;}
+.el__stu-av{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+.el__stu-av--y{background:rgba(251,191,36,.12);color:var(--yel);border:1px solid rgba(251,191,36,.22);}
+.el__stu-av--c{background:rgba(6,182,212,.12);color:#22d3ee;border:1px solid rgba(6,182,212,.22);}
+.el__stu-nm{font-weight:600;color:var(--t1);font-size:13px;}
+.el__stu-em{font-size:11px;color:var(--t3);}
+
+.el__tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:6px;}
+.el__tag--c{background:rgba(6,182,212,.1);color:#22d3ee;}
+
+.el__drive{display:flex;flex-direction:column;gap:1px;}
+.el__drive-co{font-size:13px;font-weight:700;color:var(--t1);}
+.el__drive-ti{font-size:11px;color:var(--t3);}
+
+.el__count-badge{display:inline-flex;align-items:center;justify-content:center;background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.22);font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:800;padding:3px 10px;border-radius:8px;}
+.el__count-badge--c{background:rgba(6,182,212,.1);color:#22d3ee;border-color:rgba(6,182,212,.2);}
+
+.el__empty{text-align:center;padding:36px 20px;color:var(--t3);}
+.el__empty i{font-size:28px;margin-bottom:10px;display:block;}
+.el__empty p{font-size:13px;}
+
+/* ACTION TILES */
+.el__action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media(max-width:800px){.el__action-grid{grid-template-columns:1fr;}}
+.el__action-tile{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:22px 16px;border-radius:14px;
+  text-decoration:none;
+  border:1px solid transparent;
+  transition:all .2s;cursor:pointer;
+}
+.el__at-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;transition:box-shadow .2s;}
+.el__at-label{font-size:14px;font-weight:800;color:var(--t1);}
+.el__at-hint{font-size:11.5px;color:var(--t3);text-align:center;}
+
+.el__action-tile--cyan{background:rgba(6,182,212,.06);border-color:rgba(6,182,212,.15);}
+.el__action-tile--cyan .el__at-icon{background:rgba(6,182,212,.14);color:#22d3ee;}
+.el__action-tile--cyan:hover{background:rgba(6,182,212,.12);border-color:rgba(6,182,212,.35);transform:translateY(-3px);}
+.el__action-tile--cyan:hover .el__at-icon{box-shadow:0 0 18px rgba(6,182,212,.4);}
+
+.el__action-tile--pur{background:rgba(167,139,250,.05);border-color:rgba(167,139,250,.15);}
+.el__action-tile--pur .el__at-icon{background:rgba(167,139,250,.12);color:var(--pur);}
+.el__action-tile--pur:hover{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.35);transform:translateY(-3px);}
+.el__action-tile--pur:hover .el__at-icon{box-shadow:0 0 18px rgba(167,139,250,.3);}
+
+.el__action-tile--grn{background:rgba(16,185,129,.05);border-color:rgba(16,185,129,.15);}
+.el__action-tile--grn .el__at-icon{background:rgba(16,185,129,.12);color:var(--grn);}
+.el__action-tile--grn:hover{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.35);transform:translateY(-3px);}
+.el__action-tile--grn:hover .el__at-icon{box-shadow:0 0 18px rgba(16,185,129,.3);}
+
+/* TOAST */
+.el__toast{
+  position:fixed;bottom:28px;right:28px;z-index:999;
+  display:flex;align-items:center;gap:10px;
+  background:var(--b2);border:1px solid rgba(16,185,129,.3);
+  border-radius:12px;padding:13px 18px;
+  font-size:13.5px;font-weight:600;color:var(--t1);
+  box-shadow:0 8px 30px rgba(0,0,0,.4);
+  transform:translateY(80px);opacity:0;
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+}
+.el__toast.show{transform:translateY(0);opacity:1;}
+.el__toast i{color:#10b981;font-size:16px;}
+.el__toast.error{border-color:rgba(248,113,113,.3);}
+.el__toast.error i{color:var(--red);}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+  /* Count-up */
+  document.querySelectorAll('.el__sc-n[data-count]').forEach(el=>{
+    const t=parseInt(el.dataset.count)||0;
+    const dur=1200,s=performance.now();
+    (function run(now){
+      const p=Math.min((now-s)/dur,1),e=1-Math.pow(1-p,3);
+      el.textContent=Math.floor(e*t);
+      if(p<1) requestAnimationFrame(run);
+      else el.textContent=t;
+    })(s);
+  });
+
+  /* Stat bars */
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.el__sc-fill').forEach(el=>{
+      el.style.width=getComputedStyle(el).getPropertyValue('--w');
+    });
+  });
+
+  /* Toast helper */
+  function showToast(msg, isError=false){
+    const t=document.getElementById('el-toast');
+    const m=document.getElementById('el-toast-msg');
+    const i=document.getElementById('el-toast-icon');
+    m.textContent=msg;
+    t.className='el__toast'+(isError?' error':'');
+    i.className=isError?'bi bi-x-circle-fill':'bi bi-check-circle-fill';
+    requestAnimationFrame(()=>t.classList.add('show'));
+    setTimeout(()=>t.classList.remove('show'),4000);
+  }
+
+  /* Trigger reminder handler — shared by both buttons */
+  function triggerReminders(btn){
+    const origTxt = btn.textContent.trim();
+    btn.disabled=true;
+    const txtEl=document.getElementById('el-btn-txt');
+    if(txtEl) txtEl.textContent='Sending...';
+    btn.innerHTML = btn.id==='triggerReminders'
+      ? '<i class="fas fa-spinner fa-spin"></i><span>Sending...</span>'
+      : '<div class="el__at-icon"><i class="fas fa-spinner fa-spin"></i></div><span class="el__at-label">Sending...</span><span class="el__at-hint">Please wait</span>';
+
+    fetch('{% url "admin_app:trigger_reminder_emails" %}',{
+      method:'POST',
+      headers:{'X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]').value}
+    })
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.success){
+        showToast('Reminders sent: '+data.message);
+        setTimeout(()=>location.reload(),2000);
+      } else {
+        showToast('Error: '+data.message, true);
+      }
+    })
+    .catch(err=>showToast('Network error: '+err, true))
+    .finally(()=>{
+      btn.disabled=false;
+      if(btn.id==='triggerReminders'){
+        btn.innerHTML='<i class="fas fa-paper-plane"></i><span id="el-btn-txt">Send Reminders Now</span>';
+      } else {
+        btn.innerHTML='<div class="el__at-icon"><i class="fas fa-paper-plane"></i></div><span class="el__at-label">Send Reminders Now</span><span class="el__at-hint">Trigger pending email reminders</span>';
+      }
+    });
+  }
+
+  const b1=document.getElementById('triggerReminders');
+  const b2=document.getElementById('triggerReminders2');
+  if(b1) b1.addEventListener('click',()=>triggerReminders(b1));
+  if(b2) b2.addEventListener('click',()=>triggerReminders(b2));
+
+});
+</script>
+
+{% endblock %}

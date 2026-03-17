@@ -1,0 +1,543 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Students{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+{% csrf_token %}
+
+<div class="ms">
+
+  <div class="ms__mesh"></div>
+  <div class="ms__orb ms__orb--1"></div>
+  <div class="ms__orb ms__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="ms__top">
+    <div class="ms__top-l">
+      <div class="ms__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="ms__brand">DNB <b>Admin</b></span>
+      <span class="ms__div"></span>
+      <nav class="ms__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="ms__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right ms__bc-sep"></i>
+        <span class="ms__bc-cur">Manage Students</span>
+      </nav>
+    </div>
+    <div class="ms__top-r">
+      <a href="{% url 'admin_app:dashboard' %}" class="ms__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+      {% if pending_approvals > 0 %}
+      <a href="?approval=pending" class="ms__btn-warn">
+        <i class="bi bi-person-exclamation"></i> Pending
+        <span class="ms__warn-count">{{ pending_approvals }}</span>
+      </a>
+      {% endif %}
+      <a href="{% url 'admin_app:profile_change_requests' %}" class="ms__btn-amber">
+        <i class="bi bi-pencil-square"></i> Profile Requests
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="ms__body">
+
+    <!-- PAGE HEAD -->
+    <div class="ms__head anim-up">
+      <div class="ms__head-icon"><i class="bi bi-people-fill"></i></div>
+      <div>
+        <h1 class="ms__h1">Student Management</h1>
+        <p class="ms__sub">Review, approve and manage student registrations.</p>
+      </div>
+    </div>
+
+    <!-- ══ STAT STRIP ══ -->
+    <div class="ms__stats">
+      <div class="ms__sc" style="--g:#06b6d4;--i:1">
+        <div class="ms__sc-shine"></div>
+        <div class="ms__sc-top">
+          <span class="ms__sc-lbl">Total Students</span>
+          <span class="ms__sc-ico" style="color:#06b6d4"><i class="fas fa-users"></i></span>
+        </div>
+        <span class="ms__sc-n" data-count="{{ page_obj.paginator.count }}">0</span>
+        <div class="ms__sc-bar"><div class="ms__sc-fill" style="--c:#06b6d4;--w:100%"></div></div>
+      </div>
+      <div class="ms__sc" style="--g:#f87171;--i:2">
+        <div class="ms__sc-shine"></div>
+        <div class="ms__sc-top">
+          <span class="ms__sc-lbl">Pending Approval</span>
+          <span class="ms__sc-ico" style="color:#f87171"><i class="fas fa-user-clock"></i></span>
+        </div>
+        <span class="ms__sc-n" data-count="{{ pending_approvals }}">0</span>
+        <div class="ms__sc-bar"><div class="ms__sc-fill" style="--c:#f87171;--w:20%"></div></div>
+      </div>
+      <div class="ms__sc" style="--g:#10b981;--i:3">
+        <div class="ms__sc-shine"></div>
+        <div class="ms__sc-top">
+          <span class="ms__sc-lbl">Approved</span>
+          <span class="ms__sc-ico" style="color:#10b981"><i class="fas fa-user-check"></i></span>
+        </div>
+        <span class="ms__sc-n" data-count="{{ page_obj.paginator.count|add:"-"|add:pending_approvals }}">0</span>
+        <div class="ms__sc-bar"><div class="ms__sc-fill" style="--c:#10b981;--w:80%"></div></div>
+      </div>
+      <div class="ms__sc" style="--g:#a78bfa;--i:4">
+        <div class="ms__sc-shine"></div>
+        <div class="ms__sc-top">
+          <span class="ms__sc-lbl">Active This Month</span>
+          <span class="ms__sc-ico" style="color:#a78bfa"><i class="fas fa-chart-line"></i></span>
+        </div>
+        <span class="ms__sc-n" data-count="{{ page_obj.paginator.count }}">0</span>
+        <div class="ms__sc-bar"><div class="ms__sc-fill" style="--c:#a78bfa;--w:70%"></div></div>
+      </div>
+    </div>
+
+    <!-- ══ FILTER ══ -->
+    <div class="ms__filter anim-up" style="--i:5">
+      <form method="get" class="ms__filter-form">
+        <div class="ms__ff ms__ff--wide">
+          <i class="bi bi-search ms__fic"></i>
+          <input type="text" name="search" class="ms__finput"
+            placeholder="Name, roll number, email…"
+            value="{{ search_query }}">
+        </div>
+        <div class="ms__ff">
+          <i class="bi bi-check-circle ms__fic"></i>
+          <select name="approval" class="ms__finput ms__fsel">
+            <option value="">All Status</option>
+            <option value="pending"  {% if approval_filter == 'pending'  %}selected{% endif %}>Pending</option>
+            <option value="approved" {% if approval_filter == 'approved' %}selected{% endif %}>Approved</option>
+          </select>
+        </div>
+        <div class="ms__ff">
+          <i class="bi bi-building ms__fic"></i>
+          <select name="department" class="ms__finput ms__fsel">
+            <option value="">All Departments</option>
+            {% for dept_code, dept_name in departments %}
+            <option value="{{ dept_code }}" {% if department_filter == dept_code %}selected{% endif %}>{{ dept_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="ms__ff">
+          <i class="bi bi-calendar ms__fic"></i>
+          <select name="year" class="ms__finput ms__fsel">
+            <option value="">All Years</option>
+            {% for year_code, year_name in years %}
+            <option value="{{ year_code }}" {% if year_filter == year_code %}selected{% endif %}>{{ year_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="ms__btn-search">
+          <i class="bi bi-search"></i> Filter
+        </button>
+        {% if search_query or approval_filter or department_filter or year_filter %}
+        <a href="{% url 'admin_app:manage_students' %}" class="ms__btn-clear">
+          <i class="bi bi-x-lg"></i> Clear
+        </a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- ══ STUDENTS TABLE ══ -->
+    <div class="ms__card anim-up" style="--i:6">
+      <div class="ms__card-head">
+        <span class="ms__card-title"><i class="bi bi-person-lines-fill" style="color:var(--acc)"></i> Students List</span>
+        <div class="ms__card-head-right">
+          <span class="ms__count-chip">{{ page_obj.paginator.count }} total</span>
+          <button class="ms__btn-export" onclick="exportToExcel()">
+            <i class="fas fa-file-excel"></i> Export
+          </button>
+        </div>
+      </div>
+
+      {% if page_obj %}
+      <div class="ms__tw">
+        <table class="ms__tbl">
+          <thead><tr>
+            <th>Student</th>
+            <th>Department</th>
+            <th>Year</th>
+            <th>CGPA</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            {% for student in page_obj %}
+            <tr class="ms__tr {% if not student.is_approved %}ms__tr--pending{% endif %}" style="--ri:{{ forloop.counter0 }}">
+
+              <!-- Student -->
+              <td>
+                <div class="ms__stu">
+                  <div class="ms__av {% if not student.is_approved %}ms__av--y{% else %}ms__av--c{% endif %}">
+                    {{ student.name|first|upper }}
+                  </div>
+                  <div>
+                    <div class="ms__stu-nm">{{ student.name }}</div>
+                    <div class="ms__stu-meta">
+                      <span class="ms__mono">{{ student.roll_number }}</span>
+                    </div>
+                    <div class="ms__stu-meta">@{{ student.user.username }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Dept -->
+              <td><span class="ms__tag ms__tag--c">{{ student.get_department_display }}</span></td>
+
+              <!-- Year -->
+              <td><span class="ms__tag ms__tag--g">Year {{ student.year }}</span></td>
+
+              <!-- CGPA -->
+              <td>
+                <span class="ms__cgpa
+                  {% if student.cgpa >= 8.0 %}ms__cgpa--hi
+                  {% elif student.cgpa >= 6.0 %}ms__cgpa--md
+                  {% else %}ms__cgpa--lo{% endif %}">
+                  {{ student.cgpa }}
+                </span>
+                <span class="ms__cgpa-denom">/10</span>
+              </td>
+
+              <!-- Email -->
+              <td class="ms__mu">{{ student.email|truncatechars:25 }}</td>
+
+              <!-- Status -->
+              <td>
+                {% if student.is_approved %}
+                  <span class="ms__badge ms__badge--g"><span class="ms__bdot"></span>Approved</span>
+                  {% if student.approved_at %}
+                  <div class="ms__approved-dt ms__mono">{{ student.approved_at|date:"d M Y" }}</div>
+                  {% endif %}
+                {% else %}
+                  <span class="ms__badge ms__badge--y ms__badge--pulse"><span class="ms__bdot"></span>Pending</span>
+                {% endif %}
+              </td>
+
+              <!-- Actions -->
+              <td>
+                <div class="ms__acts">
+                  <a href="{% url 'admin_app:student_detail' student.id %}" class="ms__act ms__act--c" title="View">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  {% if not student.is_approved %}
+                  <button class="ms__act ms__act--g" title="Approve"
+                    onclick="approveStudent({{ student.id }},'{{ student.name }}')">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="ms__act ms__act--r" title="Reject"
+                    onclick="showRejectModal({{ student.id }},'{{ student.name }}')">
+                    <i class="fas fa-times"></i>
+                  </button>
+                  {% endif %}
+                </div>
+              </td>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION -->
+      {% if page_obj.has_other_pages %}
+      <div class="ms__pg">
+        {% if page_obj.has_previous %}
+          <a class="ms__pg-btn" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if approval_filter %}&approval={{ approval_filter }}{% endif %}{% if department_filter %}&department={{ department_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+          <a class="ms__pg-btn" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if approval_filter %}&approval={{ approval_filter }}{% endif %}{% if department_filter %}&department={{ department_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+        {% endif %}
+        <span class="ms__pg-info">Page <b>{{ page_obj.number }}</b> of <b>{{ page_obj.paginator.num_pages }}</b></span>
+        {% if page_obj.has_next %}
+          <a class="ms__pg-btn" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if approval_filter %}&approval={{ approval_filter }}{% endif %}{% if department_filter %}&department={{ department_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+          <a class="ms__pg-btn" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if approval_filter %}&approval={{ approval_filter }}{% endif %}{% if department_filter %}&department={{ department_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="ms__empty">
+        <div class="ms__empty-ring"><i class="fas fa-users"></i></div>
+        <h3>No Students Found</h3>
+        <p>Try adjusting your search or filter criteria.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══ REJECT MODAL ══ -->
+<div class="ms-modal-overlay" id="rejectModal">
+  <div class="ms-modal">
+    <div class="ms-modal__head" style="border-bottom-color:rgba(248,113,113,.18)">
+      <span class="ms-modal__title">
+        <i class="bi bi-person-x-fill" style="color:#f87171"></i> Reject Student Registration
+      </span>
+      <button class="ms-modal__close" onclick="closeRejectModal()">×</button>
+    </div>
+    <form id="rejectForm" method="post">
+      {% csrf_token %}
+      <div class="ms-modal__body">
+        <div class="ms-modal__warn">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <p>You are about to reject the registration for <strong id="rejectStudentName"></strong>. This will delete their account and send a rejection email.</p>
+        </div>
+        <div class="ms-modal__field">
+          <label class="ms-modal__lbl">Reason for Rejection <span style="color:#f87171">*</span></label>
+          <textarea class="ms-modal__input" id="rejectionReason" name="reason" rows="4"
+            placeholder="Provide a clear reason — this will be sent to the student via email." required></textarea>
+          <span class="ms-modal__hint">This reason will be included in the rejection email.</span>
+        </div>
+      </div>
+      <div class="ms-modal__foot">
+        <button type="button" class="ms-modal__btn-sec" onclick="closeRejectModal()">
+          <i class="bi bi-x-lg"></i> Cancel
+        </button>
+        <button type="submit" class="ms-modal__btn-red">
+          <i class="fas fa-ban"></i> Reject Registration
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+.ms{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;--ora:#fb923c;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.ms__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.ms__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.ms__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.ms__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* TOPBAR */
+.ms__top{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;background:rgba(13,31,45,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(6,182,212,.13);padding:0 24px;height:52px;}
+.ms__top-l,.ms__top-r{display:flex;align-items:center;gap:10px;}
+.ms__logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.ms__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.ms__brand b{font-weight:800;color:#fff;}
+.ms__div{width:1px;height:16px;background:var(--t3);}
+.ms__bc{display:flex;align-items:center;gap:5px;}
+.ms__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.ms__bc-a:hover{color:var(--acc);}
+.ms__bc-sep{font-size:10px;color:var(--t3);}
+.ms__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.ms__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.ms__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+.ms__btn-warn{display:inline-flex;align-items:center;gap:7px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red);font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:8px;text-decoration:none;transition:all .18s;animation:glowred 2s ease-in-out infinite alternate;}
+@keyframes glowred{from{box-shadow:0 0 5px rgba(248,113,113,.15);}to{box-shadow:0 0 14px rgba(248,113,113,.35);}}
+.ms__warn-count{background:var(--red);color:#fff;font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:99px;}
+.ms__btn-amber{display:inline-flex;align-items:center;gap:6px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.22);color:#fbbf24;font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.ms__btn-amber:hover{background:rgba(251,191,36,.15);}
+
+/* BODY */
+.ms__body{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:18px;}
+
+/* PAGE HEAD */
+.ms__head{display:flex;align-items:center;gap:16px;}
+.ms__head-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;box-shadow:0 4px 20px rgba(6,182,212,.3);}
+.ms__h1{font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+.ms__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* STAT STRIP */
+.ms__stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.ms__stats{grid-template-columns:repeat(2,1fr);}}
+.ms__sc{background:var(--b2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 18px 14px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .22s,box-shadow .22s;animation:fu .5s ease both;animation-delay:calc(var(--i)*.07s);}
+.ms__sc:hover{transform:translateY(-3px);}
+.ms__sc-shine{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);opacity:.5;}
+.ms__sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.ms__sc-lbl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;}
+.ms__sc-ico{font-size:17px;}
+.ms__sc-n{display:block;font-size:34px;font-weight:800;color:#fff;line-height:1;font-family:'JetBrains Mono',monospace;}
+.ms__sc-bar{height:3px;background:rgba(255,255,255,.07);border-radius:99px;margin-top:12px;overflow:hidden;}
+.ms__sc-fill{height:100%;border-radius:99px;background:var(--c);width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1) .3s;}
+
+/* FILTER */
+.ms__filter{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;padding:15px 20px;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.ms__filter-form{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ms__ff{position:relative;display:flex;align-items:center;flex:1;min-width:150px;}
+.ms__ff--wide{flex:2;min-width:200px;}
+.ms__fic{position:absolute;left:11px;color:var(--t3);font-size:13px;pointer-events:none;}
+.ms__finput{width:100%;background:var(--b3);border:1px solid rgba(6,182,212,.15);border-radius:10px;color:var(--t1);font-family:'Urbanist',sans-serif;font-size:13.5px;font-weight:500;padding:10px 14px 10px 33px;outline:none;transition:border-color .18s,box-shadow .18s;-webkit-appearance:none;}
+.ms__finput::placeholder{color:var(--t3);}
+.ms__finput:focus{border-color:rgba(6,182,212,.45);box-shadow:0 0 0 3px rgba(6,182,212,.1);}
+.ms__fsel{cursor:pointer;}
+.ms__fsel option{background:var(--b2);color:var(--t1);}
+.ms__btn-search{display:inline-flex;align-items:center;gap:6px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:var(--acc);font-size:13px;font-weight:700;padding:10px 18px;border-radius:10px;transition:all .18s;white-space:nowrap;}
+.ms__btn-search:hover{background:rgba(6,182,212,.18);}
+.ms__btn-clear{display:inline-flex;align-items:center;gap:6px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red);font-size:13px;font-weight:700;padding:10px 16px;border-radius:10px;text-decoration:none;transition:all .18s;white-space:nowrap;}
+.ms__btn-clear:hover{background:rgba(248,113,113,.15);color:var(--red);}
+
+/* TABLE CARD */
+.ms__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.ms__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 20px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.ms__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.ms__card-head-right{display:flex;align-items:center;gap:10px;}
+.ms__count-chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(6,182,212,.1);color:var(--acc);border:1px solid rgba(6,182,212,.2);}
+.ms__btn-export{display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.22);color:var(--grn);font-size:12px;font-weight:700;padding:6px 13px;border-radius:8px;transition:all .18s;}
+.ms__btn-export:hover{background:rgba(16,185,129,.16);}
+
+/* TABLE */
+.ms__tw{overflow-x:auto;}
+.ms__tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.ms__tbl thead tr{border-bottom:1px solid rgba(6,182,212,.1);}
+.ms__tbl th{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:10px 16px;text-align:left;white-space:nowrap;}
+.ms__tbl td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;}
+.ms__tr{transition:background .15s;animation:rowIn .4s ease both;animation-delay:calc(var(--ri)*.035s);}
+.ms__tr:hover{background:rgba(6,182,212,.05);}
+.ms__tr--pending{background:rgba(251,191,36,.03);}
+.ms__tr--pending:hover{background:rgba(251,191,36,.06);}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+
+/* student cell */
+.ms__stu{display:flex;align-items:center;gap:10px;}
+.ms__av{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;}
+.ms__av--c{background:rgba(6,182,212,.15);color:#22d3ee;border:1px solid rgba(6,182,212,.28);}
+.ms__av--y{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25);}
+.ms__stu-nm{font-weight:700;color:var(--t1);font-size:13.5px;}
+.ms__stu-meta{font-size:11px;color:var(--t3);margin-top:1px;}
+.ms__mono{font-family:'JetBrains Mono',monospace;font-size:11px;}
+.ms__mu{color:var(--t2);font-size:12.5px;}
+
+.ms__tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;}
+.ms__tag--c{background:rgba(6,182,212,.1);color:#22d3ee;}
+.ms__tag--g{background:rgba(16,185,129,.1);color:#34d399;}
+
+.ms__cgpa{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;}
+.ms__cgpa--hi{color:#10b981;}
+.ms__cgpa--md{color:#fbbf24;}
+.ms__cgpa--lo{color:#f87171;}
+.ms__cgpa-denom{font-size:11px;color:var(--t3);margin-left:2px;}
+
+.ms__badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;}
+.ms__bdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.ms__badge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.ms__badge--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+.ms__badge--pulse .ms__bdot{animation:dp 1.8s infinite;}
+@keyframes dp{0%{box-shadow:0 0 0 0 rgba(251,191,36,.5);}70%{box-shadow:0 0 0 5px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+.ms__approved-dt{font-size:10.5px;color:var(--t3);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+
+.ms__acts{display:flex;gap:6px;align-items:center;}
+.ms__act{width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;text-decoration:none;transition:transform .15s,filter .15s;border:1px solid transparent;}
+.ms__act:hover{transform:scale(1.18);filter:brightness(1.3);}
+.ms__act--c{background:rgba(6,182,212,.1);color:#22d3ee;border-color:rgba(6,182,212,.2);}
+.ms__act--g{background:rgba(16,185,129,.1);color:#10b981;border-color:rgba(16,185,129,.2);}
+.ms__act--r{background:rgba(248,113,113,.1);color:#f87171;border-color:rgba(248,113,113,.2);}
+
+/* EMPTY */
+.ms__empty{display:flex;flex-direction:column;align-items:center;padding:60px 24px;color:var(--t3);}
+.ms__empty-ring{width:72px;height:72px;border-radius:50%;background:rgba(6,182,212,.07);border:1px solid rgba(6,182,212,.15);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--acc);margin-bottom:18px;}
+.ms__empty h3{font-size:17px;font-weight:800;color:var(--t1);margin-bottom:6px;}
+.ms__empty p{font-size:13px;}
+
+/* PAGINATION */
+.ms__pg{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-top:1px solid rgba(6,182,212,.08);flex-wrap:wrap;}
+.ms__pg-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--t2);font-size:13px;text-decoration:none;transition:all .18s;}
+.ms__pg-btn:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+.ms__pg-info{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t2);padding:0 4px;}
+.ms__pg-info b{color:var(--acc);}
+
+/* ══ REJECT MODAL ══ */
+.ms-modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(7,12,25,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .22s;}
+.ms-modal-overlay.open{opacity:1;pointer-events:all;}
+.ms-modal{background:var(--b2);border:1px solid rgba(248,113,113,.22);border-radius:18px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(20px);transition:transform .25s cubic-bezier(.34,1.2,.64,1);}
+.ms-modal-overlay.open .ms-modal{transform:translateY(0);}
+.ms-modal__head{display:flex;justify-content:space-between;align-items:center;padding:16px 22px 14px;border-bottom:1px solid rgba(248,113,113,.15);background:rgba(248,113,113,.04);}
+.ms-modal__title{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800;color:#fff;}
+.ms-modal__close{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:var(--t2);width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;transition:all .15s;cursor:pointer;}
+.ms-modal__close:hover{background:rgba(248,113,113,.15);color:#f87171;border-color:rgba(248,113,113,.3);}
+.ms-modal__body{padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+.ms-modal__foot{padding:14px 22px;border-top:1px solid rgba(248,113,113,.1);display:flex;justify-content:flex-end;gap:10px;}
+.ms-modal__warn{display:flex;align-items:flex-start;gap:10px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--t2);line-height:1.5;}
+.ms-modal__warn i{color:var(--yel);flex-shrink:0;margin-top:1px;font-size:15px;}
+.ms-modal__warn strong{color:var(--yel);}
+.ms-modal__field{display:flex;flex-direction:column;gap:6px;}
+.ms-modal__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.ms-modal__hint{font-size:11px;color:var(--t3);}
+.ms-modal__input{width:100%;background:var(--b3);border:1px solid rgba(248,113,113,.2);border-radius:10px;color:var(--t1);font-family:'Urbanist',sans-serif;font-size:14px;font-weight:500;padding:11px 14px;outline:none;resize:vertical;transition:border-color .18s,box-shadow .18s;}
+.ms-modal__input::placeholder{color:var(--t3);}
+.ms-modal__input:focus{border-color:rgba(248,113,113,.5);box-shadow:0 0 0 3px rgba(248,113,113,.1);}
+.ms-modal__btn-sec{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:13.5px;font-weight:700;padding:9px 18px;border-radius:10px;cursor:pointer;transition:all .18s;}
+.ms-modal__btn-sec:hover{background:rgba(255,255,255,.09);color:var(--t1);}
+.ms-modal__btn-red{display:inline-flex;align-items:center;gap:7px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:#f87171;font-size:13.5px;font-weight:800;padding:9px 20px;border-radius:10px;cursor:pointer;transition:all .18s;}
+.ms-modal__btn-red:hover{background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.55);}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;animation-delay:calc(var(--i,0)*.08s);}
+</style>
+
+
+<script>
+/* Count-up */
+document.querySelectorAll('.ms__sc-n[data-count]').forEach(el=>{
+  const t=parseInt(el.dataset.count)||0;
+  const dur=1200,s=performance.now();
+  (function run(now){
+    const p=Math.min((now-s)/dur,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.floor(e*t);
+    if(p<1) requestAnimationFrame(run);
+    else el.textContent=t;
+  })(s);
+});
+
+/* Stat bars */
+requestAnimationFrame(()=>{
+  document.querySelectorAll('.ms__sc-fill').forEach(el=>{
+    el.style.width=getComputedStyle(el).getPropertyValue('--w');
+  });
+});
+
+/* Approve */
+function approveStudent(studentId,studentName){
+  if(!confirm(`Approve ${studentName}'s registration?\n\nThis will activate their account and send an approval email.`)) return;
+  const form=document.createElement('form');
+  form.method='POST';
+  form.action=`/admin-panel/students/${studentId}/approve/`;
+  const csrf=document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const inp=document.createElement('input');
+  inp.type='hidden';inp.name='csrfmiddlewaretoken';inp.value=csrf;
+  form.appendChild(inp);
+  document.body.appendChild(form);
+  form.submit();
+}
+
+/* Reject modal */
+function showRejectModal(studentId,studentName){
+  document.getElementById('rejectStudentName').textContent=studentName;
+  document.getElementById('rejectForm').action=`/admin-panel/students/${studentId}/reject/`;
+  document.getElementById('rejectionReason').value='';
+  document.getElementById('rejectModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeRejectModal(){
+  document.getElementById('rejectModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.getElementById('rejectModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('rejectModal')) closeRejectModal();
+});
+
+function exportToExcel(){
+  alert('Export functionality will be implemented soon!');
+}
+</script>
+
+{% endblock %}

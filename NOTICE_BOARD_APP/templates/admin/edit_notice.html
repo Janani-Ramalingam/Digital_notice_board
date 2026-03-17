@@ -1,0 +1,659 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Drive{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="ed">
+
+  <div class="ed__mesh"></div>
+  <div class="ed__orb ed__orb--1"></div>
+  <div class="ed__orb ed__orb--2"></div>
+
+  <!-- ══ TOPBAR ══ -->
+  <div class="ed__top">
+    <div class="ed__top-l">
+      <div class="ed__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="ed__brand">DNB <b>Admin</b></span>
+      <span class="ed__div"></span>
+      <nav class="ed__bc">
+        <a href="{% url 'admin_app:dashboard' %}" class="ed__bc-a">Dashboard</a>
+        <i class="bi bi-chevron-right ed__bc-sep"></i>
+        <a href="{% url 'admin_app:manage_drives' %}" class="ed__bc-a">Manage Drives</a>
+        <i class="bi bi-chevron-right ed__bc-sep"></i>
+        <span class="ed__bc-cur">Edit Drive</span>
+      </nav>
+    </div>
+    <div class="ed__top-r">
+      <a href="{% url 'admin_app:manage_drives' %}" class="ed__btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="ed__body">
+
+    <!-- PAGE HEAD -->
+    <div class="ed__head anim-up">
+      <div class="ed__head-icon"><i class="bi bi-pencil-fill"></i></div>
+      <div class="ed__head-text">
+        <h1 class="ed__h1">Edit Placement Drive</h1>
+        <p class="ed__sub">Modify the drive details below. Changes are applied immediately on save.</p>
+      </div>
+      <span class="ed__status-pill
+        {% if drive.status == 'Active' %}ed__status-pill--g
+        {% elif drive.status == 'Closed' %}ed__status-pill--r
+        {% else %}ed__status-pill--y{% endif %}">
+        <span class="ed__sdot"></span>{{ drive.status }}
+      </span>
+    </div>
+
+    <!-- ══ GRID ══ -->
+    <div class="ed__grid">
+
+      <!-- ── LEFT: FORM ── -->
+      <div class="ed__left">
+        <form method="post" class="ed__form">
+          {% csrf_token %}
+
+          <!-- 01 Basic Info -->
+          <div class="ed__sec anim-up" style="--i:1">
+            <div class="ed__sec-head">
+              <span class="ed__sec-num">01</span>
+              <div>
+                <h2 class="ed__sec-title">Basic Information</h2>
+                <p class="ed__sec-hint">Drive title and company details</p>
+              </div>
+            </div>
+            <div class="ed__sec-body">
+              <div class="ed__row2">
+                <div class="ed__field">
+                  <label class="ed__lbl">Drive Title</label>
+                  {{ form.title }}
+                </div>
+                <div class="ed__field">
+                  <label class="ed__lbl">Company Name</label>
+                  {{ form.company_name }}
+                </div>
+              </div>
+              <div class="ed__field">
+                <label class="ed__lbl">Description</label>
+                {{ form.description }}
+              </div>
+            </div>
+          </div>
+
+          <!-- 02 Eligibility -->
+          <div class="ed__sec anim-up" style="--i:2">
+            <div class="ed__sec-head">
+              <span class="ed__sec-num">02</span>
+              <div>
+                <h2 class="ed__sec-title">Eligibility Criteria</h2>
+                <p class="ed__sec-hint">Who qualifies for this drive</p>
+              </div>
+            </div>
+            <div class="ed__sec-body">
+              <div class="ed__row2">
+                <div class="ed__field">
+                  <label class="ed__lbl">Minimum CGPA</label>
+                  {{ form.min_cgpa }}
+                </div>
+                <div class="ed__field">
+                  <label class="ed__lbl">Eligible Year</label>
+                  {{ form.eligible_year }}
+                </div>
+              </div>
+              <!-- Department checkboxes -->
+              <div class="ed__field">
+                <label class="ed__lbl">Eligible Departments</label>
+                <div class="ed__dept-grid">
+                  {% for dept, label in dept_choices %}
+                  <label class="ed__dept-toggle">
+                    <input type="checkbox" name="eligible_departments" value="{{ dept }}"
+                      {% if dept in drive.eligible_departments %}checked{% endif %}>
+                    <span class="ed__dept-label">{{ label }}</span>
+                  </label>
+                  {% empty %}
+                  <!-- Fallback hardcoded departments -->
+                  <label class="ed__dept-toggle">
+                    <input type="checkbox" name="eligible_departments" value="CSE" {% if 'CSE' in drive.eligible_departments %}checked{% endif %}>
+                    <span class="ed__dept-label">CSE</span>
+                  </label>
+                  <label class="ed__dept-toggle">
+                    <input type="checkbox" name="eligible_departments" value="IT" {% if 'IT' in drive.eligible_departments %}checked{% endif %}>
+                    <span class="ed__dept-label">IT</span>
+                  </label>
+                  <label class="ed__dept-toggle">
+                    <input type="checkbox" name="eligible_departments" value="ECE" {% if 'ECE' in drive.eligible_departments %}checked{% endif %}>
+                    <span class="ed__dept-label">ECE</span>
+                  </label>
+                  <label class="ed__dept-toggle">
+                    <input type="checkbox" name="eligible_departments" value="EEE" {% if 'EEE' in drive.eligible_departments %}checked{% endif %}>
+                    <span class="ed__dept-label">EEE</span>
+                  </label>
+                  <label class="ed__dept-toggle">
+                    <input type="checkbox" name="eligible_departments" value="MECH" {% if 'MECH' in drive.eligible_departments %}checked{% endif %}>
+                    <span class="ed__dept-label">MECH</span>
+                  </label>
+                  <label class="ed__dept-toggle">
+                    <input type="checkbox" name="eligible_departments" value="CIVIL" {% if 'CIVIL' in drive.eligible_departments %}checked{% endif %}>
+                    <span class="ed__dept-label">CIVIL</span>
+                  </label>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 03 Timeline -->
+          <div class="ed__sec anim-up" style="--i:3">
+            <div class="ed__sec-head">
+              <span class="ed__sec-num">03</span>
+              <div>
+                <h2 class="ed__sec-title">Timeline &amp; Status</h2>
+                <p class="ed__sec-hint">Deadlines and drive visibility</p>
+              </div>
+            </div>
+            <div class="ed__sec-body">
+              <div class="ed__row2">
+                <div class="ed__field">
+                  <label class="ed__lbl">Last Date to Apply</label>
+                  {{ form.last_date }}
+                </div>
+                <div class="ed__field">
+                  <label class="ed__lbl">Drive Status</label>
+                  {{ form.status }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="ed__actions anim-up" style="--i:4">
+            <a href="{% url 'admin_app:manage_drives' %}" class="ed__btn-sec">
+              <i class="bi bi-arrow-left"></i> Cancel
+            </a>
+            <div class="ed__actions-r">
+              <a href="{% url 'admin_app:drive_responses' drive.id %}" class="ed__btn-outline">
+                <i class="fas fa-eye"></i> Responses
+                <span class="ed__resp-count">{{ drive.total_responses }}</span>
+              </a>
+              <button type="submit" class="ed__btn-primary">
+                <i class="fas fa-save"></i> Update Drive
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ── RIGHT: SIDEBAR ── -->
+      <aside class="ed__right">
+
+        <!-- Drive Statistics -->
+        <div class="ed__card anim-up" style="--i:1">
+          <div class="ed__card-head">
+            <span class="ed__card-title"><i class="bi bi-bar-chart-fill" style="color:#a78bfa"></i> Drive Statistics</span>
+          </div>
+          <div class="ed__card-body">
+            <div class="ed__stat3">
+              <div class="ed__stat3-item" style="--sc:#06b6d4">
+                <span class="ed__stat3-n">{{ drive.total_responses }}</span>
+                <span class="ed__stat3-l">Total</span>
+              </div>
+              <div class="ed__stat3-item" style="--sc:#10b981">
+                <span class="ed__stat3-n">{{ drive.opt_in_count }}</span>
+                <span class="ed__stat3-l">Opted In</span>
+              </div>
+              <div class="ed__stat3-item" style="--sc:#f87171">
+                <span class="ed__stat3-n">{{ drive.opt_out_count }}</span>
+                <span class="ed__stat3-l">Opted Out</span>
+              </div>
+            </div>
+
+            <div class="ed__divider"></div>
+
+            <!-- Response rate bar -->
+            <div class="ed__rate">
+              <div class="ed__rate-row">
+                <span class="ed__rate-lbl">Response Rate</span>
+                <span class="ed__rate-val">{{ drive.response_rate }}%</span>
+              </div>
+              <div class="ed__rate-track">
+                <div class="ed__rate-fill" style="--w:{{ drive.response_rate }}%"></div>
+              </div>
+            </div>
+
+            <!-- Days remaining -->
+            <div class="ed__days">
+              <span class="ed__days-lbl">Days Remaining</span>
+              <span class="ed__days-val
+                {% if drive.days_remaining <= 0 %}ed__days--red
+                {% elif drive.days_remaining <= 7 %}ed__days--amber
+                {% else %}ed__days--grn{% endif %}">
+                {% if drive.days_remaining > 0 %}
+                  {{ drive.days_remaining }} days
+                {% else %}
+                  Expired
+                {% endif %}
+              </span>
+            </div>
+
+            <div class="ed__divider"></div>
+
+            <div class="ed__meta-sm">
+              <span class="ed__meta-row"><i class="bi bi-calendar-plus"></i> Created: <b class="ed__mono">{{ drive.created_at|date:"d M Y" }}</b></span>
+              <span class="ed__meta-row"><i class="bi bi-clock"></i> Updated: <b class="ed__mono">{{ drive.updated_at|date:"d M Y, H:i" }}</b></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Warning card -->
+        {% if drive.total_responses > 0 %}
+        <div class="ed__card ed__card--warn anim-up" style="--i:2">
+          <div class="ed__card-head">
+            <span class="ed__card-title"><i class="bi bi-exclamation-triangle-fill" style="color:#fbbf24"></i> Important Notice</span>
+          </div>
+          <div class="ed__card-body">
+            <p class="ed__warn-txt">This drive has <strong>{{ drive.total_responses }} responses</strong>. Changing eligibility may affect:</p>
+            <div class="ed__warn-list">
+              <div class="ed__warn-item"><i class="bi bi-dot"></i> Student notification visibility</div>
+              <div class="ed__warn-item"><i class="bi bi-dot"></i> Response validity</div>
+              <div class="ed__warn-item"><i class="bi bi-dot"></i> Analytics accuracy</div>
+            </div>
+            <div class="ed__warn-tip">
+              <i class="bi bi-lightbulb-fill"></i>
+              Consider creating a new drive for major changes.
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="ed__card anim-up" style="--i:3">
+          <div class="ed__card-head">
+            <span class="ed__card-title"><i class="bi bi-lightning-charge-fill" style="color:#fbbf24"></i> Quick Actions</span>
+          </div>
+          <div class="ed__card-body ed__qa-body">
+
+            <!-- Toggle status -->
+            <form method="post" action="{% url 'admin_app:toggle_drive_status' drive.id %}">
+              {% csrf_token %}
+              <button type="submit" class="ed__qa-btn
+                {% if drive.status == 'Active' %}ed__qa-btn--amber{% else %}ed__qa-btn--grn{% endif %}">
+                <i class="fas {% if drive.status == 'Active' %}fa-pause{% else %}fa-play{% endif %}"></i>
+                {% if drive.status == 'Active' %}Close Drive{% else %}Activate Drive{% endif %}
+              </button>
+            </form>
+
+            <a href="{% url 'admin_app:drive_responses' drive.id %}" class="ed__qa-btn ed__qa-btn--cyan">
+              <i class="fas fa-users"></i> View All Responses
+            </a>
+
+            <a href="{% url 'admin_app:delete_drive' drive.pk %}" class="ed__qa-btn ed__qa-btn--red"
+               onclick="return confirm('Delete this drive? This cannot be undone.')">
+              <i class="fas fa-trash"></i> Delete Drive
+            </a>
+
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+  </div>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;}
+
+/* ══ ROOT ══ */
+.ed{
+  --b0:#0d1f2d;
+  --b1:#102436;
+  --b2:#133044;
+  --b3:#1a3a52;
+  --t1:#e0f4f8;
+  --t2:#7ec8d8;
+  --t3:#3d7a8a;
+  --acc:#06b6d4;
+  --grn:#10b981;
+  --pur:#a78bfa;
+  --yel:#fbbf24;
+  --red:#f87171;
+  --ora:#fb923c;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);
+  color:var(--t1);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+}
+
+/* mesh + orbs */
+.ed__mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);
+  background-size:38px 38px;
+}
+.ed__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.ed__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.ed__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* ══ TOPBAR ══ */
+.ed__top{
+  position:sticky;top:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(13,31,45,.88);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(6,182,212,.13);
+  padding:0 24px;height:52px;
+}
+.ed__top-l,.ed__top-r{display:flex;align-items:center;gap:12px;}
+.ed__logo{
+  width:28px;height:28px;border-radius:7px;
+  background:linear-gradient(135deg,#0891b2,#7c3aed);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;
+}
+.ed__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.ed__brand b{font-weight:800;color:#fff;}
+.ed__div{width:1px;height:16px;background:var(--t3);}
+.ed__bc{display:flex;align-items:center;gap:5px;}
+.ed__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.ed__bc-a:hover{color:var(--acc);}
+.ed__bc-sep{font-size:10px;color:var(--t3);}
+.ed__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.ed__btn-ghost{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  color:var(--t2);font-size:12.5px;font-weight:600;
+  padding:7px 15px;border-radius:8px;text-decoration:none;transition:all .18s;
+}
+.ed__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+
+/* ══ BODY ══ */
+.ed__body{
+  position:relative;z-index:1;
+  max-width:1320px;margin:0 auto;
+  padding:28px 24px 64px;
+  display:flex;flex-direction:column;gap:20px;
+}
+
+/* PAGE HEAD */
+.ed__head{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(6,182,212,.1);
+  backdrop-filter:blur(18px);
+  border-radius:18px;padding:22px 28px;
+  box-shadow:0 8px 30px rgba(0,0,0,.2);
+}
+.ed__head-icon{
+  width:48px;height:48px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(135deg,#0891b2,#06b6d4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:#fff;box-shadow:0 4px 20px rgba(6,182,212,.3);
+}
+.ed__head-text{flex:1;}
+.ed__h1{font-size:20px;font-weight:800;color:#fff;line-height:1.2;}
+.ed__sub{font-size:12.5px;color:var(--t3);margin-top:3px;}
+
+/* status pill */
+.ed__status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:700;padding:6px 14px;border-radius:99px;
+  margin-left:auto;
+}
+.ed__sdot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:dp 2s infinite;}
+@keyframes dp{0%{box-shadow:0 0 0 0 currentColor;}70%{box-shadow:0 0 0 5px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+.ed__status-pill--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.22);}
+.ed__status-pill--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.22);}
+.ed__status-pill--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.22);}
+
+/* ══ MAIN GRID ══ */
+.ed__grid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;}
+@media(max-width:1060px){.ed__grid{grid-template-columns:1fr;}}
+
+/* ══ FORM SECTIONS ══ */
+.ed__form{display:flex;flex-direction:column;gap:14px;}
+.ed__sec{
+  background:var(--b2);
+  border:1px solid rgba(6,182,212,.1);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,.2);
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--i)*.08s);
+}
+.ed__sec-head{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 22px 12px;
+  border-bottom:1px solid rgba(6,182,212,.08);
+  background:rgba(6,182,212,.025);
+}
+.ed__sec-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:22px;font-weight:700;
+  color:rgba(6,182,212,.28);line-height:1;flex-shrink:0;
+}
+.ed__sec-title{font-size:14px;font-weight:700;color:var(--t1);}
+.ed__sec-hint{font-size:11.5px;color:var(--t3);margin-top:2px;}
+.ed__sec-body{padding:20px 22px;display:flex;flex-direction:column;gap:16px;}
+
+.ed__row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:640px){.ed__row2{grid-template-columns:1fr;}}
+
+/* field */
+.ed__field{display:flex;flex-direction:column;gap:6px;}
+.ed__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+
+/* override crispy/Django inputs */
+.ed__form input[type="text"],
+.ed__form input[type="number"],
+.ed__form input[type="date"],
+.ed__form input[type="datetime-local"],
+.ed__form textarea,
+.ed__form select{
+  width:100%;
+  background:var(--b3) !important;
+  border:1px solid rgba(6,182,212,.18) !important;
+  border-radius:10px !important;
+  color:var(--t1) !important;
+  font-family:'Urbanist',sans-serif !important;
+  font-size:14px !important;font-weight:500 !important;
+  padding:11px 14px !important;
+  outline:none !important;transition:border-color .18s,box-shadow .18s !important;
+  box-shadow:none !important;-webkit-appearance:none;
+}
+.ed__form input:focus,.ed__form textarea:focus,.ed__form select:focus{
+  border-color:rgba(6,182,212,.5) !important;
+  box-shadow:0 0 0 3px rgba(6,182,212,.12) !important;
+}
+.ed__form textarea{min-height:96px;resize:vertical;}
+.ed__form select option{background:var(--b3);color:var(--t1);}
+.ed__form label:not(.ed__lbl):not(.ed__dept-label){display:none !important;}
+.ed__form .form-group,.ed__form .mb-3{margin:0 !important;}
+.ed__form .helptext,.ed__form small.text-muted{display:none !important;}
+
+/* department toggles */
+.ed__dept-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.ed__dept-toggle{
+  display:flex;align-items:center;
+  cursor:pointer;
+}
+.ed__dept-toggle input[type="checkbox"]{display:none;}
+.ed__dept-label{
+  display:inline-block;
+  font-size:12.5px;font-weight:700;
+  padding:6px 14px;border-radius:8px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(6,182,212,.15);
+  color:var(--t3);cursor:pointer;
+  transition:all .18s;user-select:none;
+}
+.ed__dept-toggle input:checked + .ed__dept-label{
+  background:rgba(6,182,212,.14);
+  border-color:rgba(6,182,212,.45);
+  color:var(--acc);
+  box-shadow:0 0 10px rgba(6,182,212,.15);
+}
+.ed__dept-label:hover{border-color:rgba(6,182,212,.35);color:var(--t2);}
+
+/* actions bar */
+.ed__actions{
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px;
+  padding:16px 22px;
+  background:var(--b2);border:1px solid rgba(6,182,212,.1);
+  border-radius:16px;
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--i)*.08s);
+}
+.ed__actions-r{display:flex;gap:10px;flex-wrap:wrap;}
+.ed__btn-sec{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  color:var(--t2);font-size:13.5px;font-weight:700;
+  padding:10px 18px;border-radius:10px;text-decoration:none;transition:all .18s;
+}
+.ed__btn-sec:hover{background:rgba(255,255,255,.09);color:var(--t1);}
+.ed__btn-outline{
+  display:inline-flex;align-items:center;gap:7px;
+  background:transparent;border:1px solid rgba(6,182,212,.35);
+  color:var(--acc);font-size:13.5px;font-weight:700;
+  padding:10px 18px;border-radius:10px;text-decoration:none;transition:all .18s;
+}
+.ed__btn-outline:hover{background:rgba(6,182,212,.1);}
+.ed__resp-count{
+  background:rgba(6,182,212,.2);color:var(--acc);
+  font-size:11px;font-weight:800;
+  padding:1px 7px;border-radius:99px;
+}
+.ed__btn-primary{
+  display:inline-flex;align-items:center;gap:7px;
+  background:linear-gradient(135deg,#0891b2,#06b6d4);
+  border:1px solid rgba(6,182,212,.4);
+  color:#fff;font-size:13.5px;font-weight:800;
+  padding:10px 22px;border-radius:10px;
+  box-shadow:0 0 18px rgba(6,182,212,.28);transition:all .18s;
+}
+.ed__btn-primary:hover{box-shadow:0 0 28px rgba(6,182,212,.48);transform:translateY(-1px);}
+
+/* ══ SIDEBAR ══ */
+.ed__right{display:flex;flex-direction:column;gap:16px;}
+.ed__card{
+  background:var(--b2);
+  border:1px solid rgba(6,182,212,.1);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,.2);
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--i)*.1s);
+}
+.ed__card--warn{border-color:rgba(251,191,36,.18);}
+.ed__card-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:13px 18px 11px;
+  border-bottom:1px solid rgba(6,182,212,.07);
+  background:rgba(6,182,212,.025);
+}
+.ed__card--warn .ed__card-head{background:rgba(251,191,36,.04);border-bottom-color:rgba(251,191,36,.1);}
+.ed__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.ed__card-body{padding:18px 18px;}
+
+/* stat 3-up */
+.ed__stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.ed__stat3-item{
+  text-align:center;padding:12px 8px;
+  background:var(--b3);border:1px solid rgba(255,255,255,.06);border-radius:10px;
+  position:relative;overflow:hidden;
+}
+.ed__stat3-item::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--sc);opacity:.6;
+}
+.ed__stat3-n{
+  display:block;font-family:'JetBrains Mono',monospace;
+  font-size:24px;font-weight:800;color:#fff;line-height:1;
+}
+.ed__stat3-l{display:block;font-size:10px;color:var(--t3);margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+
+.ed__divider{height:1px;background:rgba(6,182,212,.08);margin:14px 0;}
+
+/* rate bar */
+.ed__rate-row{display:flex;justify-content:space-between;margin-bottom:6px;}
+.ed__rate-lbl{font-size:12px;color:var(--t2);font-weight:600;}
+.ed__rate-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--acc);}
+.ed__rate-track{height:4px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;}
+.ed__rate-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#0891b2,#06b6d4);width:0;transition:width 1s ease .4s;}
+
+/* days remaining */
+.ed__days{display:flex;justify-content:space-between;align-items:center;margin-top:12px;}
+.ed__days-lbl{font-size:12px;color:var(--t2);}
+.ed__days-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;}
+.ed__days--grn{color:#10b981;}
+.ed__days--amber{color:#fbbf24;}
+.ed__days--red{color:#f87171;}
+
+/* meta small */
+.ed__meta-sm{display:flex;flex-direction:column;gap:5px;}
+.ed__meta-row{font-size:11.5px;color:var(--t3);display:flex;align-items:center;gap:6px;}
+.ed__meta-row i{font-size:11px;}
+.ed__mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);}
+
+/* warning card */
+.ed__warn-txt{font-size:13px;color:var(--t2);margin-bottom:10px;line-height:1.5;}
+.ed__warn-txt strong{color:var(--yel);}
+.ed__warn-list{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.ed__warn-item{font-size:12.5px;color:var(--t3);display:flex;align-items:center;gap:4px;}
+.ed__warn-tip{
+  display:flex;align-items:flex-start;gap:8px;
+  background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.18);
+  border-radius:9px;padding:10px 12px;
+  font-size:12px;color:var(--t2);line-height:1.4;
+}
+.ed__warn-tip i{color:var(--yel);flex-shrink:0;margin-top:1px;}
+
+/* quick action buttons */
+.ed__qa-body{padding:12px 16px 16px;display:flex;flex-direction:column;gap:8px;}
+.ed__qa-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;font-size:13.5px;font-weight:700;
+  padding:10px 16px;border-radius:10px;
+  text-decoration:none;transition:all .18s;border:1px solid transparent;
+}
+.ed__qa-btn--amber{background:rgba(251,146,60,.1);color:#fb923c;border-color:rgba(251,146,60,.25);}
+.ed__qa-btn--amber:hover{background:rgba(251,146,60,.18);border-color:rgba(251,146,60,.5);}
+.ed__qa-btn--grn{background:rgba(16,185,129,.1);color:#10b981;border-color:rgba(16,185,129,.25);}
+.ed__qa-btn--grn:hover{background:rgba(16,185,129,.18);border-color:rgba(16,185,129,.5);}
+.ed__qa-btn--cyan{background:rgba(6,182,212,.1);color:#22d3ee;border-color:rgba(6,182,212,.25);}
+.ed__qa-btn--cyan:hover{background:rgba(6,182,212,.18);border-color:rgba(6,182,212,.5);}
+.ed__qa-btn--red{background:rgba(248,113,113,.08);color:#f87171;border-color:rgba(248,113,113,.22);}
+.ed__qa-btn--red:hover{background:rgba(248,113,113,.16);border-color:rgba(248,113,113,.45);}
+
+/* ══ ANIMATION ══ */
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  /* Animate rate bar */
+  setTimeout(()=>{
+    document.querySelectorAll('.ed__rate-fill').forEach(el=>{
+      el.style.width = getComputedStyle(el).getPropertyValue('--w');
+    });
+  }, 300);
+});
+</script>
+
+{% endblock %}
