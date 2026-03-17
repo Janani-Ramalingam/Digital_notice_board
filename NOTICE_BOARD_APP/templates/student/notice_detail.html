@@ -4,206 +4,465 @@
 {% block title %}{{ drive.title }} - Notice Details{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <!-- Header -->
-            <div class="mb-4">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'student:home' %}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{% url 'student:notices' %}">All Notices</a></li>
-                        <li class="breadcrumb-item active">{{ drive.title }}</li>
-                    </ol>
-                </nav>
-            </div>
 
-            <div class="row">
-                <div class="col-lg-8">
-                    <!-- Drive Details Card -->
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h4 class="card-title mb-0">{{ drive.title }}</h4>
-                            <span class="badge {% if drive.status == 'Active' %}bg-success{% elif drive.status == 'Closed' %}bg-secondary{% else %}bg-warning{% endif %}">
-                                {{ drive.status }}
-                            </span>
-                        </div>
-                        <div class="card-body">
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <h6 class="text-primary">Company Information</h6>
-                                    <p class="mb-2"><strong>Company:</strong> {{ drive.company_name }}</p>
-                                    <p class="mb-2"><strong>Posted by:</strong> {{ drive.created_by.adminprofile.name }}</p>
-                                    <p class="mb-0"><strong>Posted on:</strong> {{ drive.created_at|date:"M d, Y" }}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6 class="text-primary">Important Dates</h6>
-                                    <p class="mb-2"><strong>Last Date to Apply:</strong> {{ drive.last_date|date:"M d, Y H:i" }}</p>
-                                    <p class="mb-0">
-                                        <strong>Time Remaining:</strong> 
-                                        <span class="{% if drive.days_remaining <= 0 %}text-danger{% elif drive.days_remaining <= 7 %}text-warning{% else %}text-success{% endif %}">
-                                            {% if drive.days_remaining > 0 %}
-                                                {{ drive.days_remaining }} days left
-                                            {% else %}
-                                                Expired
-                                            {% endif %}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-                            <div class="mb-4">
-                                <h6 class="text-primary">Drive Description</h6>
-                                <p class="text-justify">{{ drive.description|linebreaks }}</p>
-                            </div>
+<div class="nd">
 
-                            <div class="row mb-4">
-                                <div class="col-md-12">
-                                    <h6 class="text-primary">Eligibility Criteria</h6>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="border rounded p-3 text-center">
-                                                <i class="fas fa-graduation-cap fa-2x text-info mb-2"></i>
-                                                <h6>Minimum CGPA</h6>
-                                                <span class="badge bg-info">{{ drive.min_cgpa }}+</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="border rounded p-3 text-center">
-                                                <i class="fas fa-calendar-alt fa-2x text-success mb-2"></i>
-                                                <h6>Academic Year</h6>
-                                                <span class="badge bg-success">{{ drive.get_eligible_year_display }}</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="border rounded p-3 text-center">
-                                                <i class="fas fa-building fa-2x text-warning mb-2"></i>
-                                                <h6>Departments</h6>
-                                                {% for dept in drive.eligible_departments %}
-                                                    <span class="badge bg-warning me-1">{{ dept }}</span>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+  <div class="nd__mesh"></div>
+  <div class="nd__orb nd__orb--1"></div>
+  <div class="nd__orb nd__orb--2"></div>
 
-                            <!-- Response Section -->
-                            {% if user_response %}
-                                <div class="alert {% if user_response.response == 'Opt-In' %}alert-success{% else %}alert-danger{% endif %}">
-                                    <h6><i class="fas fa-check-circle"></i> Your Response</h6>
-                                    <p class="mb-2">You have <strong>{{ user_response.response }}</strong> for this drive.</p>
-                                    <small class="text-muted">Responded on: {{ user_response.responded_at|date:"M d, Y H:i" }}</small>
-                                </div>
-                            {% elif is_eligible %}
-                                {% if drive.status == 'Active' and drive.days_remaining > 0 %}
-                                    <div class="alert alert-info">
-                                        <h6><i class="fas fa-info-circle"></i> You are eligible for this drive!</h6>
-                                        <p class="mb-3">Please submit your response below:</p>
-                                        
-                                        <form method="post" action="{% url 'student:submit_response' drive.id %}">
-                                            {% csrf_token %}
-                                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                                                <button type="submit" name="response" value="Opt-In" class="btn btn-success me-md-2">
-                                                    <i class="fas fa-thumbs-up"></i> Opt-In
-                                                </button>
-                                                <button type="submit" name="response" value="Opt-Out" class="btn btn-danger">
-                                                    <i class="fas fa-thumbs-down"></i> Opt-Out
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                {% else %}
-                                    <div class="alert alert-warning">
-                                        <h6><i class="fas fa-clock"></i> Drive Closed</h6>
-                                        <p class="mb-0">This drive is no longer accepting responses.</p>
-                                    </div>
-                                {% endif %}
-                            {% else %}
-                                <div class="alert alert-secondary">
-                                    <h6><i class="fas fa-times-circle"></i> Not Eligible</h6>
-                                    <p class="mb-0">You do not meet the eligibility criteria for this drive.</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+  <div class="nd__body">
 
-                <div class="col-lg-4">
-                    <!-- Quick Stats -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">
-                                <i class="fas fa-chart-pie text-primary"></i> Response Statistics
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row text-center">
-                                <div class="col-6">
-                                    <h4 class="text-success mb-0">{{ opt_in_count }}</h4>
-                                    <small class="text-muted">Opted In</small>
-                                </div>
-                                <div class="col-6">
-                                    <h4 class="text-danger mb-0">{{ opt_out_count }}</h4>
-                                    <small class="text-muted">Opted Out</small>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="text-center">
-                                <h5 class="text-primary mb-0">{{ total_responses }}</h5>
-                                <small class="text-muted">Total Responses</small>
-                            </div>
-                        </div>
-                    </div>
+    <!-- BREADCRUMB -->
+    <nav class="nd__bc anim-up">
+      <a href="{% url 'student:home' %}" class="nd__bc-a">Home</a>
+      <i class="bi bi-chevron-right nd__bc-sep"></i>
+      <a href="{% url 'student:notices' %}" class="nd__bc-a">All Notices</a>
+      <i class="bi bi-chevron-right nd__bc-sep"></i>
+      <span class="nd__bc-cur">{{ drive.title }}</span>
+    </nav>
 
-                    <!-- Eligibility Check -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">
-                                <i class="fas fa-user-check text-info"></i> Eligibility Status
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            {% if is_eligible %}
-                                <div class="text-success">
-                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
-                                    <h6>You are eligible!</h6>
-                                    <small class="text-muted">You meet all the criteria for this placement drive.</small>
-                                </div>
-                            {% else %}
-                                <div class="text-danger">
-                                    <i class="fas fa-times-circle fa-2x mb-2"></i>
-                                    <h6>Not eligible</h6>
-                                    <small class="text-muted">You do not meet the eligibility criteria.</small>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">
-                                <i class="fas fa-cog text-secondary"></i> Actions
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-grid gap-2">
-                                <a href="{% url 'student:notices' %}" class="btn btn-outline-primary">
-                                    <i class="fas fa-list"></i> View All Notices
-                                </a>
-                                <a href="{% url 'student:my_responses' %}" class="btn btn-outline-info">
-                                    <i class="fas fa-history"></i> My Responses
-                                </a>
-                                <a href="{% url 'student:home' %}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-home"></i> Back to Home
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- HERO -->
+    <div class="nd__hero anim-up">
+      <div class="nd__hero-left">
+        <div class="nd__hero-av">{{ drive.company_name|first }}</div>
+        <div>
+          <p class="nd__hero-co">{{ drive.company_name }}</p>
+          <h1 class="nd__hero-title">{{ drive.title }}</h1>
+          <div class="nd__hero-chips">
+            <span class="nd__chip
+              {% if drive.status == 'Active' %}nd__chip--g
+              {% elif drive.status == 'Closed' %}nd__chip--sl
+              {% else %}nd__chip--y{% endif %}">
+              <span class="nd__cdot"></span>{{ drive.status }}
+            </span>
+            <span class="nd__chip
+              {% if drive.days_remaining <= 0 %}nd__chip--r
+              {% elif drive.days_remaining <= 7 %}nd__chip--y
+              {% else %}nd__chip--g{% endif %}">
+              <i class="bi bi-clock"></i>
+              {% if drive.days_remaining > 0 %}{{ drive.days_remaining }} days left{% else %}Expired{% endif %}
+            </span>
+          </div>
         </div>
+      </div>
     </div>
+
+    <!-- MAIN GRID -->
+    <div class="nd__grid">
+
+      <!-- LEFT: DETAILS -->
+      <div class="nd__left">
+
+        <!-- Company & Dates -->
+        <div class="nd__card anim-up" style="--i:1">
+          <div class="nd__card-head">
+            <span class="nd__card-title"><i class="bi bi-building" style="color:#06b6d4"></i> Drive Information</span>
+          </div>
+          <div class="nd__card-body">
+            <div class="nd__info2col">
+              <div>
+                <h3 class="nd__info-heading">Company</h3>
+                <div class="nd__info-list">
+                  <div class="nd__info-row">
+                    <span class="nd__info-ic" style="--ic:#06b6d4"><i class="bi bi-building"></i></span>
+                    <div><span class="nd__info-lbl">Company</span><span class="nd__info-val">{{ drive.company_name }}</span></div>
+                  </div>
+                  <div class="nd__info-row">
+                    <span class="nd__info-ic" style="--ic:#a78bfa"><i class="bi bi-person-badge"></i></span>
+                    <div><span class="nd__info-lbl">Posted By</span><span class="nd__info-val">{{ drive.created_by.adminprofile.name }}</span></div>
+                  </div>
+                  <div class="nd__info-row">
+                    <span class="nd__info-ic" style="--ic:#fbbf24"><i class="bi bi-calendar3"></i></span>
+                    <div><span class="nd__info-lbl">Posted On</span><span class="nd__info-val nd__mono">{{ drive.created_at|date:"d M Y" }}</span></div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 class="nd__info-heading">Timeline</h3>
+                <div class="nd__info-list">
+                  <div class="nd__info-row">
+                    <span class="nd__info-ic" style="--ic:#f87171"><i class="bi bi-calendar-x"></i></span>
+                    <div><span class="nd__info-lbl">Last Date</span><span class="nd__info-val nd__mono">{{ drive.last_date|date:"d M Y, H:i" }}</span></div>
+                  </div>
+                  <div class="nd__info-row">
+                    <span class="nd__info-ic" style="--ic:{% if drive.days_remaining <= 0 %}#f87171{% elif drive.days_remaining <= 7 %}#fbbf24{% else %}#10b981{% endif %}">
+                      <i class="bi bi-hourglass-split"></i>
+                    </span>
+                    <div>
+                      <span class="nd__info-lbl">Time Remaining</span>
+                      <span class="nd__info-val nd__mono
+                        {% if drive.days_remaining <= 0 %}nd__red
+                        {% elif drive.days_remaining <= 7 %}nd__amber
+                        {% else %}nd__grn{% endif %}">
+                        {% if drive.days_remaining > 0 %}{{ drive.days_remaining }} days left{% else %}Expired{% endif %}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="nd__card anim-up" style="--i:2">
+          <div class="nd__card-head">
+            <span class="nd__card-title"><i class="bi bi-file-text-fill" style="color:#a78bfa"></i> Drive Description</span>
+          </div>
+          <div class="nd__card-body">
+            <div class="nd__desc">{{ drive.description|linebreaks }}</div>
+          </div>
+        </div>
+
+        <!-- Eligibility Criteria -->
+        <div class="nd__card anim-up" style="--i:3">
+          <div class="nd__card-head">
+            <span class="nd__card-title"><i class="bi bi-award-fill" style="color:#fbbf24"></i> Eligibility Criteria</span>
+          </div>
+          <div class="nd__card-body">
+            <div class="nd__elig-grid">
+              <div class="nd__elig-tile" style="--et:#10b981">
+                <div class="nd__elig-icon"><i class="fas fa-graduation-cap"></i></div>
+                <div class="nd__elig-lbl">Min CGPA</div>
+                <div class="nd__elig-val">{{ drive.min_cgpa }}+</div>
+              </div>
+              <div class="nd__elig-tile" style="--et:#06b6d4">
+                <div class="nd__elig-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="nd__elig-lbl">Academic Year</div>
+                <div class="nd__elig-val">{{ drive.get_eligible_year_display }}</div>
+              </div>
+              <div class="nd__elig-tile" style="--et:#a78bfa">
+                <div class="nd__elig-icon"><i class="fas fa-building"></i></div>
+                <div class="nd__elig-lbl">Departments</div>
+                <div class="nd__dept-tags">
+                  {% for dept in drive.eligible_departments %}
+                  <span class="nd__dept-tag">{{ dept }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Response Section -->
+        {% if user_response %}
+        <div class="nd__card nd__card--resp anim-up" style="--i:4;--rc:{% if user_response.response == 'Opt-In' %}rgba(16,185,129,.2){% else %}rgba(248,113,113,.2){% endif %}">
+          <div class="nd__card-head" style="border-color:{% if user_response.response == 'Opt-In' %}rgba(16,185,129,.15){% else %}rgba(248,113,113,.15){% endif %}">
+            <span class="nd__card-title">
+              <i class="bi bi-{% if user_response.response == 'Opt-In' %}check-circle-fill{% else %}x-circle-fill{% endif %}"
+                style="color:{% if user_response.response == 'Opt-In' %}#10b981{% else %}#f87171{% endif %}"></i>
+              Your Response
+            </span>
+          </div>
+          <div class="nd__card-body">
+            <div class="nd__resp-given">
+              <div class="nd__resp-badge {% if user_response.response == 'Opt-In' %}nd__resp-badge--g{% else %}nd__resp-badge--r{% endif %}">
+                <i class="bi bi-{% if user_response.response == 'Opt-In' %}hand-thumbs-up-fill{% else %}hand-thumbs-down-fill{% endif %}"></i>
+                {{ user_response.response }}
+              </div>
+              <div>
+                <p class="nd__resp-text">You responded <strong>{{ user_response.response }}</strong> for this drive.</p>
+                <p class="nd__resp-date nd__mono">Responded on {{ user_response.responded_at|date:"d M Y, H:i" }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% elif is_eligible %}
+          {% if drive.status == 'Active' and drive.days_remaining > 0 %}
+          <div class="nd__card nd__card--action anim-up" style="--i:4">
+            <div class="nd__card-head">
+              <span class="nd__card-title"><i class="bi bi-hand-index-thumb-fill" style="color:#06b6d4"></i> Submit Your Response</span>
+            </div>
+            <div class="nd__card-body">
+              <div class="nd__eligible-notice">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>You are eligible for this drive! Please submit your response.</span>
+              </div>
+              <form method="post" action="{% url 'student:submit_response' drive.id %}" class="nd__resp-form">
+                {% csrf_token %}
+                <button type="submit" name="response" value="Opt-In" class="nd__resp-btn nd__resp-btn--g">
+                  <i class="fas fa-thumbs-up"></i> Opt-In
+                </button>
+                <button type="submit" name="response" value="Opt-Out" class="nd__resp-btn nd__resp-btn--r">
+                  <i class="fas fa-thumbs-down"></i> Opt-Out
+                </button>
+              </form>
+            </div>
+          </div>
+          {% else %}
+          <div class="nd__card anim-up" style="--i:4">
+            <div class="nd__card-body">
+              <div class="nd__notice nd__notice--amber">
+                <i class="bi bi-clock-history"></i>
+                <div>
+                  <strong>Drive Closed</strong>
+                  <p>This drive is no longer accepting responses.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+        {% else %}
+        <div class="nd__card anim-up" style="--i:4">
+          <div class="nd__card-body">
+            <div class="nd__notice nd__notice--slate">
+              <i class="bi bi-x-circle-fill"></i>
+              <div>
+                <strong>Not Eligible</strong>
+                <p>You do not meet the eligibility criteria for this drive.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- RIGHT: SIDEBAR -->
+      <aside class="nd__right">
+
+        <!-- Response Stats -->
+        <div class="nd__card anim-up" style="--i:1">
+          <div class="nd__card-head">
+            <span class="nd__card-title"><i class="bi bi-pie-chart-fill" style="color:#06b6d4"></i> Response Stats</span>
+          </div>
+          <div class="nd__card-body">
+            <div class="nd__stat3">
+              <div class="nd__stat3-item" style="--sc:#06b6d4">
+                <span class="nd__s3n nd__mono">{{ total_responses }}</span>
+                <span class="nd__s3l">Total</span>
+              </div>
+              <div class="nd__stat3-item" style="--sc:#10b981">
+                <span class="nd__s3n nd__mono">{{ opt_in_count }}</span>
+                <span class="nd__s3l">Opted In</span>
+              </div>
+              <div class="nd__stat3-item" style="--sc:#f87171">
+                <span class="nd__s3n nd__mono">{{ opt_out_count }}</span>
+                <span class="nd__s3l">Opted Out</span>
+              </div>
+            </div>
+            <!-- Opt-in rate bar -->
+            {% if total_responses > 0 %}
+            <div class="nd__rate-bar-wrap">
+              <div class="nd__rate-row">
+                <span style="color:#10b981;font-size:12px;font-weight:700">Opt-In Rate</span>
+                <span class="nd__mono" style="color:#10b981;font-size:12px">{% widthratio opt_in_count total_responses 100 %}%</span>
+              </div>
+              <div class="nd__rate-track">
+                <div class="nd__rate-fill" style="width:{% widthratio opt_in_count total_responses 100 %}%;background:#10b981"></div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Eligibility -->
+        <div class="nd__card anim-up" style="--i:2">
+          <div class="nd__card-head">
+            <span class="nd__card-title"><i class="bi bi-person-check-fill" style="color:{% if is_eligible %}#10b981{% else %}#f87171{% endif %}"></i> Your Eligibility</span>
+          </div>
+          <div class="nd__card-body">
+            {% if is_eligible %}
+            <div class="nd__elig-status nd__elig-status--g">
+              <div class="nd__elig-s-icon"><i class="bi bi-check-circle-fill"></i></div>
+              <div>
+                <div class="nd__elig-s-title">You're Eligible!</div>
+                <div class="nd__elig-s-hint">You meet all criteria for this drive.</div>
+              </div>
+            </div>
+            {% else %}
+            <div class="nd__elig-status nd__elig-status--r">
+              <div class="nd__elig-s-icon"><i class="bi bi-x-circle-fill"></i></div>
+              <div>
+                <div class="nd__elig-s-title">Not Eligible</div>
+                <div class="nd__elig-s-hint">You don't meet the eligibility criteria.</div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="nd__card anim-up" style="--i:3">
+          <div class="nd__card-head">
+            <span class="nd__card-title"><i class="bi bi-lightning-charge-fill" style="color:#fbbf24"></i> Quick Actions</span>
+          </div>
+          <div class="nd__card-body nd__qa-body">
+            <a href="{% url 'student:notices' %}" class="nd__qa">
+              <span class="nd__qa-ic" style="--qc:#06b6d4"><i class="bi bi-bell"></i></span>
+              <span>All Notices</span>
+              <i class="bi bi-chevron-right nd__qa-arr"></i>
+            </a>
+            <a href="{% url 'student:my_responses' %}" class="nd__qa">
+              <span class="nd__qa-ic" style="--qc:#10b981"><i class="bi bi-check-circle"></i></span>
+              <span>My Responses</span>
+              <i class="bi bi-chevron-right nd__qa-arr"></i>
+            </a>
+            <a href="{% url 'student:home' %}" class="nd__qa">
+              <span class="nd__qa-ic" style="--qc:#a78bfa"><i class="bi bi-house-fill"></i></span>
+              <span>Back to Home</span>
+              <i class="bi bi-chevron-right nd__qa-arr"></i>
+            </a>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </div>
 </div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;}
+
+.nd{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.nd__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.nd__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.nd__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.nd__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* BODY */
+.nd__body{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:24px 24px 64px;display:flex;flex-direction:column;gap:18px;}
+
+/* BREADCRUMB */
+.nd__bc{display:flex;align-items:center;gap:5px;font-size:12.5px;}
+.nd__bc-a{color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.nd__bc-a:hover{color:var(--acc);}
+.nd__bc-sep{font-size:10px;color:var(--t3);}
+.nd__bc-cur{color:var(--acc);font-weight:700;}
+
+/* HERO */
+.nd__hero{background:rgba(255,255,255,.035);border:1px solid rgba(6,182,212,.12);backdrop-filter:blur(18px);border-radius:18px;padding:24px 28px;box-shadow:0 8px 30px rgba(0,0,0,.2);}
+.nd__hero-left{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.nd__hero-av{width:60px;height:60px;border-radius:15px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;box-shadow:0 4px 18px rgba(6,182,212,.35);}
+.nd__hero-co{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin-bottom:5px;}
+.nd__hero-title{font-size:clamp(18px,2.5vw,26px);font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px;}
+.nd__hero-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.nd__chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:5px 12px;border-radius:99px;}
+.nd__cdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.nd__chip--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.nd__chip--sl{background:rgba(71,85,105,.1);color:#64748b;border:1px solid rgba(71,85,105,.2);}
+.nd__chip--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+.nd__chip--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+
+/* GRID */
+.nd__grid{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;}
+@media(max-width:1050px){.nd__grid{grid-template-columns:1fr;}}
+.nd__left,.nd__right{display:flex;flex-direction:column;gap:16px;}
+
+/* CARD */
+.nd__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.09s);}
+.nd__card--resp{border-color:var(--rc);}
+.nd__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 18px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.nd__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.nd__card-body{padding:18px 20px;}
+
+/* 2-col info */
+.nd__info2col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:600px){.nd__info2col{grid-template-columns:1fr;}}
+.nd__info-heading{font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+.nd__info-list{display:flex;flex-direction:column;gap:10px;}
+.nd__info-row{display:flex;align-items:flex-start;gap:10px;}
+.nd__info-ic{width:28px;height:28px;border-radius:7px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--ic);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.nd__info-lbl{display:block;font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.nd__info-val{font-size:13px;color:var(--t1);font-weight:500;}
+.nd__mono{font-family:'JetBrains Mono',monospace;font-size:12px !important;}
+.nd__red{color:#f87171;}
+.nd__amber{color:#fbbf24;}
+.nd__grn{color:#10b981;}
+
+/* description */
+.nd__desc{font-size:13.5px;color:var(--t2);line-height:1.7;}
+.nd__desc p{margin-bottom:10px;}
+
+/* eligibility grid */
+.nd__elig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:600px){.nd__elig-grid{grid-template-columns:1fr;}}
+.nd__elig-tile{background:var(--b3);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px;text-align:center;position:relative;overflow:hidden;}
+.nd__elig-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--et);opacity:.5;}
+.nd__elig-icon{font-size:20px;color:var(--et);margin-bottom:8px;}
+.nd__elig-lbl{font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.nd__elig-val{font-size:15px;font-weight:800;color:#fff;}
+.nd__dept-tags{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:3px;}
+.nd__dept-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:rgba(167,139,250,.12);color:#a78bfa;}
+
+/* notices */
+.nd__notice{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:11px;font-size:13.5px;}
+.nd__notice strong{display:block;font-weight:800;margin-bottom:4px;}
+.nd__notice p{color:var(--t2);margin:0;font-size:13px;}
+.nd__notice i{font-size:18px;flex-shrink:0;margin-top:2px;}
+.nd__notice--amber{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);color:#fbbf24;}
+.nd__notice--slate{background:rgba(71,85,105,.07);border:1px solid rgba(71,85,105,.18);color:#64748b;}
+
+/* response given */
+.nd__resp-given{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.nd__resp-badge{display:inline-flex;align-items:center;gap:8px;font-size:16px;font-weight:800;padding:12px 20px;border-radius:12px;flex-shrink:0;}
+.nd__resp-badge--g{background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);}
+.nd__resp-badge--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.22);}
+.nd__resp-text{font-size:14px;color:var(--t2);margin-bottom:4px;}
+.nd__resp-date{font-size:12px;color:var(--t3);}
+
+/* response form */
+.nd__eligible-notice{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:#10b981;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:11px 14px;margin-bottom:16px;}
+.nd__eligible-notice i{flex-shrink:0;}
+.nd__resp-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.nd__resp-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:11px;font-size:15px;font-weight:800;transition:all .2s;border:1px solid transparent;}
+.nd__resp-btn--g{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#10b981;}
+.nd__resp-btn--g:hover{background:rgba(16,185,129,.22);border-color:rgba(16,185,129,.55);transform:translateY(-2px);box-shadow:0 6px 18px rgba(16,185,129,.2);}
+.nd__resp-btn--r{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.25);color:#f87171;}
+.nd__resp-btn--r:hover{background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.5);transform:translateY(-2px);box-shadow:0 6px 18px rgba(248,113,113,.18);}
+
+/* SIDEBAR stats */
+.nd__stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.nd__stat3-item{background:var(--b3);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px 8px;text-align:center;position:relative;overflow:hidden;}
+.nd__stat3-item::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--sc);opacity:.6;}
+.nd__s3n{display:block;font-size:22px;font-weight:800;color:#fff;line-height:1;}
+.nd__s3l{display:block;font-size:10px;font-weight:700;color:var(--t3);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;}
+.nd__rate-bar-wrap{margin-top:4px;}
+.nd__rate-row{display:flex;justify-content:space-between;margin-bottom:5px;}
+.nd__rate-track{height:4px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;}
+.nd__rate-fill{height:100%;border-radius:99px;transition:width 1s ease .5s;}
+
+/* eligibility status */
+.nd__elig-status{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:11px;}
+.nd__elig-status--g{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);}
+.nd__elig-status--r{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.18);}
+.nd__elig-s-icon{font-size:22px;flex-shrink:0;}
+.nd__elig-status--g .nd__elig-s-icon{color:#10b981;}
+.nd__elig-status--r .nd__elig-s-icon{color:#f87171;}
+.nd__elig-s-title{font-size:14px;font-weight:800;color:var(--t1);margin-bottom:3px;}
+.nd__elig-s-hint{font-size:12px;color:var(--t3);}
+
+/* quick actions */
+.nd__qa-body{padding:8px 14px 14px;display:flex;flex-direction:column;gap:3px;}
+.nd__qa{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;text-decoration:none;color:var(--t2);font-size:13px;font-weight:500;transition:all .18s;}
+.nd__qa:hover{background:var(--b3);color:var(--t1);transform:translateX(3px);}
+.nd__qa-ic{width:30px;height:30px;border-radius:8px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--qc);display:flex;align-items:center;justify-content:center;font-size:13px;transition:box-shadow .18s;}
+.nd__qa:hover .nd__qa-ic{box-shadow:0 0 12px var(--qc);}
+.nd__qa span{flex:1;}
+.nd__qa-arr{font-size:11px;color:var(--t3);opacity:0;transition:opacity .18s,transform .18s;}
+.nd__qa:hover .nd__qa-arr{opacity:1;transform:translateX(2px);}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;animation-delay:calc(var(--i,0)*.09s);}
+</style>
+
 {% endblock %}

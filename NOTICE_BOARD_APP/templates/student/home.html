@@ -4,392 +4,561 @@
 {% block title %}Student Home - Digital Notice Board{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Welcome Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h2 class="card-title">
-                        <i class="bi bi-house me-2"></i>
-                        Welcome, {{ student_profile.name }}!
-                    </h2>
-                    <p class="card-text mb-0">
-                        {{ student_profile.department }} - Year {{ student_profile.year }} - CGPA: {{ student_profile.cgpa }}
-                    </p>
-                </div>
-            </div>
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="sh">
+
+  <div class="sh__mesh"></div>
+  <div class="sh__orb sh__orb--1"></div>
+  <div class="sh__orb sh__orb--2"></div>
+
+  <div class="sh__body">
+
+    <!-- ══ HERO ══ -->
+    <div class="sh__hero anim-up">
+      <div class="sh__hero-av">{{ student_profile.name|first|upper }}</div>
+      <div class="sh__hero-info">
+        <p class="sh__hero-eye">Student Dashboard</p>
+        <h1 class="sh__hero-title">Welcome back, <em>{{ student_profile.name }}</em> 👋</h1>
+        <div class="sh__hero-meta">
+          <span class="sh__meta-chip"><i class="bi bi-building"></i> {{ student_profile.department }}</span>
+          <span class="sh__meta-chip"><i class="bi bi-calendar3"></i> Year {{ student_profile.year }}</span>
+          <span class="sh__meta-chip sh__meta-chip--cgpa
+            {% if student_profile.cgpa >= 8.0 %}sh__meta-chip--g
+            {% elif student_profile.cgpa >= 6.0 %}sh__meta-chip--y
+            {% else %}sh__meta-chip--r{% endif %}">
+            <i class="bi bi-award-fill"></i> CGPA {{ student_profile.cgpa }}
+          </span>
         </div>
+      </div>
+      {% if unanswered_drives %}
+      <div class="sh__hero-alert">
+        <span class="sh__alert-pulse"></span>
+        <span>{{ unanswered_drives|length }} drive{{ unanswered_drives|length|pluralize }} awaiting response</span>
+      </div>
+      {% endif %}
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card text-center border-primary">
-                <div class="card-body">
-                    <i class="bi bi-bell text-primary" style="font-size: 2rem;"></i>
-                    <h4 class="mt-2">{{ total_eligible_drives }}</h4>
-                    <p class="text-muted">Eligible Drives</p>
-                </div>
-            </div>
+    <!-- ══ STAT STRIP ══ -->
+    <div class="sh__stats">
+      <div class="sh__sc" style="--g:#06b6d4;--i:1">
+        <div class="sh__sc-shine"></div>
+        <div class="sh__sc-top">
+          <span class="sh__sc-lbl">Eligible Drives</span>
+          <span class="sh__sc-ico" style="color:#06b6d4"><i class="bi bi-bell-fill"></i></span>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card text-center border-success">
-                <div class="card-body">
-                    <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
-                    <h4 class="mt-2">{{ total_responses }}</h4>
-                    <p class="text-muted">Total Responses</p>
-                </div>
-            </div>
+        <span class="sh__sc-n" data-count="{{ total_eligible_drives }}">0</span>
+        <div class="sh__sc-bar"><div class="sh__sc-fill" style="--c:#06b6d4;--w:80%"></div></div>
+      </div>
+      <div class="sh__sc" style="--g:#10b981;--i:2">
+        <div class="sh__sc-shine"></div>
+        <div class="sh__sc-top">
+          <span class="sh__sc-lbl">Total Responses</span>
+          <span class="sh__sc-ico" style="color:#10b981"><i class="bi bi-check-circle-fill"></i></span>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card text-center border-info">
-                <div class="card-body">
-                    <i class="bi bi-hand-thumbs-up text-info" style="font-size: 2rem;"></i>
-                    <h4 class="mt-2">{{ opt_in_count }}</h4>
-                    <p class="text-muted">Opt-In Responses</p>
-                </div>
-            </div>
+        <span class="sh__sc-n" data-count="{{ total_responses }}">0</span>
+        <div class="sh__sc-bar"><div class="sh__sc-fill" style="--c:#10b981;--w:65%"></div></div>
+      </div>
+      <div class="sh__sc" style="--g:#a78bfa;--i:3">
+        <div class="sh__sc-shine"></div>
+        <div class="sh__sc-top">
+          <span class="sh__sc-lbl">Opt-In Responses</span>
+          <span class="sh__sc-ico" style="color:#a78bfa"><i class="bi bi-hand-thumbs-up-fill"></i></span>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card text-center border-warning">
-                <div class="card-body">
-                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
-                    <h4 class="mt-2">{{ unanswered_drives|length }}</h4>
-                    <p class="text-muted">Pending Responses</p>
-                </div>
-            </div>
+        <span class="sh__sc-n" data-count="{{ opt_in_count }}">0</span>
+        <div class="sh__sc-bar"><div class="sh__sc-fill" style="--c:#a78bfa;--w:55%"></div></div>
+      </div>
+      <div class="sh__sc" style="--g:#fbbf24;--i:4">
+        <div class="sh__sc-shine"></div>
+        <div class="sh__sc-top">
+          <span class="sh__sc-lbl">Pending Responses</span>
+          <span class="sh__sc-ico" style="color:#fbbf24"><i class="bi bi-hourglass-split"></i></span>
         </div>
+        <span class="sh__sc-n" data-count="{{ unanswered_drives|length }}">0</span>
+        <div class="sh__sc-bar"><div class="sh__sc-fill" style="--c:#fbbf24;--w:30%"></div></div>
+      </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="row">
-        <!-- Recent Drives -->
-        <div class="col-lg-8">
-            <div class="card shadow mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bi bi-bell me-2"></i>Recent Active Drives
-                    </h5>
-                    <a href="{% url 'student:notices' %}" class="btn btn-sm btn-outline-primary">
-                        View All
-                    </a>
+    <!-- ══ CONTENT GRID ══ -->
+    <div class="sh__grid">
+
+      <!-- RECENT DRIVES -->
+      <div class="sh__card sh__card--main anim-up" style="--i:5">
+        <div class="sh__card-head">
+          <span class="sh__card-title"><i class="bi bi-bell-fill" style="color:#06b6d4"></i> Recent Active Drives</span>
+          <a href="{% url 'student:notices' %}" class="sh__view-all">View All <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="sh__card-body">
+          {% if recent_drives %}
+          <div class="sh__drives-grid">
+            {% for drive in recent_drives %}
+            <div class="sh__drive-card" style="--di:{{ forloop.counter0 }}">
+              <div class="sh__drive-top">
+                <div class="sh__drive-av">{{ drive.company_name|first }}</div>
+                <div>
+                  <div class="sh__drive-co">{{ drive.company_name }}</div>
+                  <div class="sh__drive-title">{{ drive.title|truncatechars:50 }}</div>
                 </div>
-                <div class="card-body">
-                    {% if recent_drives %}
-                        <div class="row">
-                            {% for drive in recent_drives %}
-                                <div class="col-md-6 mb-3">
-                                    <div class="card border-left-primary h-100">
-                                        <div class="card-body">
-                                            <h6 class="card-title">{{ drive.company_name }}</h6>
-                                            <p class="card-text small">{{ drive.title|truncatechars:50 }}</p>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <small class="text-muted">
-                                                    <i class="bi bi-calendar me-1"></i>
-                                                    {{ drive.last_date|date:"M d, Y" }}
-                                                </small>
-                                                <a href="{% url 'student:notice_detail' drive.id %}" class="btn btn-sm btn-primary">
-                                                    View Details
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="bi bi-bell-slash text-muted" style="font-size: 3rem;"></i>
-                            <p class="text-muted mt-2">No active drives available.</p>
-                        </div>
-                    {% endif %}
-                </div>
+              </div>
+              <div class="sh__drive-footer">
+                <span class="sh__drive-date">
+                  <i class="bi bi-calendar3"></i>
+                  {{ drive.last_date|date:"d M Y" }}
+                </span>
+                <a href="{% url 'student:notice_detail' drive.id %}" class="sh__drive-btn">
+                  View Details <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
             </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="sh__empty">
+            <div class="sh__empty-icon"><i class="bi bi-bell-slash"></i></div>
+            <p>No active drives available right now.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="sh__side">
+
+        <!-- Recent Responses -->
+        <div class="sh__card anim-up" style="--i:6">
+          <div class="sh__card-head">
+            <span class="sh__card-title"><i class="bi bi-check2-circle" style="color:#10b981"></i> My Responses</span>
+            <a href="{% url 'student:my_responses' %}" class="sh__view-all">View All <i class="bi bi-arrow-right"></i></a>
+          </div>
+          <div class="sh__card-body">
+            {% if my_responses %}
+            <div class="sh__resp-list">
+              {% for response in my_responses %}
+              <div class="sh__resp-row">
+                <div class="sh__resp-left">
+                  <div class="sh__resp-av {% if response.response == 'Opt-In' %}sh__resp-av--g{% else %}sh__resp-av--r{% endif %}">
+                    {{ response.drive.company_name|first }}
+                  </div>
+                  <div>
+                    <div class="sh__resp-co">{{ response.drive.company_name }}</div>
+                    <div class="sh__resp-dt">{{ response.responded_at|date:"d M Y" }}</div>
+                  </div>
+                </div>
+                <span class="sh__badge {% if response.response == 'Opt-In' %}sh__badge--g{% else %}sh__badge--r{% endif %}">
+                  <span class="sh__bdot"></span>{{ response.response }}
+                </span>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="sh__empty sh__empty--sm">
+              <i class="bi bi-chat-dots"></i>
+              <p>No responses yet.</p>
+            </div>
+            {% endif %}
+          </div>
         </div>
 
-        <!-- My Recent Responses -->
-        <div class="col-lg-4">
-            <div class="card shadow mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bi bi-check-circle me-2"></i>My Recent Responses
-                    </h5>
-                    <a href="{% url 'student:my_responses' %}" class="btn btn-sm btn-outline-primary">
-                        View All
-                    </a>
-                </div>
-                <div class="card-body">
-                    {% if my_responses %}
-                        {% for response in my_responses %}
-                            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                                <div>
-                                    <h6 class="mb-1">{{ response.drive.company_name }}</h6>
-                                    <small class="text-muted">{{ response.responded_at|date:"M d, Y" }}</small>
-                                </div>
-                                <span class="badge bg-{% if response.response == 'Opt-In' %}success{% else %}danger{% endif %}">
-                                    {{ response.response }}
-                                </span>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="text-center py-3">
-                            <i class="bi bi-chat-dots text-muted" style="font-size: 2rem;"></i>
-                            <p class="text-muted mt-2">No responses yet.</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="card shadow">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-lightning me-2"></i>Quick Actions
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'student:notices' %}" class="btn btn-primary">
-                            <i class="bi bi-bell me-2"></i>View All Notices
-                        </a>
-                        <a href="{% url 'student:my_responses' %}" class="btn btn-outline-primary">
-                            <i class="bi bi-check-circle me-2"></i>My Responses
-                        </a>
-                        <a href="{% url 'student:profile_update' %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-person-gear me-2"></i>Update Profile
-                        </a>
-                    </div>
-                </div>
-            </div>
+        <!-- Quick Actions -->
+        <div class="sh__card anim-up" style="--i:7">
+          <div class="sh__card-head">
+            <span class="sh__card-title"><i class="bi bi-lightning-charge-fill" style="color:#fbbf24"></i> Quick Actions</span>
+          </div>
+          <div class="sh__card-body sh__qa-body">
+            <a href="{% url 'student:notices' %}" class="sh__qa">
+              <span class="sh__qa-ic" style="--qc:#06b6d4"><i class="bi bi-bell"></i></span>
+              <span>View All Notices</span>
+              <i class="bi bi-chevron-right sh__qa-arr"></i>
+            </a>
+            <a href="{% url 'student:my_responses' %}" class="sh__qa">
+              <span class="sh__qa-ic" style="--qc:#10b981"><i class="bi bi-check-circle"></i></span>
+              <span>My Responses</span>
+              <i class="bi bi-chevron-right sh__qa-arr"></i>
+            </a>
+            <a href="{% url 'student:profile_update' %}" class="sh__qa">
+              <span class="sh__qa-ic" style="--qc:#a78bfa"><i class="bi bi-person-gear"></i></span>
+              <span>Update Profile</span>
+              <i class="bi bi-chevron-right sh__qa-arr"></i>
+            </a>
+          </div>
         </div>
+
+      </aside>
     </div>
+
+  </div>
 </div>
 
-<!-- Notification Modals for Unanswered Drives -->
+
+<!-- ══════════════════════════
+     DRIVE NOTIFICATION MODALS
+══════════════════════════ -->
 {% for drive in unanswered_drives %}
-    <div class="modal fade" id="driveModal{{ drive.id }}" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">
-                        <i class="bi bi-bell me-2"></i>
-                        New Placement Drive - {{ drive.company_name }}
-                    </h5>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <h6>{{ drive.title }}</h6>
-                            <p class="text-muted">{{ drive.description|truncatechars:200 }}</p>
-                            
-                            <div class="row mt-3">
-                                <div class="col-6">
-                                    <strong>Minimum CGPA:</strong> {{ drive.min_cgpa }}
-                                </div>
-                                <div class="col-6">
-                                    <strong>Eligible Year:</strong> {{ drive.eligible_year }}
-                                </div>
-                            </div>
-                            
-                            <div class="mt-2">
-                                <strong>Eligible Departments:</strong>
-                                {% for dept in drive.eligible_departments %}
-                                    <span class="badge bg-secondary me-1">{{ dept }}</span>
-                                {% endfor %}
-                            </div>
-                            
-                            <div class="mt-2">
-                                <strong>Last Date:</strong> 
-                                <span class="text-danger">{{ drive.last_date|date:"M d, Y H:i" }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            <i class="bi bi-building text-primary" style="font-size: 4rem;"></i>
-                            <h5 class="mt-2">{{ drive.company_name }}</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <div class="w-100">
-                        <p class="text-center mb-3">
-                            <strong>Please select your response:</strong>
-                        </p>
-                        <div class="row">
-                            <div class="col-6">
-                                <button type="button" class="btn btn-success w-100" onclick="submitResponse({{ drive.id }}, 'Opt-In')">
-                                    <i class="bi bi-check-circle me-2"></i>Opt-In
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button type="button" class="btn btn-danger w-100" onclick="submitResponse({{ drive.id }}, 'Opt-Out')">
-                                    <i class="bi bi-x-circle me-2"></i>Opt-Out
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="dn-overlay" id="driveModal{{ drive.id }}">
+  <div class="dn-modal">
+
+    <!-- Pulse badge -->
+    <div class="dn-badge">
+      <span class="dn-badge-dot"></span> New Drive Available
     </div>
+
+    <div class="dn-modal-body">
+      <!-- Company -->
+      <div class="dn-company">
+        <div class="dn-co-av">{{ drive.company_name|first }}</div>
+        <div>
+          <div class="dn-co-name">{{ drive.company_name }}</div>
+          <div class="dn-co-title">{{ drive.title }}</div>
+        </div>
+      </div>
+
+      <p class="dn-desc">{{ drive.description|truncatechars:200 }}</p>
+
+      <!-- Meta grid -->
+      <div class="dn-meta">
+        <div class="dn-meta-item">
+          <span class="dn-meta-ic" style="--mc:#10b981"><i class="bi bi-mortarboard"></i></span>
+          <div>
+            <span class="dn-meta-lbl">Min CGPA</span>
+            <span class="dn-meta-val">{{ drive.min_cgpa }}+</span>
+          </div>
+        </div>
+        <div class="dn-meta-item">
+          <span class="dn-meta-ic" style="--mc:#a78bfa"><i class="bi bi-calendar3"></i></span>
+          <div>
+            <span class="dn-meta-lbl">Eligible Year</span>
+            <span class="dn-meta-val">{{ drive.eligible_year }}</span>
+          </div>
+        </div>
+        <div class="dn-meta-item dn-meta-item--full">
+          <span class="dn-meta-ic" style="--mc:#fbbf24"><i class="bi bi-calendar-x"></i></span>
+          <div>
+            <span class="dn-meta-lbl">Last Date</span>
+            <span class="dn-meta-val dn-val--red">{{ drive.last_date|date:"d M Y, H:i" }}</span>
+          </div>
+        </div>
+        <div class="dn-meta-item dn-meta-item--full">
+          <span class="dn-meta-ic" style="--mc:#06b6d4"><i class="bi bi-building"></i></span>
+          <div>
+            <span class="dn-meta-lbl">Departments</span>
+            <div class="dn-dept-tags">
+              {% for dept in drive.eligible_departments %}
+              <span class="dn-dept">{{ dept }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Response prompt -->
+      <p class="dn-prompt">Please select your response:</p>
+      <div class="dn-actions">
+        <button class="dn-btn dn-btn--g" onclick="submitResponse({{ drive.id }}, 'Opt-In')">
+          <i class="bi bi-check-circle-fill"></i> Opt-In
+        </button>
+        <button class="dn-btn dn-btn--r" onclick="submitResponse({{ drive.id }}, 'Opt-Out')">
+          <i class="bi bi-x-circle-fill"></i> Opt-Out
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
 {% endfor %}
 
+<!-- Toast -->
+<div class="sh__toast" id="sh-toast">
+  <i id="sh-toast-icon" class="bi bi-check-circle-fill"></i>
+  <span id="sh-toast-msg"></span>
+</div>
+
+
 <style>
-    .border-left-primary {
-        border-left: 4px solid #007bff !important;
-    }
-    .card.border-primary {
-        border-color: #007bff !important;
-    }
-    .card.border-success {
-        border-color: #28a745 !important;
-    }
-    .card.border-info {
-        border-color: #17a2b8 !important;
-    }
-    .card.border-warning {
-        border-color: #ffc107 !important;
-    }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+.sh{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;position:relative;overflow-x:hidden;
+}
+
+.sh__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.sh__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.sh__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.sh__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* BODY */
+.sh__body{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:18px;}
+
+/* HERO */
+.sh__hero{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(6,182,212,.12);
+  backdrop-filter:blur(18px);
+  border-radius:18px;padding:24px 28px;
+  box-shadow:0 8px 30px rgba(0,0,0,.2);
+}
+.sh__hero-av{
+  width:60px;height:60px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#0891b2,#06b6d4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:800;color:#fff;
+  box-shadow:0 4px 18px rgba(6,182,212,.35);
+  border:2px solid rgba(6,182,212,.3);
+}
+.sh__hero-info{flex:1;}
+.sh__hero-eye{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);margin-bottom:6px;}
+.sh__hero-title{font-size:clamp(18px,2.5vw,26px);font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px;}
+.sh__hero-title em{font-style:italic;color:var(--acc);}
+.sh__hero-meta{display:flex;gap:8px;flex-wrap:wrap;}
+.sh__meta-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);color:var(--t2);}
+.sh__meta-chip--g{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.22);color:#10b981;}
+.sh__meta-chip--y{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.22);color:#fbbf24;}
+.sh__meta-chip--r{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.22);color:#f87171;}
+.sh__hero-alert{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);
+  border-radius:10px;padding:9px 14px;
+  font-size:13px;font-weight:700;color:#fbbf24;
+  animation:glowamb 2s ease-in-out infinite alternate;
+  white-space:nowrap;
+}
+.sh__alert-pulse{width:8px;height:8px;border-radius:50%;background:#fbbf24;flex-shrink:0;animation:pulse 1.8s infinite;}
+@keyframes glowamb{from{box-shadow:0 0 5px rgba(251,191,36,.2);}to{box-shadow:0 0 14px rgba(251,191,36,.4);}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(251,191,36,.5);}70%{box-shadow:0 0 0 7px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+
+/* STATS */
+.sh__stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.sh__stats{grid-template-columns:repeat(2,1fr);}}
+.sh__sc{background:var(--b2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 18px 14px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .22s;animation:fu .5s ease both;animation-delay:calc(var(--i)*.07s);}
+.sh__sc:hover{transform:translateY(-3px);}
+.sh__sc-shine{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);opacity:.5;}
+.sh__sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.sh__sc-lbl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;}
+.sh__sc-ico{font-size:17px;}
+.sh__sc-n{display:block;font-size:34px;font-weight:800;color:#fff;line-height:1;font-family:'JetBrains Mono',monospace;}
+.sh__sc-bar{height:3px;background:rgba(255,255,255,.07);border-radius:99px;margin-top:12px;overflow:hidden;}
+.sh__sc-fill{height:100%;border-radius:99px;background:var(--c);width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1) .3s;}
+
+/* GRID */
+.sh__grid{display:grid;grid-template-columns:1fr 320px;gap:18px;}
+@media(max-width:1060px){.sh__grid{grid-template-columns:1fr;}}
+.sh__side{display:flex;flex-direction:column;gap:16px;}
+
+/* CARD */
+.sh__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.07s);}
+.sh__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 20px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.sh__card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);}
+.sh__card-body{padding:18px 20px;}
+.sh__view-all{font-size:12.5px;font-weight:600;color:var(--acc);text-decoration:none;display:flex;align-items:center;gap:5px;transition:gap .18s;}
+.sh__view-all:hover{gap:8px;color:var(--acc);}
+
+/* DRIVES GRID */
+.sh__drives-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.sh__drives-grid{grid-template-columns:1fr;}}
+.sh__drive-card{
+  background:var(--b3);border:1px solid rgba(6,182,212,.1);border-radius:12px;
+  padding:16px;display:flex;flex-direction:column;gap:12px;
+  transition:all .2s;
+  animation:fu .4s ease both;animation-delay:calc(var(--di)*.06s);
+}
+.sh__drive-card:hover{transform:translateY(-3px);border-color:rgba(6,182,212,.3);box-shadow:0 6px 20px rgba(6,182,212,.08);}
+.sh__drive-top{display:flex;align-items:flex-start;gap:11px;}
+.sh__drive-av{width:36px;height:36px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;box-shadow:0 2px 8px rgba(6,182,212,.28);}
+.sh__drive-co{font-size:13.5px;font-weight:800;color:var(--t1);}
+.sh__drive-title{font-size:12px;color:var(--t3);margin-top:2px;line-height:1.4;}
+.sh__drive-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.sh__drive-date{font-size:11.5px;color:var(--t3);display:flex;align-items:center;gap:4px;}
+.sh__drive-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);
+  color:var(--acc);font-size:12px;font-weight:700;
+  padding:5px 12px;border-radius:8px;text-decoration:none;
+  transition:all .18s;white-space:nowrap;
+}
+.sh__drive-btn:hover{background:rgba(6,182,212,.18);color:var(--acc);}
+
+/* RESPONSES */
+.sh__resp-list{display:flex;flex-direction:column;gap:10px;}
+.sh__resp-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:10px;transition:background .15s;}
+.sh__resp-row:hover{background:rgba(255,255,255,.055);}
+.sh__resp-left{display:flex;align-items:center;gap:9px;}
+.sh__resp-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;}
+.sh__resp-av--g{background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);}
+.sh__resp-av--r{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.25);}
+.sh__resp-co{font-size:13px;font-weight:600;color:var(--t1);}
+.sh__resp-dt{font-size:11px;color:var(--t3);}
+
+/* badges */
+.sh__badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;}
+.sh__bdot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.sh__badge--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.sh__badge--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+
+/* QUICK ACTIONS */
+.sh__qa-body{padding:8px 14px 14px;display:flex;flex-direction:column;gap:3px;}
+.sh__qa{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:10px;text-decoration:none;color:var(--t2);font-size:13.5px;font-weight:500;transition:all .18s;}
+.sh__qa:hover{background:var(--b3);color:var(--t1);transform:translateX(3px);}
+.sh__qa-ic{width:30px;height:30px;border-radius:8px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--qc);display:flex;align-items:center;justify-content:center;font-size:13px;transition:box-shadow .18s;}
+.sh__qa:hover .sh__qa-ic{box-shadow:0 0 12px var(--qc);}
+.sh__qa span{flex:1;}
+.sh__qa-arr{font-size:11px;color:var(--t3);opacity:0;transition:opacity .18s,transform .18s;}
+.sh__qa:hover .sh__qa-arr{opacity:1;transform:translateX(2px);}
+
+/* EMPTY */
+.sh__empty{text-align:center;padding:36px 20px;color:var(--t3);}
+.sh__empty-icon{font-size:32px;margin-bottom:10px;}
+.sh__empty p{font-size:13px;}
+.sh__empty--sm{padding:20px;}
+
+/* ══ DRIVE NOTIFICATION MODAL ══ */
+.dn-overlay{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(7,12,25,.8);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.dn-overlay.open{opacity:1;pointer-events:all;}
+.dn-modal{
+  background:var(--b2);
+  border:1px solid rgba(6,182,212,.2);
+  border-radius:20px;width:100%;max-width:520px;
+  box-shadow:0 0 60px rgba(6,182,212,.12),0 24px 60px rgba(0,0,0,.5);
+  transform:scale(.92);
+  transition:transform .3s cubic-bezier(.34,1.3,.64,1);
+  overflow:hidden;
+}
+.dn-overlay.open .dn-modal{transform:scale(1);}
+
+.dn-badge{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,rgba(6,182,212,.15),rgba(167,139,250,.12));
+  border-bottom:1px solid rgba(6,182,212,.15);
+  padding:12px 20px;
+  font-size:12px;font-weight:800;color:var(--acc);
+  text-transform:uppercase;letter-spacing:.1em;
+}
+.dn-badge-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);animation:pulse2 1.8s infinite;}
+@keyframes pulse2{0%{box-shadow:0 0 0 0 rgba(6,182,212,.5);}70%{box-shadow:0 0 0 7px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+
+.dn-modal-body{padding:22px 24px;}
+.dn-company{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.dn-co-av{width:48px;height:48px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;box-shadow:0 3px 12px rgba(6,182,212,.3);}
+.dn-co-name{font-size:18px;font-weight:800;color:#fff;}
+.dn-co-title{font-size:13px;color:var(--t3);margin-top:2px;}
+.dn-desc{font-size:13px;color:var(--t2);line-height:1.5;margin-bottom:18px;}
+
+.dn-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.dn-meta-item{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:10px;}
+.dn-meta-item--full{grid-column:1/-1;}
+.dn-meta-ic{width:28px;height:28px;border-radius:7px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--mc);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.dn-meta-lbl{display:block;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.dn-meta-val{font-size:13px;font-weight:600;color:var(--t1);}
+.dn-val--red{color:#f87171;}
+.dn-dept-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px;}
+.dn-dept{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:rgba(6,182,212,.1);color:#22d3ee;}
+
+.dn-prompt{font-size:13.5px;font-weight:700;color:var(--t2);text-align:center;margin-bottom:12px;}
+.dn-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.dn-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px;border-radius:11px;cursor:pointer;
+  font-family:'Urbanist',sans-serif;font-size:15px;font-weight:800;
+  transition:all .2s;border:1px solid transparent;
+}
+.dn-btn--g{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#10b981;}
+.dn-btn--g:hover{background:rgba(16,185,129,.22);border-color:rgba(16,185,129,.55);transform:translateY(-2px);box-shadow:0 6px 20px rgba(16,185,129,.25);}
+.dn-btn--r{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.25);color:#f87171;}
+.dn-btn--r:hover{background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.5);transform:translateY(-2px);box-shadow:0 6px 20px rgba(248,113,113,.2);}
+
+/* TOAST */
+.sh__toast{position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:10px;background:var(--b2);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:13px 18px;font-size:13.5px;font-weight:600;color:var(--t1);box-shadow:0 8px 30px rgba(0,0,0,.4);transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+.sh__toast.show{transform:translateY(0);opacity:1;}
+.sh__toast.error{border-color:rgba(248,113,113,.3);}
+.sh__toast i{color:#10b981;}
+.sh__toast.error i{color:#f87171;}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;animation-delay:calc(var(--i,0)*.07s);}
 </style>
-{% endblock %}
+
 
 {% block extra_js %}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
-// Ensure DOM is fully loaded and jQuery is available
-$(document).ready(function() {
-    console.log('DOM ready, checking for unanswered drives...');
-    
-    // Debug: Log unanswered drives
-    {% if unanswered_drives %}
-        console.log('Found {{ unanswered_drives|length }} unanswered drive(s)');
-        {% for drive in unanswered_drives %}
-            console.log('Showing modal for drive: {{ drive.company_name }}');
-        {% endfor %}
-    {% else %}
-        console.log('No unanswered drives found');
-    {% endif %}
-    
-    // Show notification modals for unanswered drives with delay to ensure Bootstrap is ready
-    setTimeout(function() {
-        {% for drive in unanswered_drives %}
-            try {
-                const modalElement = document.getElementById('driveModal{{ drive.id }}');
-                if (modalElement) {
-                    console.log('Initializing modal for drive {{ drive.id }}');
-                    const modal = new bootstrap.Modal(modalElement, {
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    modal.show();
-                } else {
-                    console.error('Modal element not found for drive {{ drive.id }}');
-                }
-            } catch (error) {
-                console.error('Error showing modal for drive {{ drive.id }}:', error);
-            }
-        {% endfor %}
-    }, 500); // 500ms delay to ensure Bootstrap is fully loaded
+/* count-up */
+document.querySelectorAll('.sh__sc-n[data-count]').forEach(el=>{
+  const t=parseInt(el.dataset.count)||0;
+  const dur=1200,s=performance.now();
+  (function run(now){
+    const p=Math.min((now-s)/dur,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.floor(e*t);
+    if(p<1) requestAnimationFrame(run);
+    else el.textContent=t;
+  })(s);
+});
+requestAnimationFrame(()=>{
+  document.querySelectorAll('.sh__sc-fill').forEach(el=>{
+    el.style.width=getComputedStyle(el).getPropertyValue('--w');
+  });
 });
 
-function submitResponse(driveId, response) {
-    console.log('Submitting response:', driveId, response);
-    
-    // Validate driveId parameter
-    if (!driveId || driveId === 'undefined' || driveId === 'null') {
-        console.error('Invalid driveId:', driveId);
-        showAlert('danger', 'Invalid drive ID. Please refresh the page and try again.');
-        return;
-    }
-    
-    // Get CSRF token
-    const csrfToken = $('[name=csrfmiddlewaretoken]').val() || 
-                     document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
-                     '{{ csrf_token }}';
-    
-    if (!csrfToken) {
-        console.error('CSRF token not found');
-        showAlert('danger', 'Security token not found. Please refresh the page.');
-        return;
-    }
-    
-    $.ajax({
-        url: `/student/submit-response/${driveId}/`,
-        type: 'POST',
-        headers: {
-            'X-CSRFToken': csrfToken,
-            'Content-Type': 'application/json',
-        },
-        data: JSON.stringify({
-            'drive_id': driveId,
-            'response': response
-        }),
-        success: function(data) {
-            console.log('Response submitted successfully:', data);
-            if (data.success) {
-                // Hide the modal
-                const modalElement = document.getElementById('driveModal' + driveId);
-                if (modalElement) {
-                    const modal = bootstrap.Modal.getInstance(modalElement);
-                    if (modal) {
-                        modal.hide();
-                    }
-                }
-                
-                // Show success message
-                showAlert('success', data.message);
-                
-                // Reload page after a short delay to update statistics
-                setTimeout(function() {
-                    location.reload();
-                }, 1500);
-            } else {
-                showAlert('danger', data.error || 'An error occurred');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('AJAX error:', xhr, status, error);
-            showAlert('danger', 'Failed to submit response. Please try again.');
-        }
-    });
+/* Toast */
+function showToast(msg,isErr=false){
+  const t=document.getElementById('sh-toast');
+  const m=document.getElementById('sh-toast-msg');
+  const i=document.getElementById('sh-toast-icon');
+  m.textContent=msg;
+  t.className='sh__toast'+(isErr?' error':'');
+  i.className=isErr?'bi bi-x-circle-fill':'bi bi-check-circle-fill';
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>t.classList.remove('show'),4000);
 }
 
-function showAlert(type, message) {
-    const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    // Insert alert at the top of the container
-    $('.container-fluid').prepend(alertHtml);
-    
-    // Auto-dismiss after 5 seconds
-    setTimeout(function() {
-        $('.alert').alert('close');
-    }, 5000);
-}
-
-// Alternative method using vanilla JavaScript if jQuery fails
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof $ === 'undefined') {
-        console.log('jQuery not available, using vanilla JavaScript');
-        
-        // Show modals using vanilla JavaScript
-        setTimeout(function() {
-            {% for drive in unanswered_drives %}
-                const modalElement{{ drive.id }} = document.getElementById('driveModal{{ drive.id }}');
-                if (modalElement{{ drive.id }} && typeof bootstrap !== 'undefined') {
-                    const modal{{ drive.id }} = new bootstrap.Modal(modalElement{{ drive.id }}, {
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    modal{{ drive.id }}.show();
-                }
-            {% endfor %}
-        }, 1000);
-    }
+/* Show notification modals */
+$(document).ready(function(){
+  setTimeout(function(){
+    {% for drive in unanswered_drives %}
+    const el{{ drive.id }} = document.getElementById('driveModal{{ drive.id }}');
+    if(el{{ drive.id }}) el{{ drive.id }}.classList.add('open');
+    {% endfor %}
+  }, 500);
 });
+
+/* Submit response */
+function submitResponse(driveId, response){
+  if(!driveId) return;
+  const csrfToken = $('[name=csrfmiddlewaretoken]').val() || '{{ csrf_token }}';
+  $.ajax({
+    url: `/student/submit-response/${driveId}/`,
+    type: 'POST',
+    headers: {'X-CSRFToken': csrfToken, 'Content-Type': 'application/json'},
+    data: JSON.stringify({drive_id: driveId, response: response}),
+    success: function(data){
+      if(data.success){
+        const modal = document.getElementById('driveModal' + driveId);
+        if(modal){ modal.classList.remove('open'); }
+        showToast(data.message);
+        setTimeout(()=>location.reload(), 1500);
+      } else {
+        showToast(data.error||'An error occurred', true);
+      }
+    },
+    error: function(){
+      showToast('Failed to submit response. Please try again.', true);
+    }
+  });
+}
 </script>
+{% endblock %}
+
 {% endblock %}

@@ -4,253 +4,444 @@
 {% block title %}All Notices{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2>Placement Drive Notices</h2>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{% url 'student:home' %}">Home</a></li>
-                            <li class="breadcrumb-item active">All Notices</li>
-                        </ol>
-                    </nav>
-                </div>
-                <a href="{% url 'student:my_responses' %}" class="btn btn-outline-primary">
-                    <i class="fas fa-history"></i> My Responses
-                </a>
-            </div>
 
-            <!-- Filter and Search -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" name="search" 
-                                   placeholder="Search by company or title..." 
-                                   value="{{ request.GET.search }}">
-                        </div>
-                        <div class="col-md-3">
-                            <select name="status" class="form-select">
-                                <option value="">All Status</option>
-                                <option value="Active" {% if request.GET.status == 'Active' %}selected{% endif %}>Active</option>
-                                <option value="Closed" {% if request.GET.status == 'Closed' %}selected{% endif %}>Closed</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select name="eligibility" class="form-select">
-                                <option value="">All Drives</option>
-                                <option value="eligible" {% if request.GET.eligibility == 'eligible' %}selected{% endif %}>Eligible for Me</option>
-                                <option value="responded" {% if request.GET.eligibility == 'responded' %}selected{% endif %}>Already Responded</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-outline-primary w-100">
-                                <i class="fas fa-search"></i> Filter
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-            <!-- Notices Grid -->
-            {% if drives %}
-                <div class="row">
-                    {% for drive in drives %}
-                        <div class="col-lg-6 col-xl-4 mb-4">
-                            <div class="card h-100 {% if drive.user_response %}border-success{% elif drive.is_eligible %}border-primary{% endif %}">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="card-title mb-0">{{ drive.company_name }}</h6>
-                                    <span class="badge {% if drive.status == 'Active' %}bg-success{% elif drive.status == 'Closed' %}bg-secondary{% else %}bg-warning{% endif %}">
-                                        {{ drive.status }}
-                                    </span>
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ drive.title }}</h5>
-                                    <p class="card-text text-muted">
-                                        {{ drive.description|truncatewords:20 }}
-                                    </p>
-                                    
-                                    <!-- Eligibility Info -->
-                                    <div class="mb-3">
-                                        <small class="text-muted">
-                                            <strong>CGPA:</strong> {{ drive.min_cgpa }}+ | 
-                                            <strong>Year:</strong> {{ drive.get_eligible_year_display }} | 
-                                            <strong>Dept:</strong> 
-                                            {% for dept in drive.eligible_departments %}
-                                                {{ dept }}{% if not forloop.last %}, {% endif %}
-                                            {% endfor %}
-                                        </small>
-                                    </div>
+{% csrf_token %}
 
-                                    <!-- Response Status -->
-                                    {% if drive.user_response %}
-                                        <div class="alert {% if drive.user_response.response == 'Opt-In' %}alert-success{% else %}alert-danger{% endif %} py-2">
-                                            <small>
-                                                <i class="fas fa-check-circle"></i> 
-                                                You {{ drive.user_response.response|lower }}ed for this drive
-                                            </small>
-                                        </div>
-                                    {% elif drive.is_eligible %}
-                                        {% if drive.status == 'Active' and drive.days_remaining > 0 %}
-                                            <div class="alert alert-info py-2">
-                                                <small>
-                                                    <i class="fas fa-info-circle"></i> 
-                                                    You are eligible - Response pending
-                                                </small>
-                                            </div>
-                                        {% else %}
-                                            <div class="alert alert-warning py-2">
-                                                <small>
-                                                    <i class="fas fa-clock"></i> 
-                                                    Drive closed
-                                                </small>
-                                            </div>
-                                        {% endif %}
-                                    {% else %}
-                                        <div class="alert alert-secondary py-2">
-                                            <small>
-                                                <i class="fas fa-times-circle"></i> 
-                                                Not eligible
-                                            </small>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="card-footer">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">
-                                            <i class="fas fa-calendar"></i>
-                                            Last date: {{ drive.last_date|date:"M d, Y" }}
-                                        </small>
-                                        <a href="{% url 'student:notice_detail' drive.id %}" class="btn btn-sm btn-primary">
-                                            View Details
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
+<div class="an">
 
-                <!-- Pagination -->
-                {% if is_paginated %}
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            {% if page_obj.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}">First</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}">Previous</a>
-                                </li>
-                            {% endif %}
+  <div class="an__mesh"></div>
+  <div class="an__orb an__orb--1"></div>
+  <div class="an__orb an__orb--2"></div>
 
-                            <li class="page-item active">
-                                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                            </li>
+  <div class="an__body">
 
-                            {% if page_obj.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}">Next</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}">Last</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                {% endif %}
+    <!-- PAGE HEAD -->
+    <div class="an__head anim-up">
+      <div class="an__head-left">
+        <div class="an__head-icon"><i class="bi bi-bell-fill"></i></div>
+        <div>
+          <p class="an__head-eye">Student Portal</p>
+          <h1 class="an__h1">Placement Drive Notices</h1>
+          <nav class="an__bc">
+            <a href="{% url 'student:home' %}" class="an__bc-a">Home</a>
+            <i class="bi bi-chevron-right an__bc-sep"></i>
+            <span class="an__bc-cur">All Notices</span>
+          </nav>
+        </div>
+      </div>
+      <a href="{% url 'student:my_responses' %}" class="an__btn-ghost">
+        <i class="bi bi-clock-history"></i> My Responses
+      </a>
+    </div>
+
+    <!-- FILTER -->
+    <div class="an__filter anim-up" style="--i:1">
+      <form method="get" class="an__filter-form">
+        <div class="an__ff an__ff--wide">
+          <i class="bi bi-search an__fic"></i>
+          <input type="text" name="search" class="an__finput"
+            placeholder="Search by company or title…"
+            value="{{ request.GET.search }}">
+        </div>
+        <div class="an__ff">
+          <i class="bi bi-toggle2-on an__fic"></i>
+          <select name="status" class="an__finput an__fsel">
+            <option value="">All Status</option>
+            <option value="Active"  {% if request.GET.status == 'Active'  %}selected{% endif %}>Active</option>
+            <option value="Closed"  {% if request.GET.status == 'Closed'  %}selected{% endif %}>Closed</option>
+          </select>
+        </div>
+        <div class="an__ff">
+          <i class="bi bi-person-check an__fic"></i>
+          <select name="eligibility" class="an__finput an__fsel">
+            <option value="">All Drives</option>
+            <option value="eligible"  {% if request.GET.eligibility == 'eligible'  %}selected{% endif %}>Eligible for Me</option>
+            <option value="responded" {% if request.GET.eligibility == 'responded' %}selected{% endif %}>Already Responded</option>
+          </select>
+        </div>
+        <button type="submit" class="an__btn-search">
+          <i class="bi bi-search"></i> Filter
+        </button>
+        {% if request.GET.search or request.GET.status or request.GET.eligibility %}
+        <a href="{% url 'student:notices' %}" class="an__btn-clear">
+          <i class="bi bi-x-lg"></i> Clear
+        </a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- DRIVES GRID -->
+    {% if drives %}
+    <div class="an__grid">
+      {% for drive in drives %}
+      <div class="an__card
+        {% if drive.user_response %}an__card--responded{% elif drive.is_eligible and drive.status == 'Active' and drive.days_remaining > 0 %}an__card--eligible{% endif %}
+        anim-up" style="--ci:{{ forloop.counter0 }}">
+
+        <!-- Card head -->
+        <div class="an__card-head">
+          <div class="an__card-brand">
+            <div class="an__brand-av">{{ drive.company_name|first }}</div>
+            <span class="an__brand-nm">{{ drive.company_name }}</span>
+          </div>
+          <span class="an__status
+            {% if drive.status == 'Active' %}an__status--g
+            {% elif drive.status == 'Closed' %}an__status--sl
+            {% else %}an__status--y{% endif %}">
+            <span class="an__sdot"></span>{{ drive.status }}
+          </span>
+        </div>
+
+        <!-- Card body -->
+        <div class="an__card-body">
+          <h3 class="an__drive-title">{{ drive.title }}</h3>
+          <p class="an__drive-desc">{{ drive.description|truncatewords:18 }}</p>
+
+          <!-- Eligibility strip -->
+          <div class="an__elig-strip">
+            <span class="an__elig-item">
+              <i class="bi bi-award"></i> {{ drive.min_cgpa }}+
+            </span>
+            <span class="an__elig-item">
+              <i class="bi bi-mortarboard"></i> {{ drive.get_eligible_year_display }}
+            </span>
+            <span class="an__elig-item">
+              <i class="bi bi-building"></i>
+              {% for dept in drive.eligible_departments %}{{ dept }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </span>
+          </div>
+
+          <!-- Response status pill -->
+          <div class="an__resp-status">
+            {% if drive.user_response %}
+              <div class="an__rs an__rs--{% if drive.user_response.response == 'Opt-In' %}g{% else %}r{% endif %}">
+                <i class="bi bi-check-circle-fill"></i>
+                You {{ drive.user_response.response|lower }}ed
+              </div>
+            {% elif drive.is_eligible and drive.status == 'Active' and drive.days_remaining > 0 %}
+              <div class="an__rs an__rs--pending">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                Eligible — Response pending
+              </div>
+            {% elif drive.is_eligible %}
+              <div class="an__rs an__rs--closed">
+                <i class="bi bi-clock-history"></i>
+                Drive closed
+              </div>
             {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
-                    <h4 class="text-muted">No Notices Found</h4>
-                    <p class="text-muted">
-                        {% if request.GET.search or request.GET.status or request.GET.eligibility %}
-                            No placement drives match your search criteria.
-                        {% else %}
-                            No placement drives are currently available.
-                        {% endif %}
-                    </p>
-                    <a href="{% url 'student:home' %}" class="btn btn-primary">
-                        <i class="fas fa-home"></i> Back to Home
-                    </a>
-                </div>
+              <div class="an__rs an__rs--no">
+                <i class="bi bi-x-circle-fill"></i>
+                Not eligible
+              </div>
             {% endif %}
+          </div>
         </div>
+
+        <!-- Card footer -->
+        <div class="an__card-footer">
+          <span class="an__date">
+            <i class="bi bi-calendar3"></i>
+            {{ drive.last_date|date:"d M Y" }}
+            {% if drive.days_remaining > 0 %}
+              <span class="an__days
+                {% if drive.days_remaining <= 7 %}an__days--warn{% else %}an__days--ok{% endif %}">
+                · {{ drive.days_remaining }}d left
+              </span>
+            {% else %}
+              <span class="an__days an__days--exp">· Expired</span>
+            {% endif %}
+          </span>
+          <div class="an__card-actions">
+            {% if drive.is_eligible and not drive.user_response and drive.status == 'Active' and drive.days_remaining > 0 %}
+            <button class="an__quick-btn" onclick="showQuickResponse({{ drive.id }},'{{ drive.title|escapejs }}')">
+              <i class="bi bi-lightning-charge-fill"></i>
+            </button>
+            {% endif %}
+            <a href="{% url 'student:notice_detail' drive.id %}" class="an__detail-btn">
+              View Details <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
     </div>
+
+    <!-- PAGINATION -->
+    {% if is_paginated %}
+    <div class="an__pg anim-up">
+      {% if page_obj.has_previous %}
+        <a class="an__pg-btn" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a>
+        <a class="an__pg-btn" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}"><i class="bi bi-chevron-left"></i></a>
+      {% endif %}
+      <span class="an__pg-info">Page <b>{{ page_obj.number }}</b> of <b>{{ page_obj.paginator.num_pages }}</b></span>
+      {% if page_obj.has_next %}
+        <a class="an__pg-btn" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}"><i class="bi bi-chevron-right"></i></a>
+        <a class="an__pg-btn" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.eligibility %}&eligibility={{ request.GET.eligibility }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- EMPTY STATE -->
+    <div class="an__empty anim-up">
+      <div class="an__empty-ring"><i class="bi bi-clipboard2-x"></i></div>
+      <h3>No Notices Found</h3>
+      <p>
+        {% if request.GET.search or request.GET.status or request.GET.eligibility %}
+          No drives match your search criteria. Try adjusting your filters.
+        {% else %}
+          No placement drives are currently available.
+        {% endif %}
+      </p>
+      <a href="{% url 'student:home' %}" class="an__cta">
+        <i class="bi bi-house-fill"></i> Back to Home
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
 </div>
 
-<!-- Quick Response Modal -->
-<div class="modal fade" id="quickResponseModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Quick Response</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Submit your response for <strong id="modalDriveTitle"></strong>:</p>
-                <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-success" onclick="submitQuickResponse('Opt-In')">
-                        <i class="fas fa-thumbs-up"></i> Opt-In
-                    </button>
-                    <button type="button" class="btn btn-danger" onclick="submitQuickResponse('Opt-Out')">
-                        <i class="fas fa-thumbs-down"></i> Opt-Out
-                    </button>
-                </div>
-            </div>
-        </div>
+
+<!-- QUICK RESPONSE MODAL -->
+<div class="qr-overlay" id="quickResponseModal">
+  <div class="qr-modal">
+    <div class="qr-modal__head">
+      <span class="qr-modal__title"><i class="bi bi-lightning-charge-fill" style="color:#fbbf24"></i> Quick Response</span>
+      <button class="qr-modal__close" onclick="closeQuickModal()">×</button>
     </div>
+    <div class="qr-modal__body">
+      <p class="qr-modal__desc">Submit your response for <strong id="modalDriveTitle" style="color:#06b6d4"></strong>:</p>
+      <div class="qr-modal__btns">
+        <button class="qr-btn qr-btn--g" onclick="submitQuickResponse('Opt-In')">
+          <i class="fas fa-thumbs-up"></i> Opt-In
+        </button>
+        <button class="qr-btn qr-btn--r" onclick="submitQuickResponse('Opt-Out')">
+          <i class="fas fa-thumbs-down"></i> Opt-Out
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Toast -->
+<div class="an__toast" id="an-toast">
+  <i id="an-toast-icon" class="bi bi-check-circle-fill"></i>
+  <span id="an-toast-msg"></span>
+</div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+.an{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.an__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.an__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.an__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.an__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* BODY */
+.an__body{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:18px;}
+
+/* HEAD */
+.an__head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;background:rgba(255,255,255,.035);border:1px solid rgba(6,182,212,.12);backdrop-filter:blur(18px);border-radius:18px;padding:22px 28px;box-shadow:0 8px 30px rgba(0,0,0,.2);}
+.an__head-left{display:flex;align-items:center;gap:14px;}
+.an__head-icon{width:46px;height:46px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff;box-shadow:0 4px 18px rgba(6,182,212,.3);}
+.an__head-eye{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);margin-bottom:4px;}
+.an__h1{font-size:20px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:4px;}
+.an__bc{display:flex;align-items:center;gap:5px;}
+.an__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.an__bc-a:hover{color:var(--acc);}
+.an__bc-sep{font-size:10px;color:var(--t3);}
+.an__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.an__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:10px;text-decoration:none;transition:all .18s;align-self:flex-start;}
+.an__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+
+/* FILTER */
+.an__filter{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;padding:14px 18px;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.08s);}
+.an__filter-form{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.an__ff{position:relative;display:flex;align-items:center;flex:1;min-width:150px;}
+.an__ff--wide{flex:2;min-width:200px;}
+.an__fic{position:absolute;left:11px;color:var(--t3);font-size:13px;pointer-events:none;}
+.an__finput{width:100%;background:var(--b3);border:1px solid rgba(6,182,212,.15);border-radius:10px;color:var(--t1);font-family:'Urbanist',sans-serif;font-size:13.5px;font-weight:500;padding:10px 14px 10px 33px;outline:none;transition:border-color .18s,box-shadow .18s;-webkit-appearance:none;}
+.an__finput::placeholder{color:var(--t3);}
+.an__finput:focus{border-color:rgba(6,182,212,.45);box-shadow:0 0 0 3px rgba(6,182,212,.1);}
+.an__fsel{cursor:pointer;}
+.an__fsel option{background:var(--b2);color:var(--t1);}
+.an__btn-search{display:inline-flex;align-items:center;gap:6px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:var(--acc);font-size:13px;font-weight:700;padding:10px 18px;border-radius:10px;transition:all .18s;white-space:nowrap;}
+.an__btn-search:hover{background:rgba(6,182,212,.18);}
+.an__btn-clear{display:inline-flex;align-items:center;gap:6px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:var(--red);font-size:13px;font-weight:700;padding:10px 14px;border-radius:10px;text-decoration:none;transition:all .18s;white-space:nowrap;}
+.an__btn-clear:hover{background:rgba(248,113,113,.15);color:var(--red);}
+
+/* DRIVES GRID */
+.an__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+
+/* DRIVE CARD */
+.an__card{
+  background:var(--b2);
+  border:1px solid rgba(6,182,212,.1);
+  border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column;
+  box-shadow:0 4px 20px rgba(0,0,0,.2);
+  transition:transform .22s,box-shadow .22s,border-color .22s;
+  animation:fu .5s ease both;
+  animation-delay:calc(var(--ci)*.05s);
+}
+.an__card:hover{transform:translateY(-4px);box-shadow:0 8px 28px rgba(6,182,212,.1);}
+.an__card--eligible{border-color:rgba(6,182,212,.28);}
+.an__card--responded{border-color:rgba(16,185,129,.22);}
+
+.an__card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px 11px;border-bottom:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);}
+.an__card-brand{display:flex;align-items:center;gap:9px;}
+.an__brand-av{width:30px;height:30px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;box-shadow:0 2px 7px rgba(6,182,212,.28);}
+.an__brand-nm{font-size:13.5px;font-weight:700;color:var(--t1);}
+.an__status{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:99px;}
+.an__sdot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.an__status--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);}
+.an__status--sl{background:rgba(71,85,105,.1);color:#64748b;border:1px solid rgba(71,85,105,.2);}
+.an__status--y{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+
+.an__card-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:10px;}
+.an__drive-title{font-size:15px;font-weight:800;color:#fff;line-height:1.3;}
+.an__drive-desc{font-size:12.5px;color:var(--t3);line-height:1.5;}
+
+/* elig strip */
+.an__elig-strip{display:flex;flex-wrap:wrap;gap:6px;}
+.an__elig-item{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--t2);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);padding:3px 9px;border-radius:6px;}
+.an__elig-item i{font-size:11px;}
+
+/* response status */
+.an__rs{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;padding:8px 12px;border-radius:9px;}
+.an__rs--g{background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.18);}
+.an__rs--r{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.18);}
+.an__rs--pending{background:rgba(6,182,212,.08);color:#22d3ee;border:1px solid rgba(6,182,212,.2);}
+.an__rs--closed{background:rgba(251,191,36,.07);color:#fbbf24;border:1px solid rgba(251,191,36,.15);}
+.an__rs--no{background:rgba(71,85,105,.08);color:#64748b;border:1px solid rgba(71,85,105,.15);}
+
+/* card footer */
+.an__card-footer{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-top:1px solid rgba(255,255,255,.05);}
+.an__date{font-size:11.5px;color:var(--t3);display:flex;align-items:center;gap:4px;font-weight:500;}
+.an__days{font-weight:700;font-size:11.5px;}
+.an__days--ok{color:#10b981;}
+.an__days--warn{color:#fbbf24;}
+.an__days--exp{color:#f87171;}
+.an__card-actions{display:flex;align-items:center;gap:8px;}
+.an__quick-btn{
+  width:30px;height:30px;border-radius:8px;
+  background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.22);
+  color:#fbbf24;display:flex;align-items:center;justify-content:center;
+  font-size:13px;transition:all .18s;
+}
+.an__quick-btn:hover{background:rgba(251,191,36,.2);transform:scale(1.12);}
+.an__detail-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);
+  color:var(--acc);font-size:12px;font-weight:700;
+  padding:6px 13px;border-radius:8px;text-decoration:none;transition:all .18s;
+  white-space:nowrap;
+}
+.an__detail-btn:hover{background:rgba(6,182,212,.18);color:var(--acc);}
+
+/* PAGINATION */
+.an__pg{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;}
+.an__pg-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--t2);font-size:13px;text-decoration:none;transition:all .18s;}
+.an__pg-btn:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+.an__pg-info{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t2);padding:0 4px;}
+.an__pg-info b{color:var(--acc);}
+
+/* EMPTY */
+.an__empty{display:flex;flex-direction:column;align-items:center;padding:64px 24px;color:var(--t3);text-align:center;}
+.an__empty-ring{width:72px;height:72px;border-radius:50%;background:rgba(6,182,212,.07);border:1px solid rgba(6,182,212,.15);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--acc);margin-bottom:18px;}
+.an__empty h3{font-size:18px;font-weight:800;color:var(--t1);margin-bottom:6px;}
+.an__empty p{font-size:13.5px;margin-bottom:20px;}
+.an__cta{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#0891b2,#06b6d4);border:1px solid rgba(6,182,212,.4);color:#fff;font-family:'Urbanist',sans-serif;font-size:14px;font-weight:800;padding:11px 22px;border-radius:11px;text-decoration:none;box-shadow:0 4px 18px rgba(6,182,212,.3);transition:all .18s;}
+.an__cta:hover{box-shadow:0 6px 26px rgba(6,182,212,.5);transform:translateY(-2px);color:#fff;}
+
+/* QUICK RESPONSE MODAL */
+.qr-overlay{position:fixed;inset:0;z-index:1000;background:rgba(7,12,25,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .22s;}
+.qr-overlay.open{opacity:1;pointer-events:all;}
+.qr-modal{background:var(--b2);border:1px solid rgba(6,182,212,.2);border-radius:18px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:scale(.92);transition:transform .25s cubic-bezier(.34,1.3,.64,1);overflow:hidden;}
+.qr-overlay.open .qr-modal{transform:scale(1);}
+.qr-modal__head{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;border-bottom:1px solid rgba(6,182,212,.1);background:rgba(6,182,212,.025);}
+.qr-modal__title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:#fff;}
+.qr-modal__close{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--t2);width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;transition:all .15s;cursor:pointer;}
+.qr-modal__close:hover{background:rgba(248,113,113,.15);color:#f87171;}
+.qr-modal__body{padding:18px 20px 22px;}
+.qr-modal__desc{font-size:14px;color:var(--t2);margin-bottom:16px;line-height:1.5;}
+.qr-modal__btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.qr-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:11px;font-size:15px;font-weight:800;transition:all .2s;border:1px solid transparent;cursor:pointer;}
+.qr-btn--g{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#10b981;}
+.qr-btn--g:hover{background:rgba(16,185,129,.22);transform:translateY(-2px);box-shadow:0 6px 18px rgba(16,185,129,.2);}
+.qr-btn--r{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.25);color:#f87171;}
+.qr-btn--r:hover{background:rgba(248,113,113,.2);transform:translateY(-2px);box-shadow:0 6px 18px rgba(248,113,113,.18);}
+
+/* TOAST */
+.an__toast{position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:10px;background:var(--b2);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:13px 18px;font-size:13.5px;font-weight:600;color:var(--t1);box-shadow:0 8px 30px rgba(0,0,0,.4);transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+.an__toast.show{transform:translateY(0);opacity:1;}
+.an__toast.error{border-color:rgba(248,113,113,.3);}
+.an__toast i{color:#10b981;}
+.an__toast.error i{color:#f87171;}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;animation-delay:calc(var(--i,0)*.08s);}
+</style>
 
 <script>
-let currentDriveId = null;
+let currentDriveId=null;
 
-function showQuickResponse(driveId, driveTitle) {
-    currentDriveId = driveId;
-    document.getElementById('modalDriveTitle').textContent = driveTitle;
-    new bootstrap.Modal(document.getElementById('quickResponseModal')).show();
+function showQuickResponse(id,title){
+  currentDriveId=id;
+  document.getElementById('modalDriveTitle').textContent=title;
+  document.getElementById('quickResponseModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeQuickModal(){
+  document.getElementById('quickResponseModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.getElementById('quickResponseModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('quickResponseModal')) closeQuickModal();
+});
+
+function showToast(msg,isErr=false){
+  const t=document.getElementById('an-toast');
+  const m=document.getElementById('an-toast-msg');
+  const i=document.getElementById('an-toast-icon');
+  m.textContent=msg;
+  t.className='an__toast'+(isErr?' error':'');
+  i.className=isErr?'bi bi-x-circle-fill':'bi bi-check-circle-fill';
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>t.classList.remove('show'),4000);
 }
 
-function submitQuickResponse(response) {
-    if (!currentDriveId) {
-        console.error('No drive ID available for quick response');
-        alert('Error: No drive selected. Please try again.');
-        return;
-    }
-    
-    // Validate currentDriveId is not undefined or null string
-    if (currentDriveId === 'undefined' || currentDriveId === 'null' || currentDriveId === '') {
-        console.error('Invalid currentDriveId:', currentDriveId);
-        alert('Error: Invalid drive ID. Please refresh the page and try again.');
-        return;
-    }
-    
-    // Create a form and submit it
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/student/submit-response/${currentDriveId}/`;
-    
-    // Add CSRF token
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = 'csrfmiddlewaretoken';
-    csrfInput.value = csrfToken;
-    form.appendChild(csrfInput);
-    
-    // Add response
-    const responseInput = document.createElement('input');
-    responseInput.type = 'hidden';
-    responseInput.name = 'response';
-    responseInput.value = response;
-    form.appendChild(responseInput);
-    
-    // Submit form
-    document.body.appendChild(form);
-    form.submit();
+function submitQuickResponse(response){
+  if(!currentDriveId) return;
+  const csrf=document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const form=document.createElement('form');
+  form.method='POST';
+  form.action=`/student/submit-response/${currentDriveId}/`;
+  const c=document.createElement('input');c.type='hidden';c.name='csrfmiddlewaretoken';c.value=csrf;form.appendChild(c);
+  const r=document.createElement('input');r.type='hidden';r.name='response';r.value=response;form.appendChild(r);
+  closeQuickModal();
+  document.body.appendChild(form);
+  form.submit();
 }
 </script>
+
 {% endblock %}

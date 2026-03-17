@@ -5,181 +5,481 @@
 {% block title %}Update Profile{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <!-- Header -->
-            <div class="mb-4">
-                <h2>Update Profile</h2>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'student:home' %}">Home</a></li>
-                        <li class="breadcrumb-item active">Update Profile</li>
-                    </ol>
-                </nav>
-            </div>
 
-            <div class="row">
-                <div class="col-lg-8">
-                    <!-- Profile Form -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">
-                                <i class="fas fa-user-edit text-primary"></i> Student Information
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            {% if messages %}
-                                {% for message in messages %}
-                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                        {{ message }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-                            <form method="post">
-                                {% csrf_token %}
-                                
-                                <!-- Basic Information -->
-                                <h6 class="mb-3 text-primary">Personal Information</h6>
-                                <div class="mb-3">
-                                    {{ form.name|as_crispy_field }}
-                                </div>
+<div class="up">
 
-                                <!-- Academic Information -->
-                                <h6 class="mb-3 text-primary">Academic Information</h6>
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        {{ form.department|as_crispy_field }}
-                                    </div>
-                                    <div class="col-md-4">
-                                        {{ form.year|as_crispy_field }}
-                                    </div>
-                                    <div class="col-md-4">
-                                        {{ form.cgpa|as_crispy_field }}
-                                    </div>
-                                </div>
+  <div class="up__mesh"></div>
+  <div class="up__orb up__orb--1"></div>
+  <div class="up__orb up__orb--2"></div>
 
-                                <!-- Form Actions -->
-                                <div class="d-flex justify-content-between">
-                                    <a href="{% url 'student:home' %}" class="btn btn-secondary">
-                                        <i class="fas fa-arrow-left"></i> Back to Home
-                                    </a>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i> Update Profile
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <!-- Profile Summary -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">
-                                <i class="fas fa-user text-info"></i> Profile Summary
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="text-center mb-3">
-                                <i class="fas fa-user-circle fa-4x text-muted"></i>
-                                <h6 class="mt-2">{{ user.username }}</h6>
-                                <small class="text-muted">Student Profile</small>
-                            </div>
-                            
-                            <hr>
-                            
-                            <div class="mb-2">
-                                <strong>Name:</strong> 
-                                <span class="text-muted">{{ user.studentprofile.name|default:"Not set" }}</span>
-                            </div>
-                            <div class="mb-2">
-                                <strong>Department:</strong> 
-                                <span class="text-muted">{{ user.studentprofile.get_department_display|default:"Not set" }}</span>
-                            </div>
-                            <div class="mb-2">
-                                <strong>Year:</strong> 
-                                <span class="text-muted">{{ user.studentprofile.get_year_display|default:"Not set" }}</span>
-                            </div>
-                            <div class="mb-2">
-                                <strong>CGPA:</strong> 
-                                <span class="text-muted">{{ user.studentprofile.cgpa|default:"Not set" }}</span>
-                            </div>
-                            <div class="mb-2">
-                                <strong>Last Updated:</strong> 
-                                <span class="text-muted">{{ user.studentprofile.updated_at|date:"M d, Y H:i"|default:"Never" }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Eligibility Status -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">
-                                <i class="fas fa-check-circle text-success"></i> Profile Status
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            {% if user.studentprofile.name and user.studentprofile.department and user.studentprofile.year and user.studentprofile.cgpa %}
-                                <div class="alert alert-success">
-                                    <small>
-                                        <i class="fas fa-check-circle"></i>
-                                        Your profile is complete and ready for placement drives!
-                                    </small>
-                                </div>
-                            {% else %}
-                                <div class="alert alert-warning">
-                                    <small>
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        Please complete all fields to be eligible for placement drives.
-                                    </small>
-                                </div>
-                            {% endif %}
-                            
-                            <div class="mb-3">
-                                <strong>Eligible Drives:</strong>
-                                <p class="small text-muted">You will be automatically notified of drives matching your profile.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Help & Tips -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">
-                                <i class="fas fa-lightbulb text-warning"></i> Profile Tips
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <strong>Name:</strong>
-                                <p class="small text-muted">Enter your full name as it appears in official documents.</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <strong>CGPA:</strong>
-                                <p class="small text-muted">Enter your current CGPA accurately. This is used for eligibility checking.</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <strong>Department & Year:</strong>
-                                <p class="small text-muted">Select your current department and academic year to receive relevant drive notifications.</p>
-                            </div>
-                            
-                            <div class="alert alert-info">
-                                <small>
-                                    <i class="fas fa-info-circle"></i>
-                                    Keep your profile updated to ensure you don't miss out on eligible placement opportunities.
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- TOPBAR -->
+  <div class="up__top">
+    <div class="up__top-l">
+      <div class="up__logo"><i class="bi bi-layers-half"></i></div>
+      <span class="up__brand">DNB <b>Student</b></span>
+      <span class="up__div"></span>
+      <nav class="up__bc">
+        <a href="{% url 'student:home' %}" class="up__bc-a">Home</a>
+        <i class="bi bi-chevron-right up__bc-sep"></i>
+        <span class="up__bc-cur">Update Profile</span>
+      </nav>
     </div>
+    <a href="{% url 'student:home' %}" class="up__btn-ghost">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+  </div>
+
+  <div class="up__body">
+
+    <!-- HEAD -->
+    <div class="up__head anim-up">
+      <div class="up__head-icon"><i class="bi bi-person-gear"></i></div>
+      <div>
+        <h1 class="up__h1">Update Profile</h1>
+        <p class="up__sub">Keep your details accurate to stay eligible for placement drives.</p>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+    <div class="up__msgs anim-up">
+      {% for message in messages %}
+      <div class="up__msg up__msg--{{ message.tags }}" onclick="this.remove()">
+        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+        <span>{{ message }}</span>
+        <button class="up__msg-close">×</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="up__grid">
+
+      <!-- ── LEFT: FORM ── -->
+      <div class="up__left">
+        <form method="post" id="profile-form">
+          {% csrf_token %}
+
+          <!-- Section 01: Personal -->
+          <div class="up__sec anim-up" style="--i:1">
+            <div class="up__sec-head">
+              <span class="up__sec-num">01</span>
+              <div>
+                <h2 class="up__sec-title">Personal Information</h2>
+                <p class="up__sec-hint">Your full name as in official documents</p>
+              </div>
+              <span class="up__sec-icon" style="color:#06b6d4"><i class="bi bi-person-fill"></i></span>
+            </div>
+            <div class="up__sec-body">
+              <div class="up__field">
+                <label class="up__lbl" for="{{ form.name.id_for_label }}">
+                  <i class="bi bi-person"></i> Full Name
+                </label>
+                <div class="up__input-wrap">
+                  {{ form.name }}
+                </div>
+                {% if form.name.errors %}
+                <div class="up__field-err"><i class="bi bi-exclamation-circle"></i> {{ form.name.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 02: Academic -->
+          <div class="up__sec anim-up" style="--i:2">
+            <div class="up__sec-head">
+              <span class="up__sec-num">02</span>
+              <div>
+                <h2 class="up__sec-title">Academic Information</h2>
+                <p class="up__sec-hint">Used for placement drive eligibility checks</p>
+              </div>
+              <span class="up__sec-icon" style="color:#a78bfa"><i class="bi bi-mortarboard-fill"></i></span>
+            </div>
+            <div class="up__sec-body">
+              <div class="up__row3">
+                <div class="up__field">
+                  <label class="up__lbl" for="{{ form.department.id_for_label }}">
+                    <i class="bi bi-building"></i> Department
+                  </label>
+                  <div class="up__input-wrap">{{ form.department }}</div>
+                  {% if form.department.errors %}
+                  <div class="up__field-err"><i class="bi bi-exclamation-circle"></i> {{ form.department.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="up__field">
+                  <label class="up__lbl" for="{{ form.year.id_for_label }}">
+                    <i class="bi bi-calendar3"></i> Year
+                  </label>
+                  <div class="up__input-wrap">{{ form.year }}</div>
+                  {% if form.year.errors %}
+                  <div class="up__field-err"><i class="bi bi-exclamation-circle"></i> {{ form.year.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="up__field">
+                  <label class="up__lbl" for="{{ form.cgpa.id_for_label }}">
+                    <i class="bi bi-award-fill"></i> CGPA
+                  </label>
+                  <div class="up__input-wrap">{{ form.cgpa }}</div>
+                  {% if form.cgpa.errors %}
+                  <div class="up__field-err"><i class="bi bi-exclamation-circle"></i> {{ form.cgpa.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <!-- Live CGPA bar -->
+              <div class="up__cgpa-wrap">
+                <div class="up__cgpa-row">
+                  <span style="font-size:12px;color:var(--t3);font-weight:600">CGPA Progress</span>
+                  <span class="up__cgpa-val up__mono" id="cgpa-display">{{ user.studentprofile.cgpa|default:"—" }}</span>
+                </div>
+                <div class="up__cgpa-track">
+                  <div class="up__cgpa-fill" id="cgpa-fill"
+                    style="width:{{ user.studentprofile.cgpa|default:0 }}0%;
+                    background:{% if user.studentprofile.cgpa >= 8.0 %}#10b981{% elif user.studentprofile.cgpa >= 6.0 %}#fbbf24{% else %}#f87171{% endif %}">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="up__actions anim-up" style="--i:3">
+            <a href="{% url 'student:home' %}" class="up__btn-sec">
+              <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
+            <button type="submit" class="up__btn-primary">
+              <i class="fas fa-save"></i> Update Profile
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ── RIGHT: SIDEBAR ── -->
+      <aside class="up__right">
+
+        <!-- Profile Preview -->
+        <div class="up__card anim-up" style="--i:1">
+          <div class="up__card-head">
+            <span class="up__card-title"><i class="bi bi-person-badge-fill" style="color:#06b6d4"></i> Profile Preview</span>
+          </div>
+          <div class="up__card-body">
+            <div class="up__preview-av-wrap">
+              <div class="up__preview-av" id="preview-av">{{ user.username|first|upper }}</div>
+              <div>
+                <div class="up__preview-nm" id="preview-name">{{ user.studentprofile.name|default:user.username }}</div>
+                <div class="up__preview-un up__mono">@{{ user.username }}</div>
+              </div>
+            </div>
+            <div class="up__divider"></div>
+            <div class="up__preview-rows">
+              <div class="up__preview-row">
+                <span class="up__pr-ic" style="--ic:#a78bfa"><i class="bi bi-building"></i></span>
+                <div>
+                  <span class="up__pr-lbl">Department</span>
+                  <span class="up__pr-val" id="preview-dept">{{ user.studentprofile.get_department_display|default:"—" }}</span>
+                </div>
+              </div>
+              <div class="up__preview-row">
+                <span class="up__pr-ic" style="--ic:#fbbf24"><i class="bi bi-calendar3"></i></span>
+                <div>
+                  <span class="up__pr-lbl">Academic Year</span>
+                  <span class="up__pr-val" id="preview-year">{{ user.studentprofile.get_year_display|default:"—" }}</span>
+                </div>
+              </div>
+              <div class="up__preview-row">
+                <span class="up__pr-ic" style="--ic:#10b981"><i class="bi bi-award-fill"></i></span>
+                <div>
+                  <span class="up__pr-lbl">CGPA</span>
+                  <span class="up__pr-val up__mono" id="preview-cgpa">{{ user.studentprofile.cgpa|default:"—" }}</span>
+                </div>
+              </div>
+              <div class="up__preview-row">
+                <span class="up__pr-ic" style="--ic:#38bdf8"><i class="bi bi-clock-history"></i></span>
+                <div>
+                  <span class="up__pr-lbl">Last Updated</span>
+                  <span class="up__pr-val up__mono">{{ user.studentprofile.updated_at|date:"d M Y, H:i"|default:"Never" }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Status -->
+        <div class="up__card anim-up" style="--i:2">
+          <div class="up__card-head">
+            <span class="up__card-title"><i class="bi bi-shield-check" style="color:#10b981"></i> Profile Status</span>
+          </div>
+          <div class="up__card-body">
+            {% if user.studentprofile.name and user.studentprofile.department and user.studentprofile.year and user.studentprofile.cgpa %}
+            <div class="up__status up__status--g">
+              <i class="bi bi-check-circle-fill"></i>
+              <div>
+                <div class="up__status-title">Profile Complete</div>
+                <div class="up__status-hint">You're eligible for placement drives!</div>
+              </div>
+            </div>
+            {% else %}
+            <div class="up__status up__status--y">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <div>
+                <div class="up__status-title">Incomplete Profile</div>
+                <div class="up__status-hint">Fill all fields to be eligible for drives.</div>
+              </div>
+            </div>
+            {% endif %}
+            <div class="up__drives-note">
+              <i class="bi bi-bell-fill"></i>
+              <span>You'll be notified of drives matching your profile automatically.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="up__card anim-up" style="--i:3">
+          <div class="up__card-head">
+            <span class="up__card-title"><i class="bi bi-lightbulb-fill" style="color:#fbbf24"></i> Tips</span>
+          </div>
+          <div class="up__card-body">
+            <div class="up__tips">
+              <div class="up__tip">
+                <span class="up__tip-ic" style="--tc:#06b6d4"><i class="bi bi-person-fill"></i></span>
+                <div>
+                  <div class="up__tip-title">Full Name</div>
+                  <div class="up__tip-hint">Use your name as it appears in official documents.</div>
+                </div>
+              </div>
+              <div class="up__tip">
+                <span class="up__tip-ic" style="--tc:#10b981"><i class="bi bi-award-fill"></i></span>
+                <div>
+                  <div class="up__tip-title">CGPA</div>
+                  <div class="up__tip-hint">Enter accurately — used for eligibility checks.</div>
+                </div>
+              </div>
+              <div class="up__tip">
+                <span class="up__tip-ic" style="--tc:#a78bfa"><i class="bi bi-building"></i></span>
+                <div>
+                  <div class="up__tip-title">Dept & Year</div>
+                  <div class="up__tip-hint">Select current values to get relevant notifications.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </div>
 </div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;cursor:pointer;}
+
+.up{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.up__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.up__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.up__orb--1{width:460px;height:460px;background:radial-gradient(circle,rgba(6,182,212,.15),transparent);top:-130px;right:-90px;}
+.up__orb--2{width:360px;height:360px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-80px;left:-60px;animation-delay:-9s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* TOPBAR */
+.up__top{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;background:rgba(13,31,45,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(6,182,212,.13);padding:0 24px;height:52px;}
+.up__top-l{display:flex;align-items:center;gap:12px;}
+.up__logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;}
+.up__brand{font-size:14px;font-weight:500;color:var(--t1);}
+.up__brand b{font-weight:800;color:#fff;}
+.up__div{width:1px;height:16px;background:var(--t3);}
+.up__bc{display:flex;align-items:center;gap:5px;}
+.up__bc-a{font-size:12.5px;color:var(--t2);text-decoration:none;font-weight:500;transition:color .15s;}
+.up__bc-a:hover{color:var(--acc);}
+.up__bc-sep{font-size:10px;color:var(--t3);}
+.up__bc-cur{font-size:12.5px;color:var(--acc);font-weight:700;}
+.up__btn-ghost{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:8px;text-decoration:none;transition:all .18s;}
+.up__btn-ghost:hover{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:var(--acc);}
+
+/* BODY */
+.up__body{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:28px 24px 64px;display:flex;flex-direction:column;gap:18px;}
+
+/* HEAD */
+.up__head{display:flex;align-items:center;gap:14px;}
+.up__head-icon{width:46px;height:46px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff;box-shadow:0 4px 18px rgba(6,182,212,.3);}
+.up__h1{font-size:21px;font-weight:800;color:#fff;line-height:1.2;}
+.up__sub{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* MESSAGES */
+.up__msgs{display:flex;flex-direction:column;gap:8px;}
+.up__msg{display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:10px;font-size:13.5px;font-weight:500;cursor:pointer;}
+.up__msg--success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.22);color:#34d399;}
+.up__msg--info{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.22);color:#22d3ee;}
+.up__msg i{flex-shrink:0;}
+.up__msg span{flex:1;}
+.up__msg-close{margin-left:auto;font-size:18px;opacity:.6;background:none;border:none;color:inherit;cursor:pointer;padding:0;}
+
+/* GRID */
+.up__grid{display:grid;grid-template-columns:1fr 290px;gap:20px;align-items:start;}
+@media(max-width:1050px){.up__grid{grid-template-columns:1fr;}}
+.up__left{display:flex;flex-direction:column;gap:14px;}
+.up__right{display:flex;flex-direction:column;gap:14px;}
+
+/* SECTIONS */
+.up__sec{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.09s);}
+.up__sec-head{display:flex;align-items:center;gap:14px;padding:14px 22px 12px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.up__sec-num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:rgba(6,182,212,.28);line-height:1;flex-shrink:0;}
+.up__sec-head>div{flex:1;}
+.up__sec-title{font-size:14px;font-weight:700;color:var(--t1);}
+.up__sec-hint{font-size:11.5px;color:var(--t3);margin-top:2px;}
+.up__sec-icon{font-size:18px;flex-shrink:0;}
+.up__sec-body{padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+.up__row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:640px){.up__row3{grid-template-columns:1fr;}}
+
+/* FIELDS — style crispy form outputs */
+.up__field{display:flex;flex-direction:column;gap:5px;}
+.up__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;gap:5px;}
+.up__field-err{font-size:12px;color:#f87171;display:flex;align-items:center;gap:5px;}
+.up__input-wrap{position:relative;}
+
+/* Override crispy/Django form inputs */
+#profile-form input[type="text"],
+#profile-form input[type="number"],
+#profile-form select,
+#profile-form textarea{
+  width:100% !important;
+  background:#1a3a52 !important;
+  border:1px solid rgba(6,182,212,.2) !important;
+  border-radius:10px !important;
+  color:#e0f4f8 !important;
+  font-family:'Urbanist',sans-serif !important;
+  font-size:14px !important;font-weight:500 !important;
+  padding:11px 14px !important;
+  outline:none !important;
+  transition:border-color .18s,box-shadow .18s !important;
+  box-shadow:none !important;
+  -webkit-appearance:none !important;
+}
+#profile-form input::placeholder,
+#profile-form textarea::placeholder{color:#3d7a8a !important;}
+#profile-form input:focus,
+#profile-form select:focus,
+#profile-form textarea:focus{
+  border-color:rgba(6,182,212,.5) !important;
+  box-shadow:0 0 0 3px rgba(6,182,212,.12) !important;
+}
+#profile-form select option{background:#133044;color:#e0f4f8;}
+#profile-form .form-group,
+#profile-form .mb-3{margin:0 !important;}
+#profile-form label.form-label{display:none;}
+
+/* CGPA bar */
+.up__cgpa-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;}
+.up__cgpa-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.up__cgpa-val{font-size:14px;font-weight:800;color:var(--t1);}
+.up__mono{font-family:'JetBrains Mono',monospace;}
+.up__cgpa-track{height:6px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;}
+.up__cgpa-fill{height:100%;border-radius:99px;transition:width .6s ease,background .4s ease;}
+
+/* ACTIONS */
+.up__actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 22px;background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;animation:fu .5s ease both;animation-delay:calc(var(--i)*.09s);}
+.up__btn-sec{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t2);font-size:13.5px;font-weight:700;padding:10px 20px;border-radius:10px;text-decoration:none;transition:all .18s;}
+.up__btn-sec:hover{background:rgba(255,255,255,.09);color:var(--t1);}
+.up__btn-primary{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#0891b2,#06b6d4);border:1px solid rgba(6,182,212,.4);color:#fff;font-size:13.5px;font-weight:800;padding:10px 24px;border-radius:10px;box-shadow:0 0 18px rgba(6,182,212,.28);transition:all .18s;}
+.up__btn-primary:hover{box-shadow:0 0 28px rgba(6,182,212,.48);transform:translateY(-1px);}
+
+/* SIDEBAR CARDS */
+.up__card{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fu .5s ease both;animation-delay:calc(var(--i)*.1s);}
+.up__card-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 10px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.up__card-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--t1);}
+.up__card-body{padding:16px;}
+
+/* profile preview */
+.up__preview-av-wrap{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.up__preview-av{width:44px;height:44px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;box-shadow:0 3px 12px rgba(6,182,212,.3);}
+.up__preview-nm{font-size:15px;font-weight:800;color:#fff;margin-bottom:2px;}
+.up__preview-un{font-size:11.5px;color:var(--t3);}
+.up__divider{height:1px;background:rgba(6,182,212,.08);margin:4px 0 12px;}
+.up__preview-rows{display:flex;flex-direction:column;gap:10px;}
+.up__preview-row{display:flex;align-items:flex-start;gap:9px;}
+.up__pr-ic{width:26px;height:26px;border-radius:7px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--ic);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.up__pr-lbl{display:block;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.up__pr-val{font-size:13px;color:var(--t1);font-weight:500;}
+
+/* status */
+.up__status{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:10px;margin-bottom:12px;}
+.up__status--g{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);}
+.up__status--g i{color:#10b981;font-size:18px;flex-shrink:0;margin-top:1px;}
+.up__status--y{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.18);}
+.up__status--y i{color:#fbbf24;font-size:18px;flex-shrink:0;margin-top:1px;}
+.up__status-title{font-size:13.5px;font-weight:800;color:var(--t1);margin-bottom:2px;}
+.up__status-hint{font-size:12px;color:var(--t3);}
+.up__drives-note{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--t3);line-height:1.5;}
+.up__drives-note i{color:var(--acc);flex-shrink:0;margin-top:1px;}
+
+/* tips */
+.up__tips{display:flex;flex-direction:column;gap:12px;}
+.up__tip{display:flex;align-items:flex-start;gap:10px;}
+.up__tip-ic{width:30px;height:30px;border-radius:8px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--tc);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.up__tip-title{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;}
+.up__tip-hint{font-size:11.5px;color:var(--t3);line-height:1.4;}
+
+@keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-up{animation:fu .55s ease both;animation-delay:calc(var(--i,0)*.09s);}
+</style>
+
+<script>
+/* Live preview updates */
+const nameInput   = document.querySelector('#id_name, [name="name"]');
+const deptSelect  = document.querySelector('#id_department, [name="department"]');
+const yearSelect  = document.querySelector('#id_year, [name="year"]');
+const cgpaInput   = document.querySelector('#id_cgpa, [name="cgpa"]');
+
+function updatePreview(){
+  const nm = nameInput?.value?.trim();
+  if(nm){
+    document.getElementById('preview-name').textContent = nm;
+    document.getElementById('preview-av').textContent = nm.charAt(0).toUpperCase();
+  }
+  if(deptSelect){
+    const opt = deptSelect.options[deptSelect.selectedIndex];
+    document.getElementById('preview-dept').textContent = opt?.text || '—';
+  }
+  if(yearSelect){
+    const opt = yearSelect.options[yearSelect.selectedIndex];
+    document.getElementById('preview-year').textContent = opt?.text || '—';
+  }
+  if(cgpaInput){
+    const v = parseFloat(cgpaInput.value)||0;
+    document.getElementById('preview-cgpa').textContent = v || '—';
+    document.getElementById('cgpa-display').textContent = v || '—';
+    const fill = document.getElementById('cgpa-fill');
+    const pct = Math.min(v/10*100,100);
+    fill.style.width = pct+'%';
+    fill.style.background = v >= 8 ? '#10b981' : v >= 6 ? '#fbbf24' : '#f87171';
+  }
+}
+
+[nameInput,deptSelect,yearSelect,cgpaInput].forEach(el=>{
+  if(el) el.addEventListener('input', updatePreview);
+  if(el) el.addEventListener('change', updatePreview);
+});
+
+/* Auto-dismiss messages */
+document.querySelectorAll('.up__msg').forEach(el=>{
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .4s';setTimeout(()=>el.remove(),400);},5000);
+});
+</script>
+
 {% endblock %}

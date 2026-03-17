@@ -3,216 +3,532 @@
 
 {% block title %}Student Registration - Digital Notice Board{% endblock %}
 
-{% block extra_css %}
-<style>
-    .registration-container {
-        max-width: 800px;
-        margin: 50px auto;
-        padding: 30px;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    }
-    .registration-header {
-        text-align: center;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 2px solid #0d6efd;
-    }
-    .registration-header h2 {
-        color: #0d6efd;
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
-    .registration-header p {
-        color: #6c757d;
-        margin: 0;
-    }
-    .form-section {
-        margin-bottom: 25px;
-    }
-    .form-section-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 15px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #dee2e6;
-    }
-    .info-box {
-        background: #e7f3ff;
-        border-left: 4px solid #0d6efd;
-        padding: 15px;
-        margin-bottom: 25px;
-        border-radius: 4px;
-    }
-    .info-box i {
-        color: #0d6efd;
-        margin-right: 8px;
-    }
-    .login-link {
-        text-align: center;
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid #dee2e6;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container">
-    <div class="registration-container">
-        <div class="registration-header">
-            <h2><i class="fas fa-user-plus"></i> Student Registration</h2>
-            <p>Register for Digital Notice Board - Placement Drive Management System</p>
+
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="rg">
+
+  <div class="rg__mesh"></div>
+  <div class="rg__orb rg__orb--1"></div>
+  <div class="rg__orb rg__orb--2"></div>
+  <div class="rg__orb rg__orb--3"></div>
+
+  <div class="rg__wrap">
+
+    <!-- LEFT: Form -->
+    <div class="rg__form-col">
+
+      <!-- Brand -->
+      <div class="rg__brand">
+        <div class="rg__brand-icon"><i class="bi bi-clipboard-check"></i></div>
+        <div>
+          <div class="rg__brand-name">Digital Notice Board</div>
+          <div class="rg__brand-sub">Placement Drive Management</div>
+        </div>
+      </div>
+
+      <h1 class="rg__title">Create your account</h1>
+      <p class="rg__desc">Register as a student to access placement drives and receive notifications.</p>
+
+      <!-- Approval notice -->
+      <div class="rg__notice">
+        <i class="bi bi-shield-exclamation"></i>
+        <span>Your account will be <strong>pending admin approval</strong> after registration. You'll receive an email once approved.</span>
+      </div>
+
+      <!-- Messages -->
+      {% if messages %}
+      <div class="rg__msgs">
+        {% for message in messages %}
+        <div class="rg__msg rg__msg--{{ message.tags }}" onclick="this.remove()">
+          <i class="fas fa-info-circle"></i>
+          <span>{{ message }}</span>
+          <button style="margin-left:auto;background:none;border:none;color:inherit;font-size:18px;cursor:pointer;opacity:.6">×</button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post" novalidate id="reg-form" class="rg__form">
+        {% csrf_token %}
+
+        <!-- 01 Account -->
+        <div class="rg__sec">
+          <div class="rg__sec-head">
+            <span class="rg__sec-num">01</span>
+            <div>
+              <div class="rg__sec-title">Account Information</div>
+              <div class="rg__sec-hint">Username and email for login</div>
+            </div>
+            <i class="bi bi-person-fill" style="color:#06b6d4;font-size:17px"></i>
+          </div>
+          <div class="rg__sec-body rg__row2">
+            <div class="rg__field">
+              <label class="rg__lbl">Username <span class="rg__req">*</span></label>
+              <div class="rg__input-wrap">{{ form.username }}</div>
+              {% if form.username.errors %}<div class="rg__err"><i class="bi bi-exclamation-circle"></i>{{ form.username.errors }}</div>{% endif %}
+              <span class="rg__hint">Letters, digits and @/./+/-/_ only</span>
+            </div>
+            <div class="rg__field">
+              <label class="rg__lbl">Email Address <span class="rg__req">*</span></label>
+              <div class="rg__input-wrap">{{ form.email }}</div>
+              {% if form.email.errors %}<div class="rg__err"><i class="bi bi-exclamation-circle"></i>{{ form.email.errors }}</div>{% endif %}
+              <span class="rg__hint">For notifications and password reset</span>
+            </div>
+          </div>
         </div>
 
-        <div class="info-box">
-            <i class="fas fa-info-circle"></i>
-            <strong>Note:</strong> Your account will be pending admin approval after registration. 
-            You will receive an email notification once your registration is approved.
+        <!-- 02 Personal -->
+        <div class="rg__sec">
+          <div class="rg__sec-head">
+            <span class="rg__sec-num">02</span>
+            <div>
+              <div class="rg__sec-title">Personal Information</div>
+              <div class="rg__sec-hint">Your identity details</div>
+            </div>
+            <i class="bi bi-id-card-fill" style="color:#a78bfa;font-size:17px"></i>
+          </div>
+          <div class="rg__sec-body">
+            <div class="rg__field">
+              <label class="rg__lbl">Full Name <span class="rg__req">*</span></label>
+              <div class="rg__input-wrap">{{ form.name }}</div>
+              {% if form.name.errors %}<div class="rg__err"><i class="bi bi-exclamation-circle"></i>{{ form.name.errors }}</div>{% endif %}
+            </div>
+            <div class="rg__row2" style="margin-top:12px">
+              <div class="rg__field">
+                <label class="rg__lbl">Phone Number</label>
+                <div class="rg__input-wrap">{{ form.phone }}</div>
+                {% if form.phone.errors %}<div class="rg__err"><i class="bi bi-exclamation-circle"></i>{{ form.phone.errors }}</div>{% endif %}
+              </div>
+              <div class="rg__field">
+                <label class="rg__lbl">Roll Number <span class="rg__req">*</span></label>
+                <div class="rg__input-wrap">{{ form.roll_number }}</div>
+                {% if form.roll_number.errors %}<div class="rg__err"><i class="bi bi-exclamation-circle"></i>{{ form.roll_number.errors }}</div>{% endif %}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        <form method="post" novalidate>
-            {% csrf_token %}
-            
-            <div class="form-section">
-                <div class="form-section-title">
-                    <i class="fas fa-user"></i> Account Information
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_username" class="form-label">Username *</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                            <div class="text-danger small">{{ form.username.errors }}</div>
-                        {% endif %}
-                        <small class="form-text text-muted">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_email" class="form-label">Email Address *</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                            <div class="text-danger small">{{ form.email.errors }}</div>
-                        {% endif %}
-                        <small class="form-text text-muted">For notifications and password reset</small>
-                    </div>
-                </div>
+        <!-- 03 Academic -->
+        <div class="rg__sec">
+          <div class="rg__sec-head">
+            <span class="rg__sec-num">03</span>
+            <div>
+              <div class="rg__sec-title">Academic Information</div>
+              <div class="rg__sec-hint">Used for placement drive eligibility</div>
             </div>
-
-            <div class="form-section">
-                <div class="form-section-title">
-                    <i class="fas fa-id-card"></i> Personal Information
-                </div>
-                <div class="mb-3">
-                    <label for="id_name" class="form-label">Full Name *</label>
-                    {{ form.name }}
-                    {% if form.name.errors %}
-                        <div class="text-danger small">{{ form.name.errors }}</div>
-                    {% endif %}
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_phone" class="form-label">Phone Number</label>
-                        {{ form.phone }}
-                        {% if form.phone.errors %}
-                            <div class="text-danger small">{{ form.phone.errors }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_roll_number" class="form-label">Roll Number *</label>
-                        {{ form.roll_number }}
-                        {% if form.roll_number.errors %}
-                            <div class="text-danger small">{{ form.roll_number.errors }}</div>
-                        {% endif %}
-                    </div>
-                </div>
+            <i class="bi bi-mortarboard-fill" style="color:#fbbf24;font-size:17px"></i>
+          </div>
+          <div class="rg__sec-body rg__row3">
+            <div class="rg__field">
+              <label class="rg__lbl">Department <span class="rg__req">*</span></label>
+              <div class="rg__input-wrap">{{ form.department }}</div>
+              {% if form.department.errors %}<div class="rg__err"><i class="bi bi-exclamation-circle"></i>{{ form.department.errors }}</div>{% endif %}
             </div>
-
-            <div class="form-section">
-                <div class="form-section-title">
-                    <i class="fas fa-graduation-cap"></i> Academic Information
-                </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="id_department" class="form-label">Department *</label>
-                        {{ form.department }}
-                        {% if form.department.errors %}
-                            <div class="text-danger small">{{ form.department.errors }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="id_year" class="form-label">Year *</label>
-                        {{ form.year }}
-                        {% if form.year.errors %}
-                            <div class="text-danger small">{{ form.year.errors }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="id_cgpa" class="form-label">CGPA *</label>
-                        {{ form.cgpa }}
-                        {% if form.cgpa.errors %}
-                            <div class="text-danger small">{{ form.cgpa.errors }}</div>
-                        {% endif %}
-                        <small class="form-text text-muted">0.00 to 10.00</small>
-                    </div>
-                </div>
+            <div class="rg__field">
+              <label class="rg__lbl">Year <span class="rg__req">*</span></label>
+              <div class="rg__input-wrap">{{ form.year }}</div>
+              {% if form.year.errors %}<div class="rg__err"><i class="bi bi-exclamation-circle"></i>{{ form.year.errors }}</div>{% endif %}
             </div>
-
-            <div class="form-section">
-                <div class="form-section-title">
-                    <i class="fas fa-lock"></i> Password
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_password1" class="form-label">Password *</label>
-                        {{ form.password1 }}
-                        {% if form.password1.errors %}
-                            <div class="text-danger small">{{ form.password1.errors }}</div>
-                        {% endif %}
-                        <small class="form-text text-muted">
-                            <ul class="mb-0 ps-3">
-                                <li>At least 8 characters</li>
-                                <li>Not entirely numeric</li>
-                                <li>Not too common</li>
-                            </ul>
-                        </small>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_password2" class="form-label">Confirm Password *</label>
-                        {{ form.password2 }}
-                        {% if form.password2.errors %}
-                            <div class="text-danger small">{{ form.password2.errors }}</div>
-                        {% endif %}
-                        <small class="form-text text-muted">Enter the same password as before, for verification.</small>
-                    </div>
-                </div>
+            <div class="rg__field">
+              <label class="rg__lbl">CGPA <span class="rg__req">*</span></label>
+              <div class="rg__input-wrap">{{ form.cgpa }}</div>
+              {% if form.cgpa.errors %}<div class="rg__err"><i class="bi bi-exclamation-circle"></i>{{ form.cgpa.errors }}</div>{% endif %}
+              <span class="rg__hint">0.00 – 10.00</span>
             </div>
-
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="fas fa-user-plus"></i> Register
-                </button>
-            </div>
-        </form>
-
-        <div class="login-link">
-            <p class="text-muted mb-0">
-                Already have an account? 
-                <a href="{% url 'login' %}" class="text-decoration-none">
-                    <i class="fas fa-sign-in-alt"></i> Login here
-                </a>
-            </p>
+          </div>
         </div>
+
+        <!-- 04 Password -->
+        <div class="rg__sec">
+          <div class="rg__sec-head">
+            <span class="rg__sec-num">04</span>
+            <div>
+              <div class="rg__sec-title">Password</div>
+              <div class="rg__sec-hint">Choose a strong password</div>
+            </div>
+            <i class="bi bi-lock-fill" style="color:#10b981;font-size:17px"></i>
+          </div>
+          <div class="rg__sec-body rg__row2">
+            <div class="rg__field">
+              <label class="rg__lbl">Password <span class="rg__req">*</span></label>
+              <div class="rg__input-wrap rg__pw-wrap">
+                {{ form.password1 }}
+                <button type="button" class="rg__eye" onclick="togglePw('id_password1',this)" tabindex="-1"><i class="bi bi-eye"></i></button>
+              </div>
+              {% if form.password1.errors %}<div class="rg__err"><i class="bi bi-exclamation-circle"></i>{{ form.password1.errors }}</div>{% endif %}
+              <!-- strength meter -->
+              <div class="rg__strength">
+                <div class="rg__str-bar"><div class="rg__str-fill" id="str-fill"></div></div>
+                <span class="rg__str-lbl" id="str-lbl">—</span>
+              </div>
+              <div class="rg__reqs">
+                <div class="rg__req-item" id="req-len"><span class="rg__rdot"></span> At least 8 characters</div>
+                <div class="rg__req-item" id="req-num"><span class="rg__rdot"></span> Not entirely numeric</div>
+              </div>
+            </div>
+            <div class="rg__field">
+              <label class="rg__lbl">Confirm Password <span class="rg__req">*</span></label>
+              <div class="rg__input-wrap rg__pw-wrap">
+                {{ form.password2 }}
+                <button type="button" class="rg__eye" onclick="togglePw('id_password2',this)" tabindex="-1"><i class="bi bi-eye"></i></button>
+              </div>
+              {% if form.password2.errors %}<div class="rg__err"><i class="bi bi-exclamation-circle"></i>{{ form.password2.errors }}</div>{% endif %}
+              <div class="rg__match-hint" id="match-hint"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="rg__submit">
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
+
+      </form>
+
+      <!-- Login link -->
+      <div class="rg__login-link">
+        <span>Already have an account?</span>
+        <a href="{% url 'login' %}" class="rg__login-btn">
+          <i class="fas fa-sign-in-alt"></i> Login here
+        </a>
+      </div>
+
     </div>
+
+    <!-- RIGHT: Live Preview -->
+    <aside class="rg__preview-col">
+      <div class="rg__preview-sticky">
+
+        <!-- Avatar -->
+        <div class="rg__pv-av-wrap">
+          <div class="rg__pv-av" id="pv-av">?</div>
+          <div class="rg__pv-status"><span class="rg__pv-sdot"></span> Pending Approval</div>
+        </div>
+
+        <div class="rg__pv-name" id="pv-name">Your Name</div>
+        <div class="rg__pv-un" id="pv-un">@username</div>
+
+        <div class="rg__pv-divider"></div>
+
+        <div class="rg__pv-rows">
+          <div class="rg__pv-row">
+            <span class="rg__pv-ic" style="--ic:#a78bfa"><i class="bi bi-building"></i></span>
+            <div><span class="rg__pv-lbl">Department</span><span class="rg__pv-val" id="pv-dept">—</span></div>
+          </div>
+          <div class="rg__pv-row">
+            <span class="rg__pv-ic" style="--ic:#fbbf24"><i class="bi bi-calendar3"></i></span>
+            <div><span class="rg__pv-lbl">Year</span><span class="rg__pv-val" id="pv-year">—</span></div>
+          </div>
+          <div class="rg__pv-row">
+            <span class="rg__pv-ic" style="--ic:#10b981"><i class="bi bi-award-fill"></i></span>
+            <div><span class="rg__pv-lbl">CGPA</span><span class="rg__pv-val rg__pv-mono" id="pv-cgpa">—</span></div>
+          </div>
+          <div class="rg__pv-row">
+            <span class="rg__pv-ic" style="--ic:#06b6d4"><i class="bi bi-card-text"></i></span>
+            <div><span class="rg__pv-lbl">Roll Number</span><span class="rg__pv-val rg__pv-mono" id="pv-roll">—</span></div>
+          </div>
+        </div>
+
+        <!-- CGPA bar -->
+        <div class="rg__pv-cgpa-bar">
+          <div class="rg__pv-cgpa-track">
+            <div class="rg__pv-cgpa-fill" id="pv-cgpa-fill" style="width:0%"></div>
+          </div>
+          <span class="rg__pv-mono" id="pv-cgpa-pct" style="font-size:11px;color:#3d7a8a">0 / 10</span>
+        </div>
+
+        <div class="rg__pv-divider"></div>
+
+        <!-- Steps -->
+        <div class="rg__pv-steps">
+          <div class="rg__pv-step">
+            <div class="rg__pv-step-ic rg__pv-step-ic--pending"><i class="bi bi-pencil-square"></i></div>
+            <div>
+              <div class="rg__pv-step-title">Fill & Submit</div>
+              <div class="rg__pv-step-hint">Complete the form</div>
+            </div>
+          </div>
+          <div class="rg__pv-connector"></div>
+          <div class="rg__pv-step">
+            <div class="rg__pv-step-ic"><i class="bi bi-shield-check"></i></div>
+            <div>
+              <div class="rg__pv-step-title">Admin Review</div>
+              <div class="rg__pv-step-hint">Pending approval</div>
+            </div>
+          </div>
+          <div class="rg__pv-connector"></div>
+          <div class="rg__pv-step">
+            <div class="rg__pv-step-ic"><i class="bi bi-bell-fill"></i></div>
+            <div>
+              <div class="rg__pv-step-title">Get Notified</div>
+              <div class="rg__pv-step-hint">Access drives</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
 </div>
+
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button{font-family:inherit;}
+
+.rg{
+  --b0:#0d1f2d;--b1:#102436;--b2:#133044;--b3:#1a3a52;
+  --t1:#e0f4f8;--t2:#7ec8d8;--t3:#3d7a8a;
+  --acc:#06b6d4;--grn:#10b981;--pur:#a78bfa;
+  --yel:#fbbf24;--red:#f87171;
+  font-family:'Urbanist',sans-serif;
+  background:var(--b0);color:var(--t1);
+  min-height:100vh;overflow-x:hidden;position:relative;
+}
+
+.rg__mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(6,182,212,.035) 1px,transparent 1px);background-size:38px 38px;}
+.rg__orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:ao 18s ease-in-out infinite alternate;}
+.rg__orb--1{width:500px;height:500px;background:radial-gradient(circle,rgba(6,182,212,.16),transparent);top:-150px;right:-100px;}
+.rg__orb--2{width:400px;height:400px;background:radial-gradient(circle,rgba(167,139,250,.12),transparent);bottom:-100px;left:-60px;animation-delay:-9s;}
+.rg__orb--3{width:300px;height:300px;background:radial-gradient(circle,rgba(16,185,129,.08),transparent);top:50%;left:35%;animation-delay:-5s;}
+@keyframes ao{from{transform:translate(0,0)scale(1);}to{transform:translate(22px,16px)scale(1.07);}}
+
+/* WRAP */
+.rg__wrap{
+  position:relative;z-index:1;
+  max-width:1200px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 280px;
+  gap:32px;padding:40px 24px 64px;
+  align-items:start;
+}
+@media(max-width:1000px){.rg__wrap{grid-template-columns:1fr;max-width:620px;}}
+
+/* BRAND */
+.rg__brand{display:flex;align-items:center;gap:10px;margin-bottom:22px;}
+.rg__brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;box-shadow:0 3px 12px rgba(6,182,212,.3);}
+.rg__brand-name{font-size:15px;font-weight:800;color:#fff;}
+.rg__brand-sub{font-size:11px;color:var(--t3);margin-top:1px;}
+
+.rg__title{font-size:26px;font-weight:800;color:#fff;margin-bottom:8px;}
+.rg__desc{font-size:13.5px;color:var(--t3);margin-bottom:18px;line-height:1.6;}
+
+/* notice */
+.rg__notice{display:flex;align-items:flex-start;gap:9px;background:rgba(6,182,212,.07);border:1px solid rgba(6,182,212,.2);border-radius:11px;padding:13px 16px;font-size:13px;color:var(--t2);line-height:1.5;margin-bottom:22px;}
+.rg__notice i{color:var(--acc);flex-shrink:0;margin-top:1px;font-size:15px;}
+.rg__notice strong{color:var(--acc);}
+
+/* messages */
+.rg__msgs{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.rg__msg{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;}
+.rg__msg--success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.22);color:#34d399;}
+.rg__msg--error,
+.rg__msg--danger{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.22);color:#f87171;}
+
+/* form sections */
+.rg__form{display:flex;flex-direction:column;gap:14px;}
+.rg__sec{background:var(--b2);border:1px solid rgba(6,182,212,.1);border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.18);}
+.rg__sec-head{display:flex;align-items:center;gap:13px;padding:13px 20px 11px;border-bottom:1px solid rgba(6,182,212,.08);background:rgba(6,182,212,.025);}
+.rg__sec-num{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:rgba(6,182,212,.28);line-height:1;flex-shrink:0;}
+.rg__sec-head>div{flex:1;}
+.rg__sec-title{font-size:13.5px;font-weight:700;color:var(--t1);}
+.rg__sec-hint{font-size:11.5px;color:var(--t3);margin-top:2px;}
+.rg__sec-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px;}
+.rg__row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.rg__row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:640px){.rg__row2,.rg__row3{grid-template-columns:1fr;}}
+
+/* fields */
+.rg__field{display:flex;flex-direction:column;gap:5px;}
+.rg__lbl{font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;}
+.rg__req{color:var(--red);}
+.rg__hint{font-size:11px;color:var(--t3);}
+.rg__err{font-size:12px;color:#f87171;display:flex;align-items:center;gap:5px;}
+.rg__input-wrap{position:relative;}
+
+/* Django form inputs override */
+#reg-form input[type="text"],
+#reg-form input[type="email"],
+#reg-form input[type="number"],
+#reg-form input[type="password"],
+#reg-form select,
+#reg-form textarea{
+  width:100%!important;background:#1a3a52!important;
+  border:1px solid rgba(6,182,212,.2)!important;border-radius:10px!important;
+  color:#e0f4f8!important;font-family:'Urbanist',sans-serif!important;
+  font-size:14px!important;font-weight:500!important;
+  padding:11px 14px!important;outline:none!important;
+  transition:border-color .18s,box-shadow .18s!important;
+  box-shadow:none!important;-webkit-appearance:none!important;
+}
+#reg-form input::placeholder{color:#3d7a8a!important;}
+#reg-form input:focus,#reg-form select:focus{border-color:rgba(6,182,212,.5)!important;box-shadow:0 0 0 3px rgba(6,182,212,.12)!important;}
+#reg-form select option{background:#133044;color:#e0f4f8;}
+#reg-form .rg__pw-wrap input{padding-right:44px!important;}
+#reg-form .form-group,#reg-form .mb-3{margin:0!important;}
+#reg-form label.form-label{display:none!important;}
+
+/* password eye */
+.rg__pw-wrap{position:relative;}
+.rg__eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#3d7a8a;font-size:15px;cursor:pointer;padding:4px;transition:color .15s;}
+.rg__eye:hover{color:#06b6d4;}
+
+/* strength */
+.rg__strength{display:flex;align-items:center;gap:10px;margin-top:6px;}
+.rg__str-bar{flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;}
+.rg__str-fill{height:100%;border-radius:99px;width:0;transition:width .35s,background .35s;}
+.rg__str-lbl{font-size:11.5px;font-weight:700;min-width:44px;text-align:right;}
+.rg__reqs{display:flex;flex-direction:column;gap:3px;margin-top:6px;}
+.rg__req-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#3d7a8a;transition:color .2s;}
+.rg__req-item.ok{color:#10b981;}
+.rg__rdot{width:6px;height:6px;border-radius:50%;background:#3d7a8a;flex-shrink:0;transition:background .2s;}
+.rg__req-item.ok .rg__rdot{background:#10b981;}
+.rg__match-hint{font-size:12px;min-height:16px;margin-top:6px;transition:color .2s;}
+.rg__match-hint.ok{color:#10b981;}
+.rg__match-hint.bad{color:#f87171;}
+
+/* submit */
+.rg__submit{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;background:linear-gradient(135deg,#0891b2,#06b6d4);
+  border:1px solid rgba(6,182,212,.4);color:#fff;
+  font-size:16px;font-weight:800;padding:14px;border-radius:12px;
+  box-shadow:0 4px 20px rgba(6,182,212,.32);cursor:pointer;
+  transition:all .2s;margin-top:4px;
+}
+.rg__submit:hover{box-shadow:0 6px 28px rgba(6,182,212,.55);transform:translateY(-2px);}
+.rg__submit:active{transform:scale(.98);}
+
+/* login link */
+.rg__login-link{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(6,182,212,.1);font-size:13px;color:var(--t3);}
+.rg__login-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.22);color:var(--acc);font-size:13px;font-weight:700;padding:7px 16px;border-radius:9px;text-decoration:none;transition:all .18s;}
+.rg__login-btn:hover{background:rgba(6,182,212,.16);color:var(--acc);}
+
+/* ══ PREVIEW SIDEBAR ══ */
+.rg__preview-col{
+  position:sticky;top:24px;
+}
+@media(max-width:1000px){.rg__preview-col{display:none;}}
+.rg__preview-sticky{
+  background:var(--b2);border:1px solid rgba(6,182,212,.15);
+  border-radius:20px;padding:24px 20px;
+  box-shadow:0 8px 30px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;gap:0;
+}
+
+/* avatar */
+.rg__pv-av-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px;}
+.rg__pv-av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;box-shadow:0 4px 18px rgba(6,182,212,.35);border:2px solid rgba(6,182,212,.3);transition:all .2s;}
+.rg__pv-status{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);padding:3px 10px;border-radius:99px;}
+.rg__pv-sdot{width:6px;height:6px;border-radius:50%;background:#fbbf24;animation:dp 2s infinite;}
+@keyframes dp{0%{box-shadow:0 0 0 0 rgba(251,191,36,.5);}70%{box-shadow:0 0 0 5px transparent;}100%{box-shadow:0 0 0 0 transparent;}}
+
+.rg__pv-name{font-size:16px;font-weight:800;color:#fff;text-align:center;transition:all .2s;margin-bottom:2px;}
+.rg__pv-un{font-size:12px;color:var(--t3);text-align:center;font-family:'JetBrains Mono',monospace;margin-bottom:0;}
+.rg__pv-divider{height:1px;background:rgba(6,182,212,.08);margin:14px 0;}
+.rg__pv-rows{display:flex;flex-direction:column;gap:10px;}
+.rg__pv-row{display:flex;align-items:flex-start;gap:9px;}
+.rg__pv-ic{width:26px;height:26px;border-radius:7px;flex-shrink:0;background:rgba(255,255,255,.05);color:var(--ic);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.rg__pv-lbl{display:block;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.rg__pv-val{font-size:12.5px;color:var(--t1);font-weight:500;transition:all .2s;}
+.rg__pv-mono{font-family:'JetBrains Mono',monospace;font-size:12px;}
+
+/* cgpa bar */
+.rg__pv-cgpa-bar{display:flex;align-items:center;gap:10px;margin-top:12px;}
+.rg__pv-cgpa-track{flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;}
+.rg__pv-cgpa-fill{height:100%;border-radius:99px;transition:width .5s ease,background .4s ease;background:#10b981;}
+
+/* steps */
+.rg__pv-steps{display:flex;flex-direction:column;gap:0;}
+.rg__pv-step{display:flex;align-items:flex-start;gap:10px;padding:8px 4px;}
+.rg__pv-step-ic{width:30px;height:30px;border-radius:50%;flex-shrink:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--t3);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.rg__pv-step-ic--pending{background:rgba(6,182,212,.15);border-color:rgba(6,182,212,.3);color:var(--acc);box-shadow:0 0 10px rgba(6,182,212,.25);}
+.rg__pv-step-title{font-size:12.5px;font-weight:700;color:var(--t2);}
+.rg__pv-step-hint{font-size:11px;color:var(--t3);}
+.rg__pv-connector{width:1px;height:10px;background:rgba(255,255,255,.08);margin:0 0 0 14px;}
+</style>
+
+<script>
+function togglePw(id,btn){
+  const el=document.getElementById(id);
+  const ic=btn.querySelector('i');
+  el.type=el.type==='password'?'text':'password';
+  ic.className=el.type==='password'?'bi bi-eye':'bi bi-eye-slash';
+}
+
+/* Live preview */
+const q=s=>document.querySelector(s);
+const g=id=>document.getElementById(id);
+
+function bind(sel,fn){
+  const el=document.querySelector(sel);
+  if(el){el.addEventListener('input',fn);el.addEventListener('change',fn);}
+}
+
+bind('[name="username"]',e=>{
+  const v=e.target.value.trim()||'username';
+  g('pv-un').textContent='@'+v;
+});
+bind('[name="name"]',e=>{
+  const v=e.target.value.trim()||'Your Name';
+  g('pv-name').textContent=v;
+  g('pv-av').textContent=v.charAt(0).toUpperCase()||'?';
+});
+bind('[name="department"]',e=>{
+  const opt=e.target.options[e.target.selectedIndex];
+  g('pv-dept').textContent=opt?.text||'—';
+});
+bind('[name="year"]',e=>{
+  const opt=e.target.options[e.target.selectedIndex];
+  g('pv-year').textContent=opt?.text||'—';
+});
+bind('[name="roll_number"]',e=>{
+  g('pv-roll').textContent=e.target.value.trim()||'—';
+});
+bind('[name="cgpa"]',e=>{
+  const v=parseFloat(e.target.value)||0;
+  g('pv-cgpa').textContent=v||'—';
+  g('pv-cgpa-pct').textContent=(v||'0')+' / 10';
+  const fill=g('pv-cgpa-fill');
+  fill.style.width=Math.min(v/10*100,100)+'%';
+  fill.style.background=v>=8?'#10b981':v>=6?'#fbbf24':'#f87171';
+});
+
+/* Password strength */
+bind('[name="password1"]',e=>{
+  const val=e.target.value;
+  const fill=g('str-fill'),lbl=g('str-lbl');
+  const rLen=g('req-len'),rNum=g('req-num');
+  const allNum=/^\d+$/.test(val);
+  if(val.length>=8)rLen.classList.add('ok');else rLen.classList.remove('ok');
+  if(!allNum&&val.length>0)rNum.classList.add('ok');else rNum.classList.remove('ok');
+  let s=0;
+  if(val.length>=8)s++;if(val.length>=12)s++;
+  if(!allNum)s++;if(/[A-Z]/.test(val))s++;if(/[^a-zA-Z0-9]/.test(val))s++;
+  const lvl=val.length===0?null:[
+    {p:'20%',c:'#f87171',t:'Weak'},
+    {p:'40%',c:'#fb923c',t:'Fair'},
+    {p:'65%',c:'#fbbf24',t:'Good'},
+    {p:'85%',c:'#06b6d4',t:'Strong'},
+    {p:'100%',c:'#10b981',t:'Very Strong'},
+  ][Math.min(s-1,4)];
+  if(lvl){fill.style.width=lvl.p;fill.style.background=lvl.c;lbl.textContent=lvl.t;lbl.style.color=lvl.c;}
+  else{fill.style.width='0';lbl.textContent='—';lbl.style.color='#3d7a8a';}
+  checkMatch();
+});
+bind('[name="password2"]',()=>checkMatch());
+function checkMatch(){
+  const p1=document.querySelector('[name="password1"]')?.value;
+  const p2=document.querySelector('[name="password2"]')?.value;
+  const h=g('match-hint');
+  if(!h||!p2){if(h)h.textContent='';return;}
+  if(p1===p2){h.textContent='✓ Passwords match';h.className='rg__match-hint ok';}
+  else{h.textContent='✗ Passwords do not match';h.className='rg__match-hint bad';}
+}
+</script>
+
 {% endblock %}
