@@ -28,9 +28,10 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here-
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = [
-    "digital-notice-board-b7ia.onrender.com",
+    "digital-notice-board-b7ia.onrender.com",  
     "onrender.com",
 ]
+
 
 # CSRF trusted origins for browser preview
 CSRF_TRUSTED_ORIGINS = [
