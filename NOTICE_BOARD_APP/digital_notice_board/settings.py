@@ -32,7 +32,6 @@ ALLOWED_HOSTS = [
     "onrender.com",
 ]
 
-
 # CSRF trusted origins for browser preview
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
